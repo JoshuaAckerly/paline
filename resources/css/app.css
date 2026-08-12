@@ -1,0 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap");
+
+@import "tailwindcss";
+
+:root {
+    --bg:          #1a1410;
+    --bg-card:     #221c16;
+    --primary:     #c47a3a;
+    --primary-dim: #8a5525;
+    --text:        #e8d5b0;
+    --muted:       #8a7a65;
+    --border:      #3d2f1e;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Bitter", serif;
+}
