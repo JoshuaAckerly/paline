@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const nav = [
+    { label: 'Home', href: '/' },
     { label: 'Music', href: '/music' },
     { label: 'Shows', href: '/shows' },
     { label: 'About', href: '/about' },
@@ -19,9 +20,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 style={{ borderBottom: '1px solid var(--border)' }}
                 className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm"
             >
-                <div className="mx-auto max-w-6xl px-6 flex items-center justify-between h-16">
+                <div className="mx-auto max-w-6xl px-6 flex items-center justify-between h-20">
                     <Link href="/" className="flex items-center">
-                        <img src="/logo.png" alt="PA Line" className="h-8 w-auto" />
+                        <img src="/logo.png" alt="PA Line" className="h-16 w-auto" />
                     </Link>
                     {/* Desktop nav */}
                     <nav className="hidden md:flex items-center gap-8">
@@ -70,7 +71,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </header>
 
             {/* Page content */}
-            <main className="pt-16">{children}</main>
+            <main className="pt-20">{children}</main>
 
             {/* Footer */}
             <footer

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap");
+/* Adobe Typekit — Six Hands loaded via app.blade.php */
 
 @import "tailwindcss";
 
@@ -23,5 +23,5 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Bitter", serif;
+    font-family: 'six-hands', serif;
 }

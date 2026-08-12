@@ -19,8 +19,9 @@ export default defineConfig(({ mode }) => {
         server = {
             port: 8090,
             host: '0.0.0.0',
-            origin: 'http://paline.test:8090',
-            allowedHosts: ['paline.test'],
+            origin: 'http://127.0.0.1:8090',
+            cors: { origin: 'http://127.0.0.1:8091' },
+            allowedHosts: ['localhost', '127.0.0.1', 'paline.test'],
         };
     }
 

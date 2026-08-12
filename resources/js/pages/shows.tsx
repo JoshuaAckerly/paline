@@ -48,7 +48,7 @@ export default function Shows() {
                                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
                             >
                                 <div>
-                                    <p className="font-semibold text-lg" style={{ fontFamily: 'Bitter, serif', color: 'var(--text)' }}>
+                                    <p className="font-semibold text-lg" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
                                         {show.date}
                                     </p>
                                     <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>

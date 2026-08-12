@@ -8,20 +8,22 @@ export default function Home() {
         <MainLayout>
             {/* Hero */}
             <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+                {/* Hero background photo */}
+                <div className="absolute inset-0">
+                    <img
+                        src="/images/FB_IMG_1780195233682.jpg"
+                        alt="PA Line live"
+                        className="w-full h-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(26,20,16,0.55) 0%, rgba(26,20,16,0.75) 60%, rgba(26,20,16,1) 100%)' }} />
+                </div>
                 {/* Grain texture overlay */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-30"
+                    className="absolute inset-0 pointer-events-none opacity-20"
                     style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
                         backgroundRepeat: 'repeat',
                         backgroundSize: '200px 200px',
-                    }}
-                />
-                {/* Amber glow */}
-                <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(ellipse 60% 50% at 50% 60%, rgba(196,122,58,0.08) 0%, transparent 70%)',
                     }}
                 />
 
@@ -35,7 +37,7 @@ export default function Home() {
                         src="/logo.png"
                         alt="PA Line"
                         className="w-72 md:w-96 mb-10"
-                        style={{ filter: 'invert(0) brightness(1)' }}
+                        style={{ mixBlendMode: 'screen' }}
                     />
                     <p
                         className="text-base md:text-lg tracking-[0.3em] uppercase mb-10"
