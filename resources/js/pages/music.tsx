@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import MainLayout from '@/Layouts/MainLayout';
+import PageMeta from '@/Components/PageMeta';
 
 const albums = [
     {
@@ -19,6 +20,7 @@ const albums = [
 export default function Music() {
     return (
         <MainLayout>
+            <PageMeta title="Music" description="Stream PA Line on Spotify and Apple Music. Albums include dENIAL (2024) and Peace Always (2018)." />
             <div className="max-w-4xl mx-auto px-6 py-24">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -68,9 +70,9 @@ export default function Music() {
                                 allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
                                 frameBorder="0"
                                 height="450"
-                                style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', borderRadius: '4px', border: '1px solid var(--border)' }}
+                                style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', borderRadius: '4px', border: '1px solid var(--border)', backgroundColor: '#000' }}
                                 sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
-                                src={`https://embed.music.apple.com/us/album/${album.appleSlug}/${album.appleId}`}
+                                src={`https://embed.music.apple.com/us/album/${album.appleSlug}/${album.appleId}?theme=dark`}
                             />
                         </motion.div>
                     ))}
@@ -84,6 +86,15 @@ export default function Music() {
                     transition={{ duration: 0.7 }}
                     className="mt-16 flex flex-wrap gap-4"
                 >
+                    <a
+                        href="https://www.youtube.com/@palineofficial"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2 text-xs font-semibold tracking-widest uppercase border transition-all"
+                        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                    >
+                        YouTube ↗
+                    </a>
                     <a
                         href="https://open.spotify.com/artist/2OArsWhucdqcTIh9FenCiO"
                         target="_blank"

@@ -78,6 +78,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 style={{ borderTop: '1px solid var(--border)', color: 'var(--muted)' }}
                 className="mt-24 py-10 text-center text-sm"
             >
+                <div className="flex justify-center gap-6 mb-6">
+                    <a href="https://www.facebook.com/PALineOfficial" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>Facebook</a>
+                    <a href="https://www.instagram.com/palineofficial/" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>Instagram</a>
+                    <a href="https://x.com/PALineOfficial" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>X</a>
+                    <a href="https://open.spotify.com/artist/2OArsWhucdqcTIh9FenCiO" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>Spotify</a>
+                    <a href="https://music.apple.com/us/artist/pa-line/971265800" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>Apple Music</a>
+                    <a href="https://www.youtube.com/@palineofficial" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>YouTube</a>
+                    <a href="https://music.amazon.com/artists/B01L1B73TC/pa-line" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase transition-colors hover:text-white" style={{ color: 'var(--muted)' }}>Amazon</a>
+                </div>
                 <p>© {new Date().getFullYear()} PA Line. All rights reserved.</p>
                 <p className="mt-2">
                     Site by{' '}

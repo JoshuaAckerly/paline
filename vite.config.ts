@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => {
             port: 8090,
             host: '0.0.0.0',
             origin: 'http://127.0.0.1:8090',
-            cors: { origin: 'http://127.0.0.1:8091' },
-            allowedHosts: ['localhost', '127.0.0.1', 'paline.test'],
+            cors: { origin: ['http://127.0.0.1:8091', 'https://uncle-gatherer-enactment.ngrok-free.dev'] },
+            allowedHosts: ['localhost', '127.0.0.1', 'paline.test', 'uncle-gatherer-enactment.ngrok-free.dev'],
         };
     }
 

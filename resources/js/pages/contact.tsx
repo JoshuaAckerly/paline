@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
+import PageMeta from '@/Components/PageMeta';
 import axios from 'axios';
 
 export default function Contact() {
@@ -32,6 +33,7 @@ export default function Contact() {
 
     return (
         <MainLayout>
+            <PageMeta title="Contact" description="Book PA Line, press inquiries, or just say hello. Contact the band directly at info@palineofficial.com." />
             <div className="max-w-2xl mx-auto px-6 py-24">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -45,7 +47,8 @@ export default function Contact() {
                         Contact
                     </h1>
                     <p className="mb-12 text-sm" style={{ color: 'var(--muted)' }}>
-                        Booking inquiries, press, or just want to say hey — reach out below.
+                        Booking inquiries, press, or just want to say hey — reach out below or email us directly at{' '}
+                        <a href="mailto:info@palineofficial.com" style={{ color: 'var(--primary)' }}>info@palineofficial.com</a>.
                     </p>
                 </motion.div>
 

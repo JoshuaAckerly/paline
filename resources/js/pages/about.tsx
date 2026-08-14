@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import MainLayout from '@/Layouts/MainLayout';
+import PageMeta from '@/Components/PageMeta';
 
 const galleryPhotos = [
     { src: '/images/FB_IMG_1779126099726.jpg', alt: 'PA Line live — vocals and guitar' },
@@ -190,6 +191,7 @@ Peace Always.`,
 export default function About() {
     return (
         <MainLayout>
+            <PageMeta title="About" description="The story of PA Line — founded in Western New York in 2014 by Trever Stribing. True Grit Americana Folk with roots in folk, blues, and American rock." image="/images/IMG_20260518_000900.jpg" />
             <div className="max-w-5xl mx-auto px-6 py-24">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

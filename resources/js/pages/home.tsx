@@ -1,11 +1,22 @@
 import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Clock, MapPin } from 'lucide-react';
 import MainLayout from '@/Layouts/MainLayout';
+import PageMeta from '@/Components/PageMeta';
 import { Link } from '@inertiajs/react';
 
-export default function Home() {
+interface Show {
+    summary: string;
+    date: string;
+    time: string | null;
+    location: string | null;
+    url: string | null;
+    ts: number;
+}
+
+export default function Home({ upcomingShows }: { upcomingShows: Show[] }) {
     return (
         <MainLayout>
+            <PageMeta description="PA Line — True Grit Americana Folk from Western New York. Stream music, see upcoming shows, and get in touch." />
             {/* Hero */}
             <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
                 {/* Hero background photo */}
@@ -86,64 +97,106 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7 }}
-                    className="text-center mb-16"
-                >
-                    <p
-                        className="text-xs tracking-[0.3em] uppercase mb-3"
-                        style={{ color: 'var(--primary)' }}
+                    className="text-center mb-10"
                     >
-                        Latest
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--text)' }}>
-                        New Music
-                    </h2>
-                </motion.div>
+                        <p className="text-xs tracking-[0.3em] uppercase mb-3" style={{ color: 'var(--primary)' }}>
+                            Latest
+                        </p>
+                        <h2 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--text)' }}>
+                            New Music
+                        </h2>
+                    </motion.div>
 
-                {/* Placeholder music embed */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7, delay: 0.1 }}
-                    className="rounded border text-center py-16"
-                    style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--muted)' }}
-                >
-                    <p className="text-sm tracking-widest uppercase">Music embed coming soon</p>
-                    <Link href="/music" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--primary)' }}>
-                        View all music →
-                    </Link>
-                </motion.div>
-            </section>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.1 }}
+                    >
+                        <iframe
+                            src="https://open.spotify.com/embed/artist/2OArsWhucdqcTIh9FenCiO?utm_source=generator&theme=0"
+                            width="100%"
+                            height="160"
+                            frameBorder="0"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            style={{ borderRadius: '4px', border: '1px solid var(--border)', display: 'block' }}
+                        />
+                        <div className="mt-4 text-center">
+                            <Link href="/music" className="text-sm" style={{ color: 'var(--primary)' }}>
+                                View all music →
+                            </Link>
+                        </div>
+                    </motion.div>
+                </section>
 
-            {/* Shows teaser */}
-            <section
-                style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
-                className="py-20 px-6 text-center"
-            >
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7 }}
+                {/* Shows teaser */}
+                <section
+                    style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
+                    className="py-20 px-6"
                 >
-                    <p
-                        className="text-xs tracking-[0.3em] uppercase mb-3"
-                        style={{ color: 'var(--primary)' }}
-                    >
-                        On the Road
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--text)' }}>
-                        Upcoming Shows
-                    </h2>
-                    <Link
-                        href="/shows"
-                        className="inline-block px-8 py-3 text-sm font-semibold tracking-widest uppercase border transition-all"
-                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                    >
-                        See All Dates
-                    </Link>
-                </motion.div>
-            </section>
+                    <div className="max-w-4xl mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7 }}
+                            className="text-center mb-10"
+                        >
+                            <p className="text-xs tracking-[0.3em] uppercase mb-3" style={{ color: 'var(--primary)' }}>
+                                On the Road
+                            </p>
+                            <h2 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--text)' }}>
+                                Upcoming Shows
+                            </h2>
+                        </motion.div>
+
+                        {upcomingShows.length === 0 ? (
+                            <p className="text-center text-sm mb-8" style={{ color: 'var(--muted)' }}>More dates coming soon.</p>
+                        ) : (
+                            <div className="space-y-3 mb-8">
+                                {upcomingShows.map((show, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: 12 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.4, delay: i * 0.06 }}
+                                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-4 border rounded"
+                                        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
+                                    >
+                                        <p className="font-semibold" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
+                                            {show.summary}
+                                        </p>
+                                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                            <span className="text-sm" style={{ color: 'var(--primary)' }}>{show.date}</span>
+                                            {show.time && (
+                                                <span className="flex items-center gap-1 text-sm" style={{ color: 'var(--muted)' }}>
+                                                    <Clock className="h-3 w-3" />{show.time}
+                                                </span>
+                                            )}
+                                            {show.location && (
+                                                <span className="flex items-center gap-1 text-sm" style={{ color: 'var(--muted)' }}>
+                                                    <MapPin className="h-3 w-3" />{show.location}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="text-center">
+                            <Link
+                                href="/shows"
+                                className="inline-block px-8 py-3 text-sm font-semibold tracking-widest uppercase border transition-all"
+                                style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                            >
+                                See All Dates
+                            </Link>
+                        </div>
+                    </div>
+                </section>
         </MainLayout>
     );
 }
