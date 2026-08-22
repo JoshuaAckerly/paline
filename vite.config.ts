@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             laravel({
                 input: ['resources/css/app.css', 'resources/js/app.tsx'],
+                ssr: 'resources/js/ssr.tsx',
                 refresh: true,
             }),
             react(),
@@ -39,6 +40,9 @@ export default defineConfig(({ mode }) => {
             alias: {
                 '@': resolve(__dirname, 'resources/js'),
             },
+        },
+        ssr: {
+            noExternal: ['react', 'react-dom', '@inertiajs/react', '@inertiajs/core'],
         },
     };
 });
