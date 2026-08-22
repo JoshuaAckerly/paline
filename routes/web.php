@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Shared helper — fetches and parses upcoming shows, cached for 5 minutes
+if (!function_exists('fetchUpcomingShows')) {
 function fetchUpcomingShows(int $limit = 0): array
 {
     $shows = \Illuminate\Support\Facades\Cache::remember('pa_line_shows', 300, function () {
@@ -53,6 +54,7 @@ function fetchUpcomingShows(int $limit = 0): array
 
     return $limit > 0 ? array_slice($shows, 0, $limit) : $shows;
 }
+} // end function_exists guard
 
 Route::get('/', fn () => Inertia::render('home', [
     'upcomingShows' => fetchUpcomingShows(3),
