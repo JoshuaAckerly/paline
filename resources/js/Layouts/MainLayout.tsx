@@ -26,7 +26,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }, [open]);
 
     return (
-        <div style={{ backgroundColor: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
+        <div style={{ backgroundColor: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', overflowX: 'hidden' }}>
             {/* Nav */}
             <header
                 style={{ borderBottom: '1px solid var(--border)' }}

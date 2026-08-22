@@ -55,8 +55,7 @@ function fetchUpcomingShows(int $limit = 0): array
 }
 
 Route::get('/', fn () => Inertia::render('home', [
-    // Use cached shows — never block the home page waiting for Google Calendar
-    'upcomingShows' => \Illuminate\Support\Facades\Cache::get('pa_line_shows', []),
+    'upcomingShows' => fetchUpcomingShows(3),
 ]))->name('home');
 Route::get('/music', fn () => Inertia::render('music'))->name('music');
 Route::get('/shows', fn () => Inertia::render('shows', ['shows' => fetchUpcomingShows()]))->name('shows');
