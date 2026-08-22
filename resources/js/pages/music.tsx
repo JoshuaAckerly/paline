@@ -66,13 +66,31 @@ export default function Music() {
                             <p className="text-xs tracking-widest uppercase mb-3" style={{ color: 'var(--muted)' }}>
                                 {album.year} · {album.title}
                             </p>
+                            {/*
+                              Apple Music iframe works best at ~450px tall on desktop.
+                              On mobile we cap it so it never goes below a useful height
+                              but also never overflows the viewport width.
+                              max-height: min(450px, 70vh) lets it shrink on short/small
+                              screens while staying full on desktop.
+                            */}
                             <iframe
                                 allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
                                 frameBorder="0"
-                                height="450"
-                                style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', borderRadius: '4px', border: '1px solid var(--border)', backgroundColor: '#000' }}
+                                style={{
+                                    width: '100%',
+                                    height: 'min(450px, 70vw)',
+                                    minHeight: '300px',
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--border)',
+                                    backgroundColor: '#000',
+                                    display: 'block',
+                                }}
                                 sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
                                 src={`https://embed.music.apple.com/us/album/${album.appleSlug}/${album.appleId}?theme=dark`}
+                                title={`${album.title} on Apple Music`}
+                                loading="lazy"
                             />
                         </motion.div>
                     ))}

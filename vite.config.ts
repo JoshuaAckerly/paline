@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
         server = {
             port: 443,
             host: '0.0.0.0',
-            origin: 'https://paline.graveyardjokes.com',
-            allowedHosts: ['paline.graveyardjokes.com', 'palineofficial.com'],
+            origin: 'https://palineofficial.com',
+            allowedHosts: ['palineofficial.com', 'paline.graveyardjokes.com'],
         };
     } else {
         server = {
@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         ssr: {
-            noExternal: ['react', 'react-dom', '@inertiajs/react', '@inertiajs/core'],
+            noExternal: ['react', 'react-dom', '@inertiajs/react', '@inertiajs/core', 'framer-motion'],
         },
     };
 });

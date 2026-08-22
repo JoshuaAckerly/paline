@@ -17,8 +17,12 @@ export default function Home({ upcomingShows }: { upcomingShows: Show[] }) {
     return (
         <MainLayout>
             <PageMeta description="PA Line — True Grit Americana Folk from Western New York. Stream music, see upcoming shows, and get in touch." />
-            {/* Hero */}
-            <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+            {/* Hero — use svh/dvh so the section fills the visible viewport on mobile
+                (100vh includes the browser chrome on iOS; 100dvh excludes it) */}
+            <section
+                className="relative flex flex-col items-center justify-center text-center px-6 overflow-hidden"
+                style={{ minHeight: '100svh' }}
+            >
                 {/* Hero background photo */}
                 <div className="absolute inset-0">
                     <img
@@ -44,35 +48,41 @@ export default function Home({ upcomingShows }: { upcomingShows: Show[] }) {
                     transition={{ duration: 0.9, ease: 'easeOut' }}
                     className="relative z-10 flex flex-col items-center"
                 >
+                    {/* Logo: smaller on phones so it doesn't dominate small viewports */}
                     <img
                         src="/logo.png"
                         alt="PA Line"
-                        className="w-72 md:w-96 mb-10"
+                        className="w-52 sm:w-72 md:w-96 mb-8 md:mb-10"
                         style={{ mixBlendMode: 'screen' }}
                     />
                     <p
-                        className="text-base md:text-lg tracking-[0.3em] uppercase mb-10"
+                        className="text-sm md:text-base tracking-[0.3em] uppercase mb-8 md:mb-10"
                         style={{ color: 'var(--muted)' }}
                     >
                         True Grit Americana
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Buttons stack on mobile, side-by-side on sm+ */}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
                         <Link
                             href="/music"
-                            className="px-8 py-3 text-sm font-semibold tracking-widest uppercase transition-all"
+                            className="px-8 py-4 sm:py-3 text-sm font-semibold tracking-widest uppercase transition-all text-center"
                             style={{
                                 backgroundColor: 'var(--primary)',
                                 color: '#1a1410',
+                                WebkitTapHighlightColor: 'transparent',
+                                touchAction: 'manipulation',
                             }}
                         >
                             Listen Now
                         </Link>
                         <Link
                             href="/shows"
-                            className="px-8 py-3 text-sm font-semibold tracking-widest uppercase border transition-all"
+                            className="px-8 py-4 sm:py-3 text-sm font-semibold tracking-widest uppercase border transition-all text-center"
                             style={{
                                 borderColor: 'var(--border)',
                                 color: 'var(--text)',
+                                WebkitTapHighlightColor: 'transparent',
+                                touchAction: 'manipulation',
                             }}
                         >
                             Shows

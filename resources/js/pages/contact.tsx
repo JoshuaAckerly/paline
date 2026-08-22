@@ -28,7 +28,8 @@ export default function Contact() {
         color: 'var(--text)',
         outline: 'none',
         borderRadius: '2px',
-        fontSize: '0.9rem',
+        // 16px minimum prevents iOS from zooming in on focus
+        fontSize: '1rem',
     };
 
     return (

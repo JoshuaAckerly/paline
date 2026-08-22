@@ -295,10 +295,24 @@ export default function About() {
                                     <p key={j} className="text-base leading-relaxed mb-4" style={{ color: 'var(--muted)' }}>{para}</p>
                                 ))}
                                 {section.photos && (
-                                    <div className={`grid gap-3 mt-6 ${section.photos.length === 1 ? 'grid-cols-1 max-w-sm' : section.photos.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                                    <div
+                                        className={`grid gap-3 mt-6 ${
+                                            section.photos.length === 1
+                                                ? 'grid-cols-1 max-w-sm'
+                                                : section.photos.length === 2
+                                                  ? 'grid-cols-1 sm:grid-cols-2'
+                                                  : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+                                        }`}
+                                    >
                                         {section.photos.map((photo: {src:string;alt:string}, k: number) => (
                                             <div key={k} className="overflow-hidden rounded" style={{ border: '1px solid var(--border)' }}>
-                                                <img src={photo.src} alt={photo.alt} className="w-full object-cover transition-transform duration-500 hover:scale-105" style={{ height: '200px' }} />
+                                                <img
+                                                    src={photo.src}
+                                                    alt={photo.alt}
+                                                    className="w-full object-cover transition-transform duration-500 hover:scale-105"
+                                                    style={{ height: '220px' }}
+                                                    loading="lazy"
+                                                />
                                             </div>
                                         ))}
                                     </div>
