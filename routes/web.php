@@ -26,6 +26,9 @@ Route::post('/booking-requests', [BookingRequestController::class, 'store'])
 Route::patch('/booking-requests/{bookingRequest}', [BookingRequestController::class, 'update'])
     ->middleware('throttle:30,1')
     ->name('booking-requests.update');
+Route::patch('/booking-requests/{bookingRequest}/production', [BookingRequestController::class, 'updateProduction'])
+    ->middleware('throttle:30,1')
+    ->name('booking-requests.production.update');
 Route::post('/demand', [DemandController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('demand.store');

@@ -95,7 +95,7 @@ describe('Booking', () => {
         expect(await screen.findByRole('status')).toHaveTextContent('not a booking confirmation');
     });
 
-    it('saves venue event and contact details on an exact-date draft', async () => {
+    it('saves details and production options on an exact-date draft', async () => {
         vi.mocked(axios.post)
             .mockResolvedValueOnce({ data: { state: 'available' } })
             .mockResolvedValueOnce({ data: { id: 'draft-1', draft_token: 'secret', dates: [], routing_status: null } });
@@ -125,7 +125,22 @@ describe('Booking', () => {
             event: expect.objectContaining({ name: 'PA LINE Live', estimated_attendance: 500 }),
             contact: expect.objectContaining({ email: 'jamie@example.com' }),
         }));
-        expect(await screen.findByRole('status')).toHaveTextContent('Performance options come next');
+
+        expect(await screen.findByRole('heading', { name: 'Build the right show.' })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: /Sound is provided/i }));
+        await user.selectOptions(screen.getByLabelText('Qualified house engineer included?'), 'no');
+        await user.selectOptions(screen.getByLabelText('Performance length'), '120');
+        await user.click(screen.getByRole('button', { name: 'Save production options' }));
+
+        expect(axios.patch).toHaveBeenLastCalledWith('/booking-requests/draft-1/production', {
+            draft_token: 'secret',
+            performance_format: 'full_pa_line',
+            performance_length_minutes: 120,
+            sound_provided: true,
+            house_engineer_provided: false,
+            true_potential_requested: false,
+        });
+        expect(await screen.findByRole('status')).toHaveTextContent('Recurring dates');
     });
 
     it('never claims availability when the server check fails', async () => {

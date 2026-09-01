@@ -46,7 +46,9 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Add a persistent city-demand submission flow with explicit update consent.
 - [x] Complete token-protected venue, event, and contact details for anonymous booking drafts.
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
-- [ ] Add recurring booking, budget, format, sound, and merch steps.
+- [x] Add performance format, duration, sound, and TRUE POTENTIAL request steps.
+- [ ] Add recurring booking and per-date review.
+- [ ] Add budget-fit and merch steps.
 
 ## Phase 5: secure pricing and legal
 

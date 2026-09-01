@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\PerformanceFormat;
 use App\Models\BookingRequest;
 use App\Models\Contact;
 use App\Models\Venue;
@@ -198,6 +199,61 @@ class BookingRequestController extends Controller
             'status' => 'details_saved',
             'venue' => $bookingRequest->venue()->firstOrFail()->only(['id', 'name', 'city', 'state']),
             'contact_id' => $bookingRequest->contact_id,
+        ]);
+    }
+
+    public function updateProduction(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+    ): JsonResponse {
+        $credentials = $request->validate([
+            'draft_token' => ['required', 'string', 'max:255'],
+        ]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingRequest->venue_id === null || $bookingRequest->contact_id === null || $bookingRequest->primary_date === null) {
+            throw ValidationException::withMessages([
+                'draft' => 'Complete the venue, event, and contact details before production options.',
+            ]);
+        }
+
+        $validated = $request->validate([
+            'performance_format' => ['required', Rule::enum(PerformanceFormat::class)],
+            'performance_length_minutes' => ['required', 'integer', Rule::in([60, 90, 120, 180])],
+            'sound_provided' => ['required', 'boolean'],
+            'house_engineer_provided' => ['nullable', 'boolean'],
+            'true_potential_requested' => ['required', 'boolean'],
+        ]);
+
+        if ($validated['sound_provided'] && ($validated['house_engineer_provided'] ?? null) === null) {
+            throw ValidationException::withMessages([
+                'house_engineer_provided' => 'Confirm whether a qualified house engineer is included.',
+            ]);
+        }
+
+        if ($validated['true_potential_requested']
+            && $bookingRequest->primary_date->lt(CarbonImmutable::today()->addMonthsNoOverflow(6))) {
+            throw ValidationException::withMessages([
+                'true_potential_requested' => 'TRUE POTENTIAL requires a booking date at least six months away.',
+            ]);
+        }
+
+        $bookingRequest->update([
+            ...$validated,
+            'house_engineer_provided' => $validated['sound_provided']
+                ? ($validated['house_engineer_provided'] ?? null)
+                : null,
+        ]);
+
+        return response()->json([
+            'id' => $bookingRequest->id,
+            'status' => 'production_saved',
+            'performance_format' => $bookingRequest->performance_format->value,
+            'performance_length_minutes' => $bookingRequest->performance_length_minutes,
+            'sound_provided' => $bookingRequest->sound_provided,
+            'house_engineer_provided' => $bookingRequest->house_engineer_provided,
+            'true_potential_requested' => $bookingRequest->true_potential_requested,
         ]);
     }
 }

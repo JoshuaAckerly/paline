@@ -4,10 +4,12 @@ namespace Tests\Feature\Booking;
 
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\PerformanceFormat;
 use App\Models\BookingRequest;
 use App\Models\CalendarBlock;
 use App\Models\DemandSignal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class BookingEntryApiTest extends TestCase
@@ -223,5 +225,84 @@ class BookingEntryApiTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('selected_date');
 
         $this->assertDatabaseCount('venues', 0);
+    }
+
+    public function test_a_completed_draft_can_store_performance_and_sound_options(): void
+    {
+        $draft = $this->createDetailedDraft('2027-04-10');
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/production', [
+            'draft_token' => $draft['token'],
+            'performance_format' => 'full_pa_line',
+            'performance_length_minutes' => 120,
+            'sound_provided' => true,
+            'house_engineer_provided' => false,
+            'true_potential_requested' => true,
+        ])->assertOk()
+            ->assertJsonPath('status', 'production_saved')
+            ->assertJsonPath('performance_format', 'full_pa_line')
+            ->assertJsonPath('house_engineer_provided', false);
+
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertSame(PerformanceFormat::FullPaLine, $booking->performance_format);
+        $this->assertSame(120, $booking->performance_length_minutes);
+        $this->assertTrue($booking->true_potential_requested);
+    }
+
+    public function test_true_potential_requires_six_months_lead_time(): void
+    {
+        Carbon::setTestNow('2026-09-01');
+        $draft = $this->createDetailedDraft('2026-10-10');
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/production', [
+            'draft_token' => $draft['token'],
+            'performance_format' => 'duo',
+            'performance_length_minutes' => 90,
+            'sound_provided' => false,
+            'house_engineer_provided' => null,
+            'true_potential_requested' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('true_potential_requested');
+
+        $this->assertNull(BookingRequest::findOrFail($draft['id'])->performance_format);
+    }
+
+    public function test_production_options_require_completed_details_and_a_valid_token(): void
+    {
+        $booking = BookingRequest::create([
+            'source_path' => BookingSourcePath::Exact,
+            'anonymous_token_hash' => hash('sha256', 'correct-token'),
+            'primary_date' => '2027-04-10',
+        ]);
+
+        $payload = [
+            'draft_token' => 'wrong-token',
+            'performance_format' => 'solo',
+            'performance_length_minutes' => 60,
+            'sound_provided' => false,
+            'house_engineer_provided' => null,
+            'true_potential_requested' => false,
+        ];
+
+        $this->patchJson('/booking-requests/'.$booking->id.'/production', $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('draft');
+
+        $payload['draft_token'] = 'correct-token';
+        $this->patchJson('/booking-requests/'.$booking->id.'/production', $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('draft');
+    }
+
+    /** @return array{id: string, token: string} */
+    private function createDetailedDraft(string $date): array
+    {
+        $draft = $this->postJson('/booking-requests', ['source_path' => 'exact', 'primary_date' => $date]);
+        $this->patchJson('/booking-requests/'.$draft->json('id'), [
+            'draft_token' => $draft->json('draft_token'),
+            'selected_date' => $date,
+            'venue' => ['name' => 'Town Ballroom', 'street_address' => '681 Main Street', 'city' => 'Buffalo', 'state' => 'NY', 'postal_code' => '14203'],
+            'event' => ['name' => 'PA LINE Live', 'type' => 'public_performance', 'setting' => 'indoor', 'start' => '19:00', 'end' => '22:00', 'estimated_attendance' => 500],
+            'contact' => ['name' => 'Jamie Buyer', 'email' => 'jamie@example.com'],
+        ])->assertOk();
+
+        return ['id' => $draft->json('id'), 'token' => $draft->json('draft_token')];
     }
 }
