@@ -175,7 +175,7 @@ export default function Home({ upcomingShows }: { upcomingShows: Show[] }) {
                                         className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-4 border rounded"
                                         style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
                                     >
-                                        <p className="font-semibold" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
+                                        <p className="font-semibold uppercase" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
                                             {show.summary}
                                         </p>
                                         <div className="flex flex-wrap gap-x-4 gap-y-1">

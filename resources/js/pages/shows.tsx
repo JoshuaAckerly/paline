@@ -54,7 +54,7 @@ export default function Shows({ shows }: { shows: Show[] }) {
                                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
                             >
                                 <div className="flex-1">
-                                    <p className="font-bold text-xl mb-1" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
+                                    <p className="font-bold text-xl uppercase mb-1" style={{ fontFamily: "'six-hands', serif", color: 'var(--text)' }}>
                                         {show.summary}
                                     </p>
                                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
