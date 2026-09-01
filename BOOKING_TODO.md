@@ -19,11 +19,11 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Configure and test seasonal multipliers and rounding.
 - [x] Configure and test mileage, PA LINE sound, and sound-technician charges.
 - [x] Implement v50 mileage, drive-time, and extended-travel pricing.
-- [ ] Implement availability states and same-day scheduling buffers.
-- [ ] Implement recurring and multi-date calculations.
-- [ ] Implement budget-fit outcomes without exposing protected pricing.
-- [ ] Implement Route Savings events, ceilings, and election accounting.
-- [ ] Implement version-aware legal acknowledgment rules.
+- [x] Implement availability states and same-day scheduling buffers.
+- [x] Implement recurring and multi-date calculations.
+- [x] Implement budget-fit outcomes without exposing protected pricing.
+- [x] Implement Route Savings events, ceilings, and election accounting.
+- [x] Implement version-aware legal acknowledgment rules.
 
 ## Phase 2: production foundation
 

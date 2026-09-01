@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'scheduling' => [
+        'booking_horizon_months' => 24,
+        'earliest_performance_start_minutes' => 10 * 60,
+        'latest_performance_start_minutes' => 23 * 60,
+        'pre_show_minutes' => 120,
+        'post_show_minutes' => 120,
+        'default_performance_duration_minutes' => 90,
+        'max_additional_bookings' => 24,
+    ],
     'pricing' => [
         'performance_baselines' => [
             'solo' => [200, 200, 200, 250, 250, 300, 300],
