@@ -36,12 +36,15 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 
 - [x] Integrate the authoritative internal PA LINE engagement, hold, and block calendar.
 - [x] Integrate Mapbox Directions behind a routing provider with a verification-pending fallback.
-- [ ] Recalculate availability and routing on the server.
+- [x] Recalculate availability for exact dates and flexible windows on the server.
+- [ ] Rank flexible dates with verified server-side routing after venue geocoding.
 
 ## Phase 4: booking experience
 
 - [x] Build the four landing paths in the existing React/Inertia application.
-- [ ] Add exact-date and flexible-date flows.
+- [x] Add exact-date and flexible-date entry flows with recoverable anonymous drafts.
+- [x] Add a persistent city-demand submission flow with explicit update consent.
+- [ ] Complete venue, event, and contact details for booking drafts.
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
 - [ ] Add recurring booking, budget, format, sound, and merch steps.
 

@@ -21,7 +21,8 @@ class BookingRequest extends Model
 
     protected $fillable = [
         'requester_user_id', 'venue_id', 'anonymous_token_hash', 'source_path', 'status',
-        'event_name', 'primary_date', 'event_start', 'event_end', 'event_type', 'setting',
+        'event_name', 'primary_date', 'preferred_city', 'preferred_state', 'window_starts_on',
+        'window_ends_on', 'event_start', 'event_end', 'event_type', 'setting',
         'estimated_attendance', 'performance_format', 'performance_length_minutes',
         'sound_provided', 'house_engineer_provided', 'true_potential_requested',
     ];
@@ -32,6 +33,8 @@ class BookingRequest extends Model
             'source_path' => BookingSourcePath::class,
             'status' => BookingStatus::class,
             'primary_date' => 'date',
+            'window_starts_on' => 'date',
+            'window_ends_on' => 'date',
             'sound_provided' => 'boolean',
             'house_engineer_provided' => 'boolean',
             'true_potential_requested' => 'boolean',

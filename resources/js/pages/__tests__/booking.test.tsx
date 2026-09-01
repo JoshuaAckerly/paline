@@ -51,6 +51,47 @@ describe('Booking', () => {
         expect(await screen.findByRole('status')).toHaveTextContent('one-time sign-in link');
     });
 
+    it('creates a flexible draft from a location and date window', async () => {
+        vi.mocked(axios.post).mockResolvedValue({ data: { routing_status: 'verification_pending', dates: [{ id: 'date-1', date: '2026-10-10', state: 'available' }] } });
+        const user = userEvent.setup();
+        render(<Booking />);
+
+        await user.click(screen.getByRole('button', { name: /Find the sweet spot/i }));
+        await user.type(screen.getByLabelText('City'), 'Buffalo');
+        await user.type(screen.getByLabelText('Window starts'), '2026-10-10');
+        await user.type(screen.getByLabelText('Window ends'), '2026-10-13');
+        await user.click(screen.getByRole('button', { name: 'Find date options' }));
+
+        expect(axios.post).toHaveBeenCalledWith('/booking-requests', {
+            source_path: 'flexible', city: 'Buffalo', state: 'NY',
+            window_starts_on: '2026-10-10', window_ends_on: '2026-10-13',
+        });
+        expect(await screen.findByRole('status')).toHaveTextContent('2026-10-10');
+        expect(screen.getByRole('status')).toHaveTextContent('Route ranking remains pending');
+    });
+
+    it('records a demand signal without claiming a booking', async () => {
+        vi.mocked(axios.post).mockResolvedValue({ data: { status: 'recorded' } });
+        const user = userEvent.setup();
+        render(<Booking />);
+
+        await user.click(screen.getByRole('button', { name: /Get over here/i }));
+        await user.type(screen.getByLabelText('City'), 'Buffalo');
+        await user.type(screen.getByLabelText('Venue idea (optional)'), 'Town Ballroom');
+        await user.selectOptions(screen.getByLabelText('Likely attendees'), '8');
+        await user.selectOptions(screen.getByLabelText('Your local role'), 'connector');
+        await user.type(screen.getByLabelText('Your name'), 'Jamie Fan');
+        await user.type(screen.getByLabelText('Email'), 'jamie@example.com');
+        await user.click(screen.getByRole('checkbox', { name: /Keep me updated/i }));
+        await user.click(screen.getByRole('button', { name: 'Create demand' }));
+
+        expect(axios.post).toHaveBeenCalledWith('/demand', expect.objectContaining({
+            city: 'Buffalo', state: 'NY', preferred_venue: 'Town Ballroom',
+            estimated_attendees: 8, local_role: 'connector', consent_to_updates: true,
+        }));
+        expect(await screen.findByRole('status')).toHaveTextContent('not a booking confirmation');
+    });
+
     it('never claims availability when the server check fails', async () => {
         vi.mocked(axios.post).mockResolvedValue({ data: null });
         const user = userEvent.setup();

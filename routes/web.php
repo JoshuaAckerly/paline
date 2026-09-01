@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\BookingRequestController;
+use App\Http\Controllers\DemandController;
 use App\Http\Controllers\RoutingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,6 +20,12 @@ Route::get('/booking', fn () => Inertia::render('booking'))->name('booking');
 
 Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
 Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
+Route::post('/booking-requests', [BookingRequestController::class, 'store'])
+    ->middleware('throttle:20,1')
+    ->name('booking-requests.store');
+Route::post('/demand', [DemandController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('demand.store');
 Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
     ->middleware('throttle:30,1')
     ->name('routing.calculate');
