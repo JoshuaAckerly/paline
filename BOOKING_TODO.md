@@ -44,7 +44,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Build the four landing paths in the existing React/Inertia application.
 - [x] Add exact-date and flexible-date entry flows with recoverable anonymous drafts.
 - [x] Add a persistent city-demand submission flow with explicit update consent.
-- [ ] Complete venue, event, and contact details for booking drafts.
+- [x] Complete token-protected venue, event, and contact details for anonymous booking drafts.
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
 - [ ] Add recurring booking, budget, format, sound, and merch steps.
 

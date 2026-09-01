@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
 use App\Models\BookingRequest;
+use App\Models\Contact;
+use App\Models\Venue;
+use App\Services\BookingDraftAccess;
 use App\Services\BookingCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -109,5 +112,92 @@ class BookingRequestController extends Controller
                 'state' => $date->availability_status->value,
             ])->all(),
         ], 201);
+    }
+
+    public function update(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+        BookingCalendar $calendar,
+    ): JsonResponse {
+        $credentials = $request->validate([
+            'draft_token' => ['required', 'string', 'max:255'],
+        ]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        $validated = $request->validate([
+            'venue.name' => ['required', 'string', 'max:255'],
+            'venue.street_address' => ['required', 'string', 'max:255'],
+            'venue.city' => ['required', 'string', 'max:255'],
+            'venue.state' => ['required', 'string', 'max:64'],
+            'venue.postal_code' => ['required', 'string', 'max:20'],
+            'event.name' => ['required', 'string', 'max:255'],
+            'event.type' => ['required', Rule::in(['public_performance', 'festival', 'private_event', 'corporate_event', 'wedding', 'fundraiser', 'other'])],
+            'event.setting' => ['required', Rule::in(['indoor', 'outdoor', 'indoor_outdoor', 'unsure'])],
+            'event.start' => ['required', 'date_format:H:i'],
+            'event.end' => ['required', 'date_format:H:i'],
+            'event.estimated_attendance' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'contact.name' => ['required', 'string', 'max:255'],
+            'contact.email' => ['required', 'email:rfc', 'max:255'],
+            'contact.phone' => ['nullable', 'string', 'max:40'],
+            'selected_date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        if ($bookingRequest->source_path === BookingSourcePath::Flexible) {
+            $selectedDate = $validated['selected_date'] ?? null;
+
+            if ($selectedDate === null
+                || ! $bookingRequest->dates()->whereDate('date', $selectedDate)->exists()) {
+                throw ValidationException::withMessages(['selected_date' => 'Choose a date from this draft’s current options.']);
+            }
+        }
+
+        $selectedDate = CarbonImmutable::createFromFormat(
+            '!Y-m-d',
+            $validated['selected_date'] ?? $bookingRequest->primary_date?->toDateString(),
+        );
+        $availability = $calendar->stateFor($selectedDate);
+
+        if (! in_array($availability, [AvailabilityState::Available, AvailabilityState::Limited], true)) {
+            throw ValidationException::withMessages([
+                'selected_date' => 'This date is no longer available to request. Please choose another date.',
+            ]);
+        }
+
+        if ($validated['event']['end'] <= $validated['event']['start']) {
+            throw ValidationException::withMessages(['event.end' => 'The event end time must be after its start time.']);
+        }
+
+        DB::transaction(function () use ($bookingRequest, $validated): void {
+            $venue = $bookingRequest->venue ?? new Venue;
+            $venue->fill($validated['venue'])->save();
+
+            $contact = $bookingRequest->contact ?? new Contact;
+            $contact->fill([
+                ...$validated['contact'],
+                'venue_id' => $venue->id,
+            ])->save();
+
+            $bookingRequest->update([
+                'venue_id' => $venue->id,
+                'contact_id' => $contact->id,
+                'event_name' => $validated['event']['name'],
+                'event_type' => $validated['event']['type'],
+                'setting' => $validated['event']['setting'],
+                'event_start' => $validated['event']['start'],
+                'event_end' => $validated['event']['end'],
+                'estimated_attendance' => $validated['event']['estimated_attendance'],
+                'primary_date' => $validated['selected_date'] ?? $bookingRequest->primary_date,
+                'preferred_city' => $validated['venue']['city'],
+                'preferred_state' => $validated['venue']['state'],
+            ]);
+        });
+
+        return response()->json([
+            'id' => $bookingRequest->id,
+            'status' => 'details_saved',
+            'venue' => $bookingRequest->venue()->firstOrFail()->only(['id', 'name', 'city', 'state']),
+            'contact_id' => $bookingRequest->contact_id,
+        ]);
     }
 }

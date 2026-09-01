@@ -13,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class MagicLinkService
 {
+    public function __construct(private readonly BookingDraftAccess $draftAccess) {}
+
     public function issue(
         string $email,
         ?string $displayName = null,
@@ -94,12 +96,10 @@ class MagicLinkService
             ->whereNull('requester_user_id')
             ->first();
 
-        if ($draft === null
-            || $draft->anonymous_token_hash === null
-            || ! hash_equals($draft->anonymous_token_hash, hash('sha256', $draftToken))) {
+        if ($draft === null) {
             throw ValidationException::withMessages(['draft' => 'Draft credentials are invalid.']);
         }
 
-        return $draft;
+        return $this->draftAccess->authorize($draft, $draftToken);
     }
 }

@@ -10,7 +10,10 @@ vi.mock('@/Layouts/MainLayout', () => ({ default: ({ children }: { children: Rea
 vi.mock('@/Components/PageMeta', () => ({ default: () => null }));
 
 describe('Booking', () => {
-    beforeEach(() => vi.mocked(axios.post).mockReset());
+    beforeEach(() => {
+        vi.mocked(axios.post).mockReset();
+        vi.mocked(axios.patch).mockReset();
+    });
 
     it('offers all four booking entry paths', () => {
         render(<Booking />);
@@ -90,6 +93,39 @@ describe('Booking', () => {
             estimated_attendees: 8, local_role: 'connector', consent_to_updates: true,
         }));
         expect(await screen.findByRole('status')).toHaveTextContent('not a booking confirmation');
+    });
+
+    it('saves venue event and contact details on an exact-date draft', async () => {
+        vi.mocked(axios.post)
+            .mockResolvedValueOnce({ data: { state: 'available' } })
+            .mockResolvedValueOnce({ data: { id: 'draft-1', draft_token: 'secret', dates: [], routing_status: null } });
+        vi.mocked(axios.patch).mockResolvedValue({ data: { status: 'details_saved' } });
+        const user = userEvent.setup();
+        render(<Booking />);
+
+        await user.click(screen.getByRole('button', { name: /I know my date/i }));
+        await user.type(screen.getByLabelText('Performance date'), '2026-10-10');
+        await user.click(screen.getByRole('button', { name: 'Check availability' }));
+        await user.click(await screen.findByRole('button', { name: 'Start this request' }));
+
+        await user.type(await screen.findByLabelText('Venue name'), 'Town Ballroom');
+        await user.type(screen.getByLabelText('Street address'), '681 Main Street');
+        await user.type(screen.getByLabelText('City'), 'Buffalo');
+        await user.type(screen.getByLabelText('ZIP'), '14203');
+        await user.type(screen.getByLabelText('Event name'), 'PA LINE Live');
+        await user.type(screen.getByLabelText('Estimated attendance'), '500');
+        await user.type(screen.getByLabelText('Contact name'), 'Jamie Buyer');
+        await user.type(screen.getByLabelText('Contact email'), 'jamie@example.com');
+        await user.click(screen.getByRole('button', { name: 'Save and continue' }));
+
+        expect(axios.patch).toHaveBeenCalledWith('/booking-requests/draft-1', expect.objectContaining({
+            draft_token: 'secret',
+            selected_date: '2026-10-10',
+            venue: expect.objectContaining({ name: 'Town Ballroom', city: 'Buffalo' }),
+            event: expect.objectContaining({ name: 'PA LINE Live', estimated_attendance: 500 }),
+            contact: expect.objectContaining({ email: 'jamie@example.com' }),
+        }));
+        expect(await screen.findByRole('status')).toHaveTextContent('Performance options come next');
     });
 
     it('never claims availability when the server check fails', async () => {

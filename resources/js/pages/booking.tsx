@@ -4,11 +4,12 @@ import axios from 'axios';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, LoaderCircle, MapPin, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
-type Path = 'start' | 'exact' | 'flexible' | 'demand' | 'returning';
+type Path = 'start' | 'exact' | 'flexible' | 'details' | 'demand' | 'returning';
 type AvailabilityState = 'available' | 'limited' | 'held' | 'blocked';
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
 type CandidateDate = { id: string; date: string; state: AvailabilityState };
 type BookingDraftResponse = { id: string; draft_token: string; dates: CandidateDate[]; routing_status: string | null };
+type ActiveDraft = BookingDraftResponse & { selectedDate: string };
 
 const paths = [
     {
@@ -42,6 +43,15 @@ const fieldStyle = { backgroundColor: 'var(--bg)', borderColor: 'var(--border)',
 
 export default function Booking() {
     const [path, setPath] = useState<Path>('start');
+    const [draft, setDraft] = useState<ActiveDraft | null>(null);
+    const continueDraft = (activeDraft: ActiveDraft) => {
+        setDraft(activeDraft);
+        setPath('details');
+    };
+    const startOver = () => {
+        setDraft(null);
+        setPath('start');
+    };
 
     return (
         <MainLayout>
@@ -57,12 +67,13 @@ export default function Booking() {
                                 <button type="button" onClick={() => setPath('start')} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold uppercase" style={{ color: 'var(--primary)' }}>
                                     <ArrowLeft className="h-4 w-4" /> Back
                                 </button>
-                                <button type="button" onClick={() => setPath('start')} aria-label="Start over" className="flex h-11 w-11 items-center justify-center border" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                                <button type="button" onClick={startOver} aria-label="Start over" className="flex h-11 w-11 items-center justify-center border" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
                                     <RotateCcw className="h-4 w-4" />
                                 </button>
                             </div>
-                            {path === 'exact' && <ExactDate />}
-                            {path === 'flexible' && <FlexibleDate />}
+                            {path === 'exact' && <ExactDate onContinue={continueDraft} />}
+                            {path === 'flexible' && <FlexibleDate onContinue={continueDraft} />}
+                            {path === 'details' && draft && <BookingDetails draft={draft} />}
                             {path === 'demand' && <Demand />}
                             {path === 'returning' && <ReturningAccess />}
                         </div>
@@ -113,7 +124,7 @@ function FlowHeader({ eyebrow, title, description }: { eyebrow: string; title: s
     return <div className="mb-9 max-w-2xl"><p className="mb-3 text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>{eyebrow}</p><h1 className="text-4xl font-bold md:text-5xl">{title}</h1><p className="mt-4 leading-7" style={{ color: 'var(--muted)' }}>{description}</p></div>;
 }
 
-function ExactDate() {
+function ExactDate({ onContinue }: { onContinue: (draft: ActiveDraft) => void }) {
     const [date, setDate] = useState('');
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [availability, setAvailability] = useState<AvailabilityState | null>(null);
@@ -142,11 +153,12 @@ function ExactDate() {
     const createDraft = async () => {
         setDraftState('loading');
         try {
-            await axios.post<BookingDraftResponse>('/booking-requests', {
+            const response = await axios.post<BookingDraftResponse>('/booking-requests', {
                 source_path: 'exact',
                 primary_date: date,
             });
             setDraftState('success');
+            onContinue({ ...response.data, selectedDate: date });
         } catch {
             setDraftState('error');
         }
@@ -178,13 +190,14 @@ function ExactDate() {
     );
 }
 
-function FlexibleDate() {
+function FlexibleDate({ onContinue }: { onContinue: (draft: ActiveDraft) => void }) {
     const [city, setCity] = useState('');
     const [state, setState] = useState('NY');
     const [windowStartsOn, setWindowStartsOn] = useState('');
     const [windowEndsOn, setWindowEndsOn] = useState('');
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [candidates, setCandidates] = useState<CandidateDate[]>([]);
+    const [draft, setDraft] = useState<BookingDraftResponse | null>(null);
     const updatePreference = (setter: (value: string) => void, value: string) => {
         setter(value);
         setRequestState('idle');
@@ -195,6 +208,7 @@ function FlexibleDate() {
         event.preventDefault();
         setRequestState('loading');
         setCandidates([]);
+        setDraft(null);
         try {
             const response = await axios.post<BookingDraftResponse>('/booking-requests', {
                 source_path: 'flexible',
@@ -204,13 +218,47 @@ function FlexibleDate() {
                 window_ends_on: windowEndsOn,
             });
             setCandidates(response.data.dates);
+            setDraft(response.data);
             setRequestState('success');
         } catch {
             setRequestState('error');
         }
     };
 
-    return <div className="max-w-2xl"><FlowHeader eyebrow="Flexible date · Step 1" title="Find the sweet spot." description="Tell us where and when. Suggestions preserve your original window and never silently replace it." /><form onSubmit={createDraft} className="grid gap-5 border p-6 md:grid-cols-2 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><label htmlFor="flex-city" className="text-xs font-semibold uppercase">City<input id="flex-city" required value={city} onChange={(event) => updatePreference(setCity, event.target.value)} autoComplete="address-level2" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-state" className="text-xs font-semibold uppercase">State<input id="flex-state" required value={state} onChange={(event) => updatePreference(setState, event.target.value)} autoComplete="address-level1" className={`${fieldClass} mt-2`} style={fieldStyle} maxLength={64} /></label><label htmlFor="flex-start" className="text-xs font-semibold uppercase">Window starts<input id="flex-start" required value={windowStartsOn} onChange={(event) => updatePreference(setWindowStartsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-end" className="text-xs font-semibold uppercase">Window ends<input id="flex-end" required value={windowEndsOn} onChange={(event) => updatePreference(setWindowEndsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50 md:col-span-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Find date options</button>{requestState === 'success' && <div role="status" className="space-y-3 border-l-2 p-4 md:col-span-2" style={{ borderColor: '#69c587', backgroundColor: 'var(--bg)' }}><strong className="uppercase">Draft saved</strong>{candidates.length > 0 ? <div className="grid gap-2 sm:grid-cols-2">{candidates.map((candidate) => <div key={candidate.id} className="border p-3 text-sm" style={{ borderColor: 'var(--border)' }}><strong>{candidate.date}</strong><span className="ml-2 uppercase" style={{ color: 'var(--muted)' }}>{candidate.state}</span></div>)}</div> : <p className="text-sm" style={{ color: 'var(--muted)' }}>No requestable dates are currently visible in that window.</p>}<p className="text-sm" style={{ color: 'var(--muted)' }}>Calendar results are live. Route ranking remains pending until the venue location can be verified.</p></div>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300 md:col-span-2">We couldn’t save this window or verify its dates. Check the range and try again.</p>}</form></div>;
+    return <div className="max-w-2xl"><FlowHeader eyebrow="Flexible date · Step 1" title="Find the sweet spot." description="Tell us where and when. Suggestions preserve your original window and never silently replace it." /><form onSubmit={createDraft} className="grid gap-5 border p-6 md:grid-cols-2 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><label htmlFor="flex-city" className="text-xs font-semibold uppercase">City<input id="flex-city" required value={city} onChange={(event) => updatePreference(setCity, event.target.value)} autoComplete="address-level2" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-state" className="text-xs font-semibold uppercase">State<input id="flex-state" required value={state} onChange={(event) => updatePreference(setState, event.target.value)} autoComplete="address-level1" className={`${fieldClass} mt-2`} style={fieldStyle} maxLength={64} /></label><label htmlFor="flex-start" className="text-xs font-semibold uppercase">Window starts<input id="flex-start" required value={windowStartsOn} onChange={(event) => updatePreference(setWindowStartsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-end" className="text-xs font-semibold uppercase">Window ends<input id="flex-end" required value={windowEndsOn} onChange={(event) => updatePreference(setWindowEndsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50 md:col-span-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Find date options</button>{requestState === 'success' && <div role="status" className="space-y-3 border-l-2 p-4 md:col-span-2" style={{ borderColor: '#69c587', backgroundColor: 'var(--bg)' }}><strong className="uppercase">Choose a date</strong>{candidates.length > 0 ? <div className="grid gap-2 sm:grid-cols-2">{candidates.map((candidate) => <button type="button" key={candidate.id} onClick={() => draft && onContinue({ ...draft, selectedDate: candidate.date })} className="flex min-h-12 items-center justify-between border p-3 text-left text-sm hover:bg-black/20" style={{ borderColor: 'var(--border)' }}><strong>{candidate.date}</strong><span className="uppercase" style={{ color: 'var(--muted)' }}>{candidate.state}</span></button>)}</div> : <p className="text-sm" style={{ color: 'var(--muted)' }}>No requestable dates are currently visible in that window.</p>}<p className="text-sm" style={{ color: 'var(--muted)' }}>Calendar results are live. Route ranking remains pending until the venue location can be verified.</p></div>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300 md:col-span-2">We couldn’t save this window or verify its dates. Check the range and try again.</p>}</form></div>;
+}
+
+function BookingDetails({ draft }: { draft: ActiveDraft }) {
+    const [form, setForm] = useState({ venueName: '', streetAddress: '', city: '', state: 'NY', postalCode: '', eventName: '', eventType: 'public_performance', setting: 'indoor', start: '19:00', end: '22:00', attendance: '', contactName: '', contactEmail: '', contactPhone: '' });
+    const [requestState, setRequestState] = useState<RequestState>('idle');
+    const update = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
+
+    const saveDetails = async (event: FormEvent) => {
+        event.preventDefault();
+        setRequestState('loading');
+        try {
+            await axios.patch(`/booking-requests/${draft.id}`, {
+                draft_token: draft.draft_token,
+                selected_date: draft.selectedDate,
+                venue: { name: form.venueName, street_address: form.streetAddress, city: form.city, state: form.state, postal_code: form.postalCode },
+                event: { name: form.eventName, type: form.eventType, setting: form.setting, start: form.start, end: form.end, estimated_attendance: Number(form.attendance) },
+                contact: { name: form.contactName, email: form.contactEmail, phone: form.contactPhone || null },
+            });
+            setRequestState('success');
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    return <div className="max-w-3xl"><FlowHeader eyebrow="Booking details · Step 2" title="Tell us about the show." description={`${draft.selectedDate} stays selected while you add the venue, event, and booking contact.`} /><form onSubmit={saveDetails} className="space-y-8 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Venue</legend><TextField id="venue-name" label="Venue name" value={form.venueName} onChange={(value) => update('venueName', value)} autoComplete="organization" /><TextField id="venue-address" label="Street address" value={form.streetAddress} onChange={(value) => update('streetAddress', value)} autoComplete="street-address" /><TextField id="venue-city" label="City" value={form.city} onChange={(value) => update('city', value)} autoComplete="address-level2" /><TextField id="venue-state" label="State" value={form.state} onChange={(value) => update('state', value)} autoComplete="address-level1" /><TextField id="venue-postal" label="ZIP" value={form.postalCode} onChange={(value) => update('postalCode', value)} autoComplete="postal-code" /></fieldset><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Event</legend><TextField id="event-name" label="Event name" value={form.eventName} onChange={(value) => update('eventName', value)} /><SelectField id="event-type" label="Event type" value={form.eventType} onChange={(value) => update('eventType', value)} options={[['public_performance', 'Public performance'], ['festival', 'Festival'], ['private_event', 'Private event'], ['corporate_event', 'Corporate event'], ['wedding', 'Wedding'], ['fundraiser', 'Fundraiser'], ['other', 'Other']]} /><SelectField id="event-setting" label="Setting" value={form.setting} onChange={(value) => update('setting', value)} options={[['indoor', 'Indoor'], ['outdoor', 'Outdoor'], ['indoor_outdoor', 'Indoor / outdoor'], ['unsure', 'Not sure yet']]} /><TextField id="event-attendance" label="Estimated attendance" type="number" min="1" value={form.attendance} onChange={(value) => update('attendance', value)} /><TextField id="event-start" label="Start time" type="time" value={form.start} onChange={(value) => update('start', value)} /><TextField id="event-end" label="End time" type="time" value={form.end} onChange={(value) => update('end', value)} /></fieldset><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Booking contact</legend><TextField id="contact-name" label="Contact name" value={form.contactName} onChange={(value) => update('contactName', value)} autoComplete="name" /><TextField id="contact-email" label="Contact email" type="email" value={form.contactEmail} onChange={(value) => update('contactEmail', value)} autoComplete="email" /><TextField id="contact-phone" label="Contact phone (optional)" required={false} value={form.contactPhone} onChange={(value) => update('contactPhone', value)} autoComplete="tel" /></fieldset><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : requestState === 'success' ? <Check className="h-4 w-4" /> : null}{requestState === 'success' ? 'Details saved' : 'Save and continue'}</button>{requestState === 'success' && <p role="status" className="text-sm" style={{ color: 'var(--muted)' }}>Venue, event, and contact details are saved. Performance options come next.</p>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">The details could not be saved. Check the fields and try again.</p>}</form></div>;
+}
+
+function TextField({ id, label, value, onChange, type = 'text', required = true, autoComplete, min }: { id: string; label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; autoComplete?: string; min?: string }) {
+    return <label htmlFor={id} className="text-xs font-semibold uppercase">{label}<input id={id} type={type} required={required} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} min={min} className={`${fieldClass} mt-2`} style={fieldStyle} /></label>;
+}
+
+function SelectField({ id, label, value, onChange, options }: { id: string; label: string; value: string; onChange: (value: string) => void; options: [string, string][] }) {
+    return <label htmlFor={id} className="text-xs font-semibold uppercase">{label}<select id={id} required value={value} onChange={(event) => onChange(event.target.value)} className={`${fieldClass} mt-2`} style={fieldStyle}>{options.map(([optionValue, text]) => <option key={optionValue} value={optionValue}>{text}</option>)}</select></label>;
 }
 
 function Demand() {
