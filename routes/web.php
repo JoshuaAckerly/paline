@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\MagicLinkController;
+use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\RoutingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ContactController;
@@ -13,6 +15,12 @@ Route::get('/shows', fn () => Inertia::render('shows', ['shows' => fetchUpcoming
 Route::get('/about', fn () => Inertia::render('about'))->name('about');
 Route::get('/contact', fn () => Inertia::render('contact'))->name('contact');
 Route::redirect('/booking', '/booking/')->name('booking');
+
+Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
+Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
+Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
+    ->middleware('throttle:30,1')
+    ->name('routing.calculate');
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/magic-link', [MagicLinkController::class, 'store'])

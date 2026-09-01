@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mapbox' => [
+        'access_token' => env('MAPBOX_ACCESS_TOKEN'),
+        'base_url' => env('MAPBOX_BASE_URL', 'https://api.mapbox.com'),
+    ],
+
 ];

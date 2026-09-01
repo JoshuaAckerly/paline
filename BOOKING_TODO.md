@@ -34,8 +34,8 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 
 ## Phase 3: calendar and routing
 
-- [ ] Integrate an authoritative PA LINE calendar.
-- [ ] Select and integrate a mapping and geocoding provider.
+- [x] Integrate the authoritative internal PA LINE engagement, hold, and block calendar.
+- [x] Integrate Mapbox Directions behind a routing provider with a verification-pending fallback.
 - [ ] Recalculate availability and routing on the server.
 
 ## Phase 4: booking experience
