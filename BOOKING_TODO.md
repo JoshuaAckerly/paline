@@ -27,7 +27,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 
 ## Phase 2: production foundation
 
-- [ ] Design venue, contact, organization, booking draft, engagement, and hold models.
+- [x] Design venue, contact, organization, booking draft, engagement, and hold models.
 - [ ] Add passwordless magic-link authentication.
 - [ ] Add venue and organization authorization.
 - [ ] Persist anonymous booking drafts securely across authentication.
