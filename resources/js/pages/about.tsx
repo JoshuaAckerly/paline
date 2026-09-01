@@ -2,15 +2,6 @@ import { motion } from 'framer-motion';
 import MainLayout from '@/Layouts/MainLayout';
 import PageMeta from '@/Components/PageMeta';
 
-const galleryPhotos = [
-    { src: '/images/FB_IMG_1779126099726.jpg', alt: 'PA Line live — vocals and guitar' },
-    { src: '/images/FB_IMG_1779126335133.jpg', alt: 'PA Line outside the venue' },
-    { src: '/images/FB_IMG_1779126105420.jpg', alt: 'PA Line live — bass' },
-    { src: '/images/IMG_20260518_000920.jpg',  alt: 'PA Line — the band' },
-    { src: '/images/FB_IMG_1779126096094.jpg', alt: 'PA Line live — indoor show' },
-    { src: '/images/IMG_20260518_000900.jpg',  alt: 'PA Line' },
-];
-
 const members = [
     { name: 'Trever Stribing', role: 'Lead Vocals, Acoustic Guitar, Kick & Tambourine' },
     { name: 'Griffin Brady',   role: 'World & Hand Percussion, Vocals' },
@@ -55,8 +46,8 @@ What began in Western New York eventually grew into a touring history spanning 2
 
 Those miles changed the songs, but they also changed the people playing them.`,
         photos: [
-            { src: '/images/FB_IMG_1780195233682.jpg', alt: 'PA Line on stage' },
-            { src: '/images/FB_IMG_1758563443626.jpg', alt: 'PA Line — sunset show' },
+            { src: '/images/FB_IMG_1780195246363.jpg', alt: 'PA Line performing live' },
+            { src: '/images/FB_IMG_1758563443626.jpg', alt: 'PA Line — sunset show', position: 'center 42%' },
             { src: '/images/FB_IMG_1752182259573.jpg', alt: 'PA Line at Blue Heron Music Festival' },
         ],
     },
@@ -113,7 +104,7 @@ Where Peace Always represented an ideal, dENIAL explored what happens when livin
 Ten years hadn't necessarily produced all the answers. It had produced better questions.`,
         photos: [
             { src: '/images/FB_IMG_1785518888446.jpg', alt: 'Trever Stribing — PA Line' },
-            { src: '/images/IMG_20260518_000920.jpg', alt: 'PA Line — the band' },
+            { src: '/images/FB_IMG_1780195239119.jpg', alt: 'PA Line live — percussion' },
         ],
     },
     {
@@ -310,7 +301,10 @@ export default function About() {
                                                     src={photo.src}
                                                     alt={photo.alt}
                                                     className="w-full object-cover transition-transform duration-500 hover:scale-105"
-                                                    style={{ height: '220px' }}
+                                                    style={{
+                                                        height: '220px',
+                                                        objectPosition: 'position' in photo ? photo.position : 'center',
+                                                    }}
                                                     loading="lazy"
                                                 />
                                             </div>
