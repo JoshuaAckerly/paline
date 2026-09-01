@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Apple, Music2, Play, ShoppingBag } from 'lucide-react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageMeta from '@/Components/PageMeta';
 
@@ -108,37 +109,45 @@ export default function Music() {
                         href="https://www.youtube.com/@palineofficial"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-5 py-2 text-xs font-semibold tracking-widest uppercase border transition-all"
+                        aria-label="PA Line on YouTube"
+                        title="YouTube"
+                        className="flex h-11 w-11 items-center justify-center border transition-all hover:opacity-70"
                         style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
-                        YouTube ↗
+                        <Play className="h-5 w-5" aria-hidden="true" />
                     </a>
                     <a
                         href="https://open.spotify.com/artist/2OArsWhucdqcTIh9FenCiO"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-5 py-2 text-xs font-semibold tracking-widest uppercase border transition-all"
+                        aria-label="PA Line on Spotify"
+                        title="Spotify"
+                        className="flex h-11 w-11 items-center justify-center border transition-all hover:opacity-70"
                         style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
-                        Spotify ↗
+                        <Music2 className="h-5 w-5" aria-hidden="true" />
                     </a>
                     <a
                         href="https://music.apple.com/us/artist/pa-line/971265800"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-5 py-2 text-xs font-semibold tracking-widest uppercase border transition-all"
+                        aria-label="PA Line on Apple Music"
+                        title="Apple Music"
+                        className="flex h-11 w-11 items-center justify-center border transition-all hover:opacity-70"
                         style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
-                        Apple Music ↗
+                        <Apple className="h-5 w-5" aria-hidden="true" />
                     </a>
                     <a
                         href="https://music.amazon.com/artists/B01L1B73TC/pa-line"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-5 py-2 text-xs font-semibold tracking-widest uppercase border transition-all"
+                        aria-label="PA Line on Amazon Music"
+                        title="Amazon Music"
+                        className="flex h-11 w-11 items-center justify-center border transition-all hover:opacity-70"
                         style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
-                        Amazon Music ↗
+                        <ShoppingBag className="h-5 w-5" aria-hidden="true" />
                     </a>
                 </motion.div>
             </div>

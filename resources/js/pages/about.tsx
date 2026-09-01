@@ -20,7 +20,7 @@ The circle soon expanded. Josh Ackerley brought keys and mandolin, and the growi
 
 By the summer of 2015, PA LINE was already beginning to gain momentum outside its immediate circle. The band won Buffalo's Battle of the Bands, earning an opportunity to open for Iron & Wine at Canalside. The road was beginning to call, and PA LINE quickly learned that new cities and unfamiliar audiences were some of the best places to discover whether a song could actually stand on its own.`,
         photos: [
-            { src: '/images/FB_IMG_1779126099726.jpg', alt: 'PA Line live — vocals and guitar' },
+            { src: '/images/FB_IMG_1779126099726.jpg', alt: 'PA Line live — vocals and guitar', position: 'center 12%' },
             { src: '/images/FB_IMG_1779126335133.jpg', alt: 'PA Line outside the venue' },
         ],
     },
@@ -103,7 +103,7 @@ Where Peace Always represented an ideal, dENIAL explored what happens when livin
 
 Ten years hadn't necessarily produced all the answers. It had produced better questions.`,
         photos: [
-            { src: '/images/FB_IMG_1785518888446.jpg', alt: 'Trever Stribing — PA Line' },
+            { src: '/images/FB_IMG_1785518888446.jpg', alt: 'Trever Stribing — PA Line', position: 'center 10%' },
             { src: '/images/FB_IMG_1780195239119.jpg', alt: 'PA Line live — percussion' },
         ],
     },
@@ -206,7 +206,7 @@ export default function About() {
                     style={{ borderColor: 'var(--border)' }}
                 >
                     <img
-                        src="/images/IMG_20260518_000900.jpg"
+                        src="/images/about-hero-sharpened.jpg"
                         alt="PA Line"
                         className="w-full h-full object-cover object-center"
                     />

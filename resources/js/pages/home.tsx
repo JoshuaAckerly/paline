@@ -113,7 +113,7 @@ export default function Home({ upcomingShows }: { upcomingShows: Show[] }) {
                             Latest
                         </p>
                         <h2 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--text)' }}>
-                            New Music
+                            Top Songs
                         </h2>
                     </motion.div>
 
