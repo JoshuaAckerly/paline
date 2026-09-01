@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'authentication' => [
+        'magic_link_expiration_minutes' => 20,
+        'redirect_after_login' => '/booking/',
+    ],
     'scheduling' => [
         'booking_horizon_months' => 24,
         'earliest_performance_start_minutes' => 10 * 60,

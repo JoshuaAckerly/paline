@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,5 +40,16 @@ class User extends Authenticatable
     public function bookingRequests(): HasMany
     {
         return $this->hasMany(BookingRequest::class, 'requester_user_id');
+    }
+
+    public function canAccessOrganization(Organization $organization): bool
+    {
+        return $this->organizations()->whereKey($organization->getKey())->exists();
+    }
+
+    public function canAccessVenue(Venue $venue): bool
+    {
+        return $venue->organization_id !== null
+            && $this->organizations()->whereKey($venue->organization_id)->exists();
     }
 }
