@@ -291,18 +291,142 @@ class BookingEntryApiTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('draft');
     }
 
+    public function test_specific_additional_dates_are_checked_and_persisted_per_date(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+        CalendarBlock::create(['starts_on' => '2027-04-12', 'ends_on' => '2027-04-12', 'reason' => 'Private block']);
+
+        $response = $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'],
+            'booking_type' => 'repeat',
+            'mode' => 'specific',
+            'dates' => ['2027-04-11', '2027-04-12', '2027-04-10'],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('status', 'dates_reviewed')
+            ->assertJsonCount(2, 'accepted')
+            ->assertJsonFragment(['date' => '2027-04-12', 'reason' => 'blocked'])
+            ->assertJsonFragment(['date' => '2027-04-10', 'reason' => 'primary']);
+
+        $booking = BookingRequest::with('dates')->findOrFail($draft['id']);
+        $this->assertSame('repeat', $booking->booking_type);
+        $this->assertCount(2, $booking->dates);
+        $additionalDate = $booking->dates->first(
+            fn ($date) => $date->date->toDateString() === '2027-04-11',
+        );
+        $this->assertSame('19:00', $additionalDate?->start_time);
+    }
+
+    public function test_recurring_dates_use_the_domain_generator_and_month_end_clamping(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-31');
+
+        $response = $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'],
+            'booking_type' => 'series',
+            'mode' => 'recurring',
+            'frequency' => 'monthly',
+            'count' => 3,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonCount(4, 'accepted')
+            ->assertJsonFragment(['date' => '2027-02-28', 'primary' => false])
+            ->assertJsonFragment(['date' => '2027-03-31', 'primary' => false])
+            ->assertJsonFragment(['date' => '2027-04-30', 'primary' => false]);
+
+        $this->assertSame('monthly', BookingRequest::findOrFail($draft['id'])->recurrence_frequency);
+    }
+
+    public function test_an_additional_date_can_be_removed_but_the_primary_date_cannot(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+        $dates = $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'], 'booking_type' => 'repeat',
+            'mode' => 'specific', 'dates' => ['2027-04-11'],
+        ])->json('accepted');
+        $primary = collect($dates)->firstWhere('primary', true);
+        $additional = collect($dates)->firstWhere('primary', false);
+
+        $this->deleteJson('/booking-requests/'.$draft['id'].'/dates/'.$additional['id'], [
+            'draft_token' => $draft['token'],
+        ])->assertNoContent();
+        $this->deleteJson('/booking-requests/'.$draft['id'].'/dates/'.$primary['id'], [
+            'draft_token' => $draft['token'],
+        ])->assertUnprocessable()->assertJsonValidationErrors('date');
+
+        $this->assertDatabaseCount('booking_dates', 1);
+    }
+
+    public function test_selecting_a_flexible_candidate_discards_unselected_suggestions(): void
+    {
+        $draft = $this->postJson('/booking-requests', [
+            'source_path' => 'flexible', 'city' => 'Buffalo', 'state' => 'NY',
+            'window_starts_on' => '2027-04-10', 'window_ends_on' => '2027-04-13',
+        ]);
+        $selectedDate = $draft->json('dates.0.date');
+
+        $this->saveDetails($draft->json('id'), $draft->json('draft_token'), $selectedDate)->assertOk();
+
+        $booking = BookingRequest::with('dates')->findOrFail($draft->json('id'));
+        $this->assertCount(1, $booking->dates);
+        $this->assertSame($selectedDate, $booking->dates->sole()->date->toDateString());
+    }
+
+    public function test_additional_dates_cannot_exceed_twenty_four_across_requests(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+        $dates = collect(range(1, 24))
+            ->map(fn (int $days) => Carbon::parse('2027-01-01')->addDays($days)->toDateString())
+            ->all();
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'], 'booking_type' => 'series',
+            'mode' => 'specific', 'dates' => $dates,
+        ])->assertOk();
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'], 'booking_type' => 'series',
+            'mode' => 'specific', 'dates' => ['2027-02-01'],
+        ])->assertUnprocessable()->assertJsonValidationErrors('dates');
+
+        $this->assertSame(25, BookingRequest::findOrFail($draft['id'])->dates()->count());
+    }
+
     /** @return array{id: string, token: string} */
     private function createDetailedDraft(string $date): array
     {
         $draft = $this->postJson('/booking-requests', ['source_path' => 'exact', 'primary_date' => $date]);
-        $this->patchJson('/booking-requests/'.$draft->json('id'), [
-            'draft_token' => $draft->json('draft_token'),
+        $this->saveDetails($draft->json('id'), $draft->json('draft_token'), $date)->assertOk();
+
+        return ['id' => $draft->json('id'), 'token' => $draft->json('draft_token')];
+    }
+
+    /** @return array{id: string, token: string} */
+    private function createProductionDraft(string $date): array
+    {
+        $draft = $this->createDetailedDraft($date);
+        $this->patchJson('/booking-requests/'.$draft['id'].'/production', [
+            'draft_token' => $draft['token'],
+            'performance_format' => 'duo',
+            'performance_length_minutes' => 90,
+            'sound_provided' => false,
+            'house_engineer_provided' => null,
+            'true_potential_requested' => false,
+        ])->assertOk();
+
+        return $draft;
+    }
+
+    private function saveDetails(string $id, string $token, string $date): \Illuminate\Testing\TestResponse
+    {
+        return $this->patchJson('/booking-requests/'.$id, [
+            'draft_token' => $token,
             'selected_date' => $date,
             'venue' => ['name' => 'Town Ballroom', 'street_address' => '681 Main Street', 'city' => 'Buffalo', 'state' => 'NY', 'postal_code' => '14203'],
             'event' => ['name' => 'PA LINE Live', 'type' => 'public_performance', 'setting' => 'indoor', 'start' => '19:00', 'end' => '22:00', 'estimated_attendance' => 500],
             'contact' => ['name' => 'Jamie Buyer', 'email' => 'jamie@example.com'],
-        ])->assertOk();
-
-        return ['id' => $draft->json('id'), 'token' => $draft->json('draft_token')];
+        ]);
     }
 }

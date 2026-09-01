@@ -13,6 +13,7 @@ describe('Booking', () => {
     beforeEach(() => {
         vi.mocked(axios.post).mockReset();
         vi.mocked(axios.patch).mockReset();
+        vi.mocked(axios.delete).mockReset();
     });
 
     it('offers all four booking entry paths', () => {
@@ -98,8 +99,13 @@ describe('Booking', () => {
     it('saves details and production options on an exact-date draft', async () => {
         vi.mocked(axios.post)
             .mockResolvedValueOnce({ data: { state: 'available' } })
-            .mockResolvedValueOnce({ data: { id: 'draft-1', draft_token: 'secret', dates: [], routing_status: null } });
+            .mockResolvedValueOnce({ data: { id: 'draft-1', draft_token: 'secret', dates: [], routing_status: null } })
+            .mockResolvedValueOnce({ data: { accepted: [
+                { id: 'primary-1', date: '2026-10-10', state: 'available', primary: true },
+                { id: 'date-2', date: '2026-11-10', state: 'limited', primary: false },
+            ], rejected: [] } });
         vi.mocked(axios.patch).mockResolvedValue({ data: { status: 'details_saved' } });
+        vi.mocked(axios.delete).mockResolvedValue({ data: null });
         const user = userEvent.setup();
         render(<Booking />);
 
@@ -140,7 +146,24 @@ describe('Booking', () => {
             house_engineer_provided: false,
             true_potential_requested: false,
         });
-        expect(await screen.findByRole('status')).toHaveTextContent('Recurring dates');
+
+        expect(await screen.findByRole('heading', { name: 'Add more dates.' })).toBeInTheDocument();
+        await user.selectOptions(screen.getByLabelText('How should dates be added?'), 'recurring');
+        await user.selectOptions(screen.getByLabelText('Frequency'), 'monthly');
+        await user.clear(screen.getByLabelText('Number of additional bookings'));
+        await user.type(screen.getByLabelText('Number of additional bookings'), '1');
+        await user.click(screen.getByRole('button', { name: 'Generate and review dates' }));
+
+        expect(axios.post).toHaveBeenLastCalledWith('/booking-requests/draft-1/dates', {
+            draft_token: 'secret', booking_type: 'repeat', mode: 'recurring', dates: undefined,
+            frequency: 'monthly', count: 1,
+        });
+        expect(await screen.findByText('2026-11-10')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Remove' }));
+        expect(axios.delete).toHaveBeenCalledWith('/booking-requests/draft-1/dates/date-2', {
+            data: { draft_token: 'secret' },
+        });
+        expect(screen.queryByText('2026-11-10')).not.toBeInTheDocument();
     });
 
     it('never claims availability when the server check fails', async () => {

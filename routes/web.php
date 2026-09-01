@@ -29,6 +29,12 @@ Route::patch('/booking-requests/{bookingRequest}', [BookingRequestController::cl
 Route::patch('/booking-requests/{bookingRequest}/production', [BookingRequestController::class, 'updateProduction'])
     ->middleware('throttle:30,1')
     ->name('booking-requests.production.update');
+Route::post('/booking-requests/{bookingRequest}/dates', [BookingRequestController::class, 'storeDates'])
+    ->middleware('throttle:30,1')
+    ->name('booking-requests.dates.store');
+Route::delete('/booking-requests/{bookingRequest}/dates/{bookingDate}', [BookingRequestController::class, 'destroyDate'])
+    ->middleware('throttle:30,1')
+    ->name('booking-requests.dates.destroy');
 Route::post('/demand', [DemandController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('demand.store');

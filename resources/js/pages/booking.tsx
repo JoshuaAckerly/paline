@@ -4,12 +4,14 @@ import axios from 'axios';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, LoaderCircle, MapPin, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
-type Path = 'start' | 'exact' | 'flexible' | 'details' | 'production' | 'demand' | 'returning';
+type Path = 'start' | 'exact' | 'flexible' | 'details' | 'production' | 'recurring' | 'demand' | 'returning';
 type AvailabilityState = 'available' | 'limited' | 'held' | 'blocked';
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
 type CandidateDate = { id: string; date: string; state: AvailabilityState };
 type BookingDraftResponse = { id: string; draft_token: string; dates: CandidateDate[]; routing_status: string | null };
 type ActiveDraft = BookingDraftResponse & { selectedDate: string };
+type ReviewedDate = CandidateDate & { primary: boolean };
+type RejectedDate = { date: string; reason: string };
 
 const paths = [
     {
@@ -74,7 +76,8 @@ export default function Booking() {
                             {path === 'exact' && <ExactDate onContinue={continueDraft} />}
                             {path === 'flexible' && <FlexibleDate onContinue={continueDraft} />}
                             {path === 'details' && draft && <BookingDetails draft={draft} onContinue={() => setPath('production')} />}
-                            {path === 'production' && draft && <ProductionOptions draft={draft} />}
+                            {path === 'production' && draft && <ProductionOptions draft={draft} onContinue={() => setPath('recurring')} />}
+                            {path === 'recurring' && draft && <RecurringDates draft={draft} />}
                             {path === 'demand' && <Demand />}
                             {path === 'returning' && <ReturningAccess />}
                         </div>
@@ -255,7 +258,7 @@ function BookingDetails({ draft, onContinue }: { draft: ActiveDraft; onContinue:
     return <div className="max-w-3xl"><FlowHeader eyebrow="Booking details · Step 2" title="Tell us about the show." description={`${draft.selectedDate} stays selected while you add the venue, event, and booking contact.`} /><form onSubmit={saveDetails} className="space-y-8 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Venue</legend><TextField id="venue-name" label="Venue name" value={form.venueName} onChange={(value) => update('venueName', value)} autoComplete="organization" /><TextField id="venue-address" label="Street address" value={form.streetAddress} onChange={(value) => update('streetAddress', value)} autoComplete="street-address" /><TextField id="venue-city" label="City" value={form.city} onChange={(value) => update('city', value)} autoComplete="address-level2" /><TextField id="venue-state" label="State" value={form.state} onChange={(value) => update('state', value)} autoComplete="address-level1" /><TextField id="venue-postal" label="ZIP" value={form.postalCode} onChange={(value) => update('postalCode', value)} autoComplete="postal-code" /></fieldset><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Event</legend><TextField id="event-name" label="Event name" value={form.eventName} onChange={(value) => update('eventName', value)} /><SelectField id="event-type" label="Event type" value={form.eventType} onChange={(value) => update('eventType', value)} options={[['public_performance', 'Public performance'], ['festival', 'Festival'], ['private_event', 'Private event'], ['corporate_event', 'Corporate event'], ['wedding', 'Wedding'], ['fundraiser', 'Fundraiser'], ['other', 'Other']]} /><SelectField id="event-setting" label="Setting" value={form.setting} onChange={(value) => update('setting', value)} options={[['indoor', 'Indoor'], ['outdoor', 'Outdoor'], ['indoor_outdoor', 'Indoor / outdoor'], ['unsure', 'Not sure yet']]} /><TextField id="event-attendance" label="Estimated attendance" type="number" min="1" value={form.attendance} onChange={(value) => update('attendance', value)} /><TextField id="event-start" label="Start time" type="time" value={form.start} onChange={(value) => update('start', value)} /><TextField id="event-end" label="End time" type="time" value={form.end} onChange={(value) => update('end', value)} /></fieldset><fieldset className="grid gap-5 md:grid-cols-2"><legend className="mb-5 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Booking contact</legend><TextField id="contact-name" label="Contact name" value={form.contactName} onChange={(value) => update('contactName', value)} autoComplete="name" /><TextField id="contact-email" label="Contact email" type="email" value={form.contactEmail} onChange={(value) => update('contactEmail', value)} autoComplete="email" /><TextField id="contact-phone" label="Contact phone (optional)" required={false} value={form.contactPhone} onChange={(value) => update('contactPhone', value)} autoComplete="tel" /></fieldset><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : requestState === 'success' ? <Check className="h-4 w-4" /> : null}{requestState === 'success' ? 'Details saved' : 'Save and continue'}</button>{requestState === 'success' && <p role="status" className="text-sm" style={{ color: 'var(--muted)' }}>Venue, event, and contact details are saved. Performance options come next.</p>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">The details could not be saved. Check the fields and try again.</p>}</form></div>;
 }
 
-function ProductionOptions({ draft }: { draft: ActiveDraft }) {
+function ProductionOptions({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
     const [performanceFormat, setPerformanceFormat] = useState('full_pa_line');
     const [performanceLength, setPerformanceLength] = useState('90');
     const [soundProvided, setSoundProvided] = useState<boolean | null>(null);
@@ -279,6 +282,7 @@ function ProductionOptions({ draft }: { draft: ActiveDraft }) {
                 true_potential_requested: truePotential,
             });
             setRequestState('success');
+            onContinue();
         } catch {
             setRequestState('error');
         }
@@ -287,12 +291,66 @@ function ProductionOptions({ draft }: { draft: ActiveDraft }) {
     return <div className="max-w-3xl"><FlowHeader eyebrow="Performance & production · Step 3" title="Build the right show." description="Choose the PA LINE format and tell us what production the venue can provide. Pricing remains private until verified access." /><form onSubmit={saveProduction} className="space-y-8 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><fieldset><legend className="mb-4 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Performance format</legend><div className="grid gap-px border md:grid-cols-3" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--border)' }}>{[['solo', 'Solo', 'Trever Stribing solo.'], ['duo', 'Duo', 'A stripped-down PA LINE duo.'], ['full_pa_line', 'Full PA LINE', 'The full-band experience.']].map(([value, title, description]) => <label key={value} className="min-h-36 cursor-pointer p-5" style={{ backgroundColor: performanceFormat === value ? 'color-mix(in srgb, var(--primary) 12%, var(--bg-card))' : 'var(--bg-card)' }}><input type="radio" name="performance-format" value={value} checked={performanceFormat === value} onChange={() => setPerformanceFormat(value)} className="mr-3" /><strong className="uppercase">{title}</strong><span className="mt-4 block text-sm leading-6" style={{ color: 'var(--muted)' }}>{description}</span></label>)}</div></fieldset><SelectField id="performance-length" label="Performance length" value={performanceLength} onChange={setPerformanceLength} options={[["60", "Up to 60 minutes"], ["90", "Up to 90 minutes"], ["120", "Up to 2 hours"], ["180", "Up to 3 hours / multiple sets"]]} /><fieldset><legend className="mb-4 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Sound system</legend><div className="grid gap-3 sm:grid-cols-2"><ChoiceButton selected={soundProvided === true} onClick={() => setSoundProvided(true)} title="Sound is provided" description="The venue has a suitable PA system." /><ChoiceButton selected={soundProvided === false} onClick={() => { setSoundProvided(false); setHouseEngineer('unknown'); }} title="PA LINE provides sound" description="Format-based sound fees will apply." /></div></fieldset>{soundProvided === true && <SelectField id="house-engineer" label="Qualified house engineer included?" value={houseEngineer} onChange={setHouseEngineer} options={[["unknown", "Choose one"], ["yes", "Yes"], ["no", "No"]]} />}<fieldset className="border-l-2 p-5" style={{ borderColor: truePotentialEligible ? 'var(--primary)' : 'var(--border)', backgroundColor: 'var(--bg)' }}><legend className="px-2 text-sm font-bold uppercase">TRUE POTENTIAL</legend><p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>Expanded musicians, production, preparation, and promotion require a custom quote and at least six months of lead time.</p><label className="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" checked={truePotential} disabled={!truePotentialEligible} onChange={(event) => setTruePotential(event.target.checked)} className="mt-0.5 h-5 w-5" /><span>{truePotentialEligible ? 'Request a TRUE POTENTIAL custom production review.' : 'This date is inside the six-month production window.'}</span></label></fieldset><button type="submit" disabled={requestState === 'loading' || requestState === 'success' || soundProvided === null || (soundProvided && houseEngineer === 'unknown')} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : requestState === 'success' ? <Check className="h-4 w-4" /> : null}{requestState === 'success' ? 'Production saved' : 'Save production options'}</button>{requestState === 'success' && <p role="status" className="text-sm" style={{ color: 'var(--muted)' }}>Performance and production choices are saved. Recurring dates and booking preferences come next.</p>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">Production choices could not be saved. Review the selections and try again.</p>}</form></div>;
 }
 
+function RecurringDates({ draft }: { draft: ActiveDraft }) {
+    const [bookingType, setBookingType] = useState('repeat');
+    const [mode, setMode] = useState('specific');
+    const [specificDate, setSpecificDate] = useState('');
+    const [frequency, setFrequency] = useState('weekly');
+    const [count, setCount] = useState('3');
+    const primaryCandidate = draft.dates.find((date) => date.date === draft.selectedDate);
+    const [dates, setDates] = useState<ReviewedDate[]>([{ id: primaryCandidate?.id ?? '', date: draft.selectedDate, state: primaryCandidate?.state ?? 'available', primary: true }]);
+    const [rejected, setRejected] = useState<RejectedDate[]>([]);
+    const [requestState, setRequestState] = useState<RequestState>('idle');
+
+    const reviewDates = async (event: FormEvent) => {
+        event.preventDefault();
+        setRequestState('loading');
+        setRejected([]);
+        try {
+            const response = await axios.post<{ accepted: ReviewedDate[]; rejected: RejectedDate[] }>(`/booking-requests/${draft.id}/dates`, {
+                draft_token: draft.draft_token,
+                booking_type: bookingType,
+                mode,
+                dates: mode === 'specific' ? [specificDate] : undefined,
+                frequency: mode === 'recurring' ? frequency : undefined,
+                count: mode === 'recurring' ? Number(count) : undefined,
+            });
+            setDates(response.data.accepted);
+            setRejected(response.data.rejected);
+            setSpecificDate('');
+            setRequestState('success');
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    const removeDate = async (date: ReviewedDate) => {
+        setRequestState('loading');
+        try {
+            await axios.delete(`/booking-requests/${draft.id}/dates/${date.id}`, {
+                data: { draft_token: draft.draft_token },
+            });
+            setDates((current) => current.filter((item) => item.id !== date.id));
+            setRequestState('success');
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    const reasonLabels: Record<string, string> = {
+        past: 'Past date', primary: 'Already the primary date', duplicate: 'Already included',
+        held: 'Private hold', blocked: 'Unavailable',
+    };
+
+    return <div className="max-w-3xl"><FlowHeader eyebrow="Recurring bookings · Step 4" title="Add more dates." description="Build a repeat booking, series, or residency. Every date is checked independently against the live calendar." /><form onSubmit={reviewDates} className="space-y-7 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><div className="grid gap-5 md:grid-cols-2"><SelectField id="booking-type" label="Booking type" value={bookingType} onChange={setBookingType} options={[["repeat", "Repeat booking"], ["series", "Recurring series"], ["continuous", "Continuous / residency"]]} /><SelectField id="date-mode" label="How should dates be added?" value={mode} onChange={(value) => { setMode(value); setRejected([]); }} options={[["specific", "Specific date"], ["recurring", "Generate recurring dates"]]} /></div>{mode === 'specific' ? <TextField id="additional-date" label="Additional date" type="date" value={specificDate} onChange={setSpecificDate} /> : <div className="grid gap-5 md:grid-cols-2"><SelectField id="recurring-frequency" label="Frequency" value={frequency} onChange={setFrequency} options={[["weekly", "Weekly"], ["biweekly", "Every other week"], ["monthly", "Monthly"]]} /><TextField id="recurring-count" label="Number of additional bookings" type="number" min="1" max="24" value={count} onChange={setCount} /></div>}<button type="submit" disabled={requestState === 'loading'} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />}{mode === 'specific' ? 'Check and add date' : 'Generate and review dates'}</button><div aria-live="polite"><h2 className="text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Dates in this request</h2><div className="mt-3 divide-y border" style={{ borderColor: 'var(--border)' }}>{dates.map((date) => <div key={date.id || date.date} className="flex min-h-16 items-center justify-between gap-4 p-4"><span><strong>{date.date}</strong><span className="ml-2 text-xs uppercase" style={{ color: 'var(--muted)' }}>{date.state}</span>{date.primary && <span className="ml-2 text-xs uppercase" style={{ color: 'var(--primary)' }}>Primary</span>}</span>{!date.primary && <button type="button" onClick={() => removeDate(date)} className="min-h-11 px-3 text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>Remove</button>}</div>)}</div></div>{rejected.length > 0 && <div role="status" className="border-l-2 p-4" style={{ borderColor: 'var(--primary)', backgroundColor: 'var(--bg)' }}><strong className="text-sm uppercase">Not added</strong><ul className="mt-2 space-y-1 text-sm" style={{ color: 'var(--muted)' }}>{rejected.map((date) => <li key={`${date.date}-${date.reason}`}>{date.date}: {reasonLabels[date.reason] ?? date.reason}</li>)}</ul></div>}{requestState === 'success' && rejected.length === 0 && <p role="status" className="text-sm" style={{ color: 'var(--muted)' }}>All displayed dates are saved for individual routing and pricing review.</p>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">The dates could not be reviewed. Check the choices and try again.</p>}<p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>Each date keeps its own seasonal rate, routing, mileage, sound, and production review. No primary-date quote is copied across the series.</p></form></div>;
+}
+
 function ChoiceButton({ selected, onClick, title, description }: { selected: boolean; onClick: () => void; title: string; description: string }) {
     return <button type="button" aria-pressed={selected} onClick={onClick} className="min-h-28 border p-4 text-left" style={{ borderColor: selected ? 'var(--primary)' : 'var(--border)', backgroundColor: selected ? 'color-mix(in srgb, var(--primary) 12%, var(--bg-card))' : 'var(--bg-card)' }}><strong className="block uppercase">{title}</strong><span className="mt-2 block text-sm" style={{ color: 'var(--muted)' }}>{description}</span></button>;
 }
 
-function TextField({ id, label, value, onChange, type = 'text', required = true, autoComplete, min }: { id: string; label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; autoComplete?: string; min?: string }) {
-    return <label htmlFor={id} className="text-xs font-semibold uppercase">{label}<input id={id} type={type} required={required} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} min={min} className={`${fieldClass} mt-2`} style={fieldStyle} /></label>;
+function TextField({ id, label, value, onChange, type = 'text', required = true, autoComplete, min, max }: { id: string; label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; autoComplete?: string; min?: string; max?: string }) {
+    return <label htmlFor={id} className="text-xs font-semibold uppercase">{label}<input id={id} type={type} required={required} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} min={min} max={max} className={`${fieldClass} mt-2`} style={fieldStyle} /></label>;
 }
 
 function SelectField({ id, label, value, onChange, options }: { id: string; label: string; value: string; onChange: (value: string) => void; options: [string, string][] }) {

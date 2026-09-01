@@ -24,7 +24,8 @@ class BookingRequest extends Model
         'event_name', 'primary_date', 'preferred_city', 'preferred_state', 'window_starts_on',
         'window_ends_on', 'event_start', 'event_end', 'event_type', 'setting',
         'estimated_attendance', 'performance_format', 'performance_length_minutes',
-        'sound_provided', 'house_engineer_provided', 'true_potential_requested',
+        'booking_type', 'recurrence_frequency', 'sound_provided',
+        'house_engineer_provided', 'true_potential_requested',
     ];
 
     protected function casts(): array

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
 use App\Domain\Booking\PerformanceFormat;
+use App\Domain\Booking\RecurringDateGenerator;
+use App\Domain\Booking\RecurringFrequency;
+use App\Models\BookingDate;
 use App\Models\BookingRequest;
 use App\Models\Contact;
 use App\Models\Venue;
@@ -192,6 +195,15 @@ class BookingRequestController extends Controller
                 'preferred_city' => $validated['venue']['city'],
                 'preferred_state' => $validated['venue']['state'],
             ]);
+
+            $bookingRequest->dates()->whereDate('date', $bookingRequest->primary_date)->update([
+                'start_time' => $validated['event']['start'],
+                'end_time' => $validated['event']['end'],
+            ]);
+
+            if ($bookingRequest->source_path === BookingSourcePath::Flexible) {
+                $bookingRequest->dates()->whereDate('date', '!=', $validated['selected_date'])->delete();
+            }
         });
 
         return response()->json([
@@ -255,5 +267,154 @@ class BookingRequestController extends Controller
             'house_engineer_provided' => $bookingRequest->house_engineer_provided,
             'true_potential_requested' => $bookingRequest->true_potential_requested,
         ]);
+    }
+
+    public function storeDates(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+        BookingCalendar $calendar,
+        RecurringDateGenerator $recurringDates,
+    ): JsonResponse {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingRequest->performance_format === null || $bookingRequest->primary_date === null) {
+            throw ValidationException::withMessages(['draft' => 'Complete production options before adding dates.']);
+        }
+
+        $validated = $request->validate([
+            'booking_type' => ['required', Rule::in(['repeat', 'series', 'continuous'])],
+            'mode' => ['required', Rule::in(['specific', 'recurring'])],
+            'dates' => ['required_if:mode,specific', 'array', 'min:1', 'max:24'],
+            'dates.*' => ['date_format:Y-m-d', 'distinct'],
+            'frequency' => ['required_if:mode,recurring', 'nullable', Rule::enum(RecurringFrequency::class)],
+            'count' => ['required_if:mode,recurring', 'nullable', 'integer', 'min:1', 'max:24'],
+        ]);
+
+        $rejected = DB::transaction(function () use ($bookingRequest, $calendar, $credentials, $draftAccess, $recurringDates, $validated): array {
+            $lockedBooking = BookingRequest::query()->lockForUpdate()->findOrFail($bookingRequest->id);
+            $draftAccess->authorize($lockedBooking, $credentials['draft_token']);
+            $existingDates = $lockedBooking->dates()
+                ->whereDate('date', '!=', $lockedBooking->primary_date)
+                ->get();
+            $remaining = 24 - $existingDates->count();
+
+            if ($remaining < 1) {
+                throw ValidationException::withMessages(['dates' => 'This booking already has the maximum of 24 additional dates.']);
+            }
+
+            $accepted = [];
+            $rejected = [];
+
+            if ($validated['mode'] === 'recurring') {
+                if ($validated['count'] > $remaining) {
+                    throw ValidationException::withMessages(['count' => "Only {$remaining} additional dates remain available for this booking."]);
+                }
+
+                $result = $recurringDates->generate(
+                    $lockedBooking->primary_date->toDateTimeImmutable(),
+                    RecurringFrequency::from($validated['frequency']),
+                    $validated['count'],
+                    fn (\DateTimeImmutable $date) => $calendar->stateFor($date),
+                    $existingDates->map(fn (BookingDate $date) => $date->date->toDateTimeImmutable())->all(),
+                );
+                $accepted = array_map(fn (\DateTimeImmutable $date) => $date->format('Y-m-d'), $result->acceptedDates);
+                $rejected = array_map(fn ($date) => [
+                    'date' => $date->date->format('Y-m-d'),
+                    'reason' => $date->reason,
+                ], $result->rejectedDates);
+            } else {
+                if (count($validated['dates']) > $remaining) {
+                    throw ValidationException::withMessages(['dates' => "Only {$remaining} additional dates remain available for this booking."]);
+                }
+
+                $existingKeys = $existingDates->pluck('date')->map->toDateString()->flip();
+                foreach ($validated['dates'] as $dateString) {
+                    $date = CarbonImmutable::createFromFormat('!Y-m-d', $dateString);
+                    $reason = null;
+
+                    if ($date->lt(CarbonImmutable::today())) {
+                        $reason = 'past';
+                    } elseif ($date->isSameDay($lockedBooking->primary_date)) {
+                        $reason = 'primary';
+                    } elseif ($existingKeys->has($dateString)) {
+                        $reason = 'duplicate';
+                    } else {
+                        $state = $calendar->stateFor($date);
+                        if (! in_array($state, [AvailabilityState::Available, AvailabilityState::Limited], true)) {
+                            $reason = $state->value;
+                        }
+                    }
+
+                    if ($reason !== null) {
+                        $rejected[] = ['date' => $dateString, 'reason' => $reason];
+                    } else {
+                        $accepted[] = $dateString;
+                        $existingKeys->put($dateString, true);
+                    }
+                }
+            }
+
+            $lockedBooking->update([
+                'booking_type' => $validated['booking_type'],
+                'recurrence_frequency' => $validated['mode'] === 'recurring' ? $validated['frequency'] : null,
+            ]);
+
+            foreach ($accepted as $dateString) {
+                $date = CarbonImmutable::createFromFormat('!Y-m-d', $dateString);
+                $state = $calendar->stateFor($date);
+
+                if (! in_array($state, [AvailabilityState::Available, AvailabilityState::Limited], true)) {
+                    $rejected[] = ['date' => $dateString, 'reason' => $state->value];
+
+                    continue;
+                }
+
+                $lockedBooking->dates()->create([
+                    'date' => $date,
+                    'start_time' => $lockedBooking->event_start,
+                    'end_time' => $lockedBooking->event_end,
+                    'availability_status' => $state,
+                ]);
+            }
+
+            return $rejected;
+        });
+
+        $bookingRequest->refresh();
+
+        return response()->json([
+            'status' => 'dates_reviewed',
+            'accepted' => $bookingRequest->dates()->orderBy('date')->get()->map(fn (BookingDate $date) => [
+                'id' => $date->id,
+                'date' => $date->date->toDateString(),
+                'state' => $date->availability_status->value,
+                'primary' => $date->date->isSameDay($bookingRequest->primary_date),
+            ])->all(),
+            'rejected' => $rejected,
+        ]);
+    }
+
+    public function destroyDate(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDate $bookingDate,
+        BookingDraftAccess $draftAccess,
+    ): JsonResponse {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingDate->booking_request_id !== $bookingRequest->id) {
+            abort(404);
+        }
+
+        if ($bookingDate->date->isSameDay($bookingRequest->primary_date)) {
+            throw ValidationException::withMessages(['date' => 'The primary booking date cannot be removed.']);
+        }
+
+        $bookingDate->delete();
+
+        return response()->json(status: 204);
     }
 }

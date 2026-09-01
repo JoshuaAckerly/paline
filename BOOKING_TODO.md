@@ -47,7 +47,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Complete token-protected venue, event, and contact details for anonymous booking drafts.
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
 - [x] Add performance format, duration, sound, and TRUE POTENTIAL request steps.
-- [ ] Add recurring booking and per-date review.
+- [x] Add recurring booking generation and server-backed per-date availability review.
 - [ ] Add budget-fit and merch steps.
 
 ## Phase 5: secure pricing and legal
