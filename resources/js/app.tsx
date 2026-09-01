@@ -1,9 +1,21 @@
 import { createInertiaApp } from '@inertiajs/react';
+import axios from 'axios';
 import type { ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
 
-const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
+const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+
+if (csrfToken) {
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+}
+
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+const pages = import.meta.glob<{ default: ComponentType }>([
+    './pages/**/*.tsx',
+    '!./pages/**/__tests__/**',
+]);
 
 createInertiaApp({
     title: (title) => (title ? `${title} — PA Line` : 'PA Line'),

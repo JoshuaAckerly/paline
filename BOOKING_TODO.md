@@ -40,7 +40,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 
 ## Phase 4: booking experience
 
-- [ ] Build the four landing paths in the existing React/Inertia application.
+- [x] Build the four landing paths in the existing React/Inertia application.
 - [ ] Add exact-date and flexible-date flows.
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
 - [ ] Add recurring booking, budget, format, sound, and merch steps.

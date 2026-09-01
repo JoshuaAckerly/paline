@@ -31,13 +31,13 @@ describe('MainLayout', () => {
         const user = userEvent.setup();
         render(<MainLayout><p>Page content</p></MainLayout>);
 
-        expect(screen.getByRole('link', { name: 'Book PA LINE' })).toHaveAttribute('href', '/booking/');
+        expect(screen.getByRole('link', { name: 'Book PA LINE' })).toHaveAttribute('href', '/booking');
 
         await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
         const bookingLinks = screen.getAllByRole('link', { name: 'Book PA LINE' });
         expect(bookingLinks).toHaveLength(2);
-        bookingLinks.forEach((link) => expect(link).toHaveAttribute('href', '/booking/'));
+        bookingLinks.forEach((link) => expect(link).toHaveAttribute('href', '/booking'));
         expect(screen.getByText('Page content')).toBeInTheDocument();
     });
 
