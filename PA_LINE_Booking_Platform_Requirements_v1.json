@@ -1,0 +1,957 @@
+{
+  "product": "PA LINE Booking Platform",
+  "documentation_version": "1.0",
+  "prototype_source": "PA_LINE_Booking_Prototype_STABLE_v41.html",
+  "source_checksums_sha256": {
+    "PA_LINE_Booking_Prototype_STABLE_v41.html": "f3cb0002c73121209cdb5daf3b68299f8f15e7eb6cd0651c0c664dc7f9d4099f",
+    "PA_LINE_Performance_Agreement_2026_Fillable.docx": "4104e36f5e5dd4ebf4180582e3e987b3fa040dfc4a1ef30fe4c02e123286a6c7",
+    "PA_LINE_2026_Stage_Plot.html": "9b770ca5d3c3957f1398dd100004312b4282c9d0772f661428f92bacba710df2",
+    "PA_LINE_2026_Technical_Rider.html": "2adff355859eb7372afd5deeb78e077e29c8ee21c7faf287b1ad7c344e8067f6",
+    "PA_LINE_2026_Personal_Hospitality_Rider.html": "c747362340d4db20272a3002664ab59250931f6fafdb006239512e56cd34be7d",
+    "PA LINE Rose Invert.png": "c8e9928aaa9ffe4bb48b6205dc6d3f4068f5712553dd9344659162b52e99c086"
+  },
+  "brand": {
+    "artist_name": "PA LINE",
+    "visual_theme": "premium dark / black with warm gold accent",
+    "returning_cta": "BACK FOR MORE?"
+  },
+  "entry_paths": [
+    "exact_date",
+    "flexible_date",
+    "demand_get_over_here",
+    "returning_booker"
+  ],
+  "scheduling": {
+    "booking_horizon_months": 24,
+    "long_range_review_months": 12,
+    "earliest_performance_start": "10:00",
+    "latest_performance_start": "23:00",
+    "pre_show_minutes": 120,
+    "post_show_minutes": 120,
+    "availability_states": [
+      "available",
+      "limited",
+      "held",
+      "blocked"
+    ],
+    "booked_date_can_be_limited": true
+  },
+  "performance_pricing": {
+    "solo": {
+      "sun": 200,
+      "mon": 200,
+      "tue": 200,
+      "wed": 250,
+      "thu": 250,
+      "fri": 300,
+      "sat": 300
+    },
+    "duo": {
+      "sun": 350,
+      "mon": 350,
+      "tue": 350,
+      "wed": 450,
+      "thu": 450,
+      "fri": 550,
+      "sat": 550
+    },
+    "full_pa_line": {
+      "sun": 600,
+      "mon": 600,
+      "tue": 600,
+      "wed": 750,
+      "thu": 750,
+      "fri": 1000,
+      "sat": 1000
+    },
+    "season_multipliers": {
+      "dec_jan_feb": 0.75,
+      "mar_apr_oct_nov": 1.0,
+      "may_sep": 1.25,
+      "jun_jul_aug": 1.4
+    }
+  },
+  "travel": {
+    "home_base_label": "Depew, NY",
+    "mileage_rate": 0.8,
+    "max_combined_drive_hours_per_travel_day": 8,
+    "hourly_drive_rate": 0,
+    "travel_day_allowance": "season-adjusted base performance rate per required travel day",
+    "open_decision": "prototype currently enforces a minimum of one travel day"
+  },
+  "sound": {
+    "pa_line_sound_fee": {
+      "solo": 25,
+      "duo": 50,
+      "full_pa_line": 250
+    },
+    "sound_tech_base_fee": 150,
+    "sound_tech_mileage_rate": 0.8
+  },
+  "true_potential": {
+    "minimum_advance_months": 6,
+    "price_mode": "custom_quote"
+  },
+  "repeat_program": {
+    "qualifying_gigs_per_year": 4,
+    "qualify_by": [
+      "venue",
+      "authorized_booking_contact"
+    ],
+    "discount_amount": null,
+    "stacking_rules": null
+  },
+  "discount_programs": {
+    "introductory_venue": {
+      "implemented_eligibility": true,
+      "amount": null
+    },
+    "new_venue_referral": {
+      "implemented_eligibility": true,
+      "amount": null
+    },
+    "repeat_booking": {
+      "implemented_eligibility": true,
+      "amount": null
+    },
+    "venue_appreciation_credit": {
+      "status": "pinned_not_implemented"
+    }
+  },
+  "merch": {
+    "standard_shirt_retail": 25,
+    "approximate_shirt_cost": 15,
+    "packages": {
+      "rep_the_band": {
+        "price": 40,
+        "paid_shirts": 2,
+        "stickers": 2,
+        "pins": 2
+      },
+      "gear_up_the_crew": {
+        "price": 75,
+        "paid_shirts": 4,
+        "stickers": 4,
+        "pins": 4
+      },
+      "dream_team_swag": {
+        "unit_price": 20,
+        "minimum_paid_shirts": 6,
+        "free_extra_shirt_at_paid_qty": 10
+      }
+    }
+  },
+  "security": {
+    "recommended_auth": "passwordless_email_magic_link",
+    "private_pricing_requires_verified_account": true,
+    "confidentiality_before_private_quote": true,
+    "server_side_price_validation": true,
+    "server_side_availability_validation": true
+  },
+  "legal": {
+    "single_final_review_page": true,
+    "scroll_to_bottom_unlock_required": true,
+    "documents": [
+      "confidential_pricing_terms",
+      "performance_agreement",
+      "stage_plot",
+      "technical_rider",
+      "personal_hospitality_rider"
+    ],
+    "final_price_immediately_before_submit": true
+  },
+  "predictive_input": {
+    "types": [
+      "city",
+      "zip",
+      "address",
+      "venue",
+      "event",
+      "contact"
+    ],
+    "manual_typing_has_priority": true,
+    "enter_alone_auto_selects_first_suggestion": false,
+    "stale_async_results_must_be_ignored": true,
+    "recursive_autofill_prohibited": true
+  },
+  "prototype_limitations": [
+    "static calendar snapshot",
+    "demo held/booked/blocked dates",
+    "pseudo route mileage",
+    "55 mph route simulation",
+    "browser localStorage memory",
+    "simulated magic links",
+    "no secure backend authorization",
+    "no payment processing",
+    "no immutable server legal audit"
+  ],
+  "open_decisions": [
+    "introductory discount amount",
+    "referral discount amount",
+    "repeat discount amount",
+    "discount stacking",
+    "venue appreciation credit economics",
+    "local travel-day threshold",
+    "deposit/payment policy",
+    "cancellation amounts",
+    "payment processor",
+    "final exclusivity policy",
+    "mapping provider",
+    "calendar integration architecture",
+    "TRUE POTENTIAL quote workflow"
+  ],
+  "pages": [
+    {
+      "id": "pageStart",
+      "title": "Let\u2019s make a show happen.",
+      "fields": []
+    },
+    {
+      "id": "pageReturningAccess",
+      "title": "Good to see you again.",
+      "fields": [
+        {
+          "id": "returningEmail",
+          "label": "Email used for previous PA LINE bookings",
+          "element": "input",
+          "type": "email"
+        },
+        {
+          "id": "returningVenue",
+          "label": "Venue / organization",
+          "element": "input",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageReturningHub",
+      "title": "Let\u2019s do it again.",
+      "fields": [
+        {
+          "id": "returnProfileVenue",
+          "label": "Venue / organization",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "returnProfileAddress",
+          "label": "Street address",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "returnProfileCity",
+          "label": "City",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "returnProfileState",
+          "label": "State",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "returnProfileZip",
+          "label": "ZIP",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "returnPriorCount",
+          "label": "PA LINE gigs already confirmed through this venue / booking contact this year",
+          "element": "select",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageExact",
+      "title": "What date are you thinking?",
+      "fields": []
+    },
+    {
+      "id": "pageFlexible",
+      "title": "When are you thinking?",
+      "fields": [
+        {
+          "id": "rangeStart",
+          "label": "Earliest date",
+          "element": "input",
+          "type": "date"
+        },
+        {
+          "id": "rangeEnd",
+          "label": "Latest date",
+          "element": "input",
+          "type": "date"
+        },
+        {
+          "id": "seasonSelect",
+          "label": "Season",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "seasonYear",
+          "label": "Year",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "flexVenue",
+          "label": "Venue / organization",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "flexCity",
+          "label": "City",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "flexState",
+          "label": "State",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "flexZip",
+          "label": "ZIP",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "flexLevel",
+          "label": "Flexibility",
+          "element": "select",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageDemand",
+      "title": "Bring PA LINE To You",
+      "fields": [
+        {
+          "id": "demandCity",
+          "label": "City",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandState",
+          "label": "State",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandZip",
+          "label": "ZIP",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandVenue",
+          "label": "Preferred venue",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandVenue2",
+          "label": "Alternate venue idea",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandParty",
+          "label": "How many people would likely come with you?",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "demandNotes",
+          "label": "Anything useful we should know?",
+          "element": "textarea",
+          "type": ""
+        },
+        {
+          "id": "demandName",
+          "label": "Your name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandEmail",
+          "label": "Email",
+          "element": "input",
+          "type": "email"
+        },
+        {
+          "id": "demandPhone",
+          "label": "Phone",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "demandUpdates",
+          "label": "Preferred updates",
+          "element": "select",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageDemandDone",
+      "title": "You helped put PA LINE on the map here.",
+      "fields": []
+    },
+    {
+      "id": "pageDetails",
+      "title": "Tell us about the show",
+      "fields": [
+        {
+          "id": "eventDate",
+          "label": "Selected date",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventVenue",
+          "label": "Venue name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventName",
+          "label": "Event name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventAddress",
+          "label": "Street address",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventCity",
+          "label": "City",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventState",
+          "label": "State",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventZip",
+          "label": "ZIP",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "eventType",
+          "label": "Event type",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "eventSetting",
+          "label": "Setting",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "eventStart",
+          "label": "Start time",
+          "element": "input",
+          "type": "time"
+        },
+        {
+          "id": "eventEnd",
+          "label": "End time",
+          "element": "input",
+          "type": "time"
+        },
+        {
+          "id": "eventAttendance",
+          "label": "Estimated attendance",
+          "element": "input",
+          "type": "number"
+        },
+        {
+          "id": "performanceLength",
+          "label": "Performance length",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "timingNotes",
+          "label": "Timing notes",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "houseEngineer",
+          "label": "Qualified house engineer included?",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "soundTechNeeded",
+          "label": "Dedicated PA LINE sound tech needed?",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "soundTechMiles",
+          "label": "Estimated sound tech mileage",
+          "element": "input",
+          "type": "number"
+        },
+        {
+          "id": "soundNotes",
+          "label": "Sound system notes",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "tpBudget",
+          "label": "Production budget range",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "tpNotes",
+          "label": "Creative notes",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "recurringType",
+          "label": "Booking type",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "recurringFrequency",
+          "label": "How should dates be added?",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "additionalDateInput",
+          "label": "Additional date",
+          "element": "input",
+          "type": "date"
+        },
+        {
+          "id": "recurringCount",
+          "label": "Number of additional bookings",
+          "element": "input",
+          "type": "number"
+        },
+        {
+          "id": "introVenueStatus",
+          "label": "Is this a brand-new PA LINE venue?",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "referralSource",
+          "label": "Were you referred by another venue / booking contact?",
+          "element": "input",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageReview",
+      "title": "Here\u2019s what we have so far",
+      "fields": []
+    },
+    {
+      "id": "pageSecureAccess",
+      "title": "Save the booking before we show private pricing.",
+      "fields": [
+        {
+          "id": "secureAccountName",
+          "label": "Your name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "secureAccountEmail",
+          "label": "Business email",
+          "element": "input",
+          "type": "email"
+        },
+        {
+          "id": "secureAccountOrg",
+          "label": "Venue / organization",
+          "element": "input",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageConfidentiality",
+      "title": "Confidential Pricing & Booking Terms Agreement",
+      "fields": [
+        {
+          "id": "pricingConfName",
+          "label": "Authorized signer",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "pricingConfTitle",
+          "label": "Title / role",
+          "element": "input",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageQuote",
+      "title": "Preliminary quote",
+      "fields": []
+    },
+    {
+      "id": "pageExclusive",
+      "title": "Any exclusivity requirements?",
+      "fields": [
+        {
+          "id": "exRadius",
+          "label": "Radius",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "exBefore",
+          "label": "Days before",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "exAfter",
+          "label": "Days after",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "exApplies",
+          "label": "Applies to",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "exExceptions",
+          "label": "Exceptions",
+          "element": "select",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageTech",
+      "title": "Technical Requirements",
+      "fields": [
+        {
+          "id": "techIssue",
+          "label": "What needs discussion?",
+          "element": "textarea",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageBonus",
+      "title": "Want to show up in PA LINE colors?",
+      "fields": [
+        {
+          "id": "dreamTeamQty",
+          "label": "How many people are on the dream team?",
+          "element": "input",
+          "type": "number"
+        },
+        {
+          "id": "merchSizes",
+          "label": "Shirt sizes",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "merchFor",
+          "label": "Who is the gear for?",
+          "element": "select",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageCheckout",
+      "title": "Almost there.",
+      "fields": [
+        {
+          "id": "buyerName",
+          "label": "Your name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "buyerEmail",
+          "label": "Email",
+          "element": "input",
+          "type": "email"
+        },
+        {
+          "id": "buyerPhone",
+          "label": "Phone",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "buyerOrg",
+          "label": "Organization / venue",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "buyerPref",
+          "label": "Best way to reach you",
+          "element": "select",
+          "type": ""
+        },
+        {
+          "id": "buyerNotes",
+          "label": "Anything else?",
+          "element": "input",
+          "type": ""
+        }
+      ]
+    },
+    {
+      "id": "pageDocumentGate",
+      "title": "Review & Sign",
+      "fields": [
+        {
+          "id": "sName",
+          "label": "Full legal name",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "sTitle",
+          "label": "Title / role",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "sSig",
+          "label": "Signature",
+          "element": "input",
+          "type": ""
+        },
+        {
+          "id": "sDate",
+          "label": "Date",
+          "element": "input",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "id": "pageDone",
+      "title": "You\u2019re on the calendar radar.",
+      "fields": []
+    }
+  ],
+  "prototype_function_count": 179,
+  "prototype_functions": [
+    "showPage",
+    "iso",
+    "parseDate",
+    "money",
+    "addDays",
+    "pseudoLegMiles",
+    "locationLabel",
+    "surroundingConfirmedShows",
+    "routeFor",
+    "isLongRange",
+    "openReturningAccess",
+    "updateReturningAccess",
+    "simulateReturningMagicLink",
+    "completeReturningVerification",
+    "captureReturningProfile",
+    "updateReturningBenefits",
+    "startReturningExact",
+    "startReturningFlexible",
+    "startReturningSeries",
+    "applyReturningProfileToDetails",
+    "qualifyingShowCount",
+    "repeatBenefitEligible",
+    "updateBookingBenefits",
+    "renderQuoteBenefits",
+    "continueToSecurePricing",
+    "updateSecureAccess",
+    "simulateSecureLink",
+    "completeSecureVerification",
+    "openConfidentiality",
+    "updateConfidentialityGate",
+    "acceptConfidentialityAndQuote",
+    "goExact",
+    "goFlexible",
+    "goDemand",
+    "setDemandRole",
+    "selectedDemandActions",
+    "updateDemandState",
+    "submitDemand",
+    "liveCalendarEventsFor",
+    "bookedEventsForDate",
+    "availability",
+    "renderCalendar",
+    "moveMonth",
+    "clockMinutes",
+    "clockLabel",
+    "clockLabelWithDay",
+    "requestedDurationMinutes",
+    "travelMinutesBetween",
+    "sameDayWindows",
+    "windowsHTML",
+    "showLimitedDateModal",
+    "closeLimitedDateModal",
+    "confirmLimitedDate",
+    "sameDayTimingStatus",
+    "renderUniversalShowWindow",
+    "renderSameDayAvailability",
+    "selectExactDate",
+    "continueExact",
+    "setFlexMode",
+    "setupSeasonYears",
+    "setupWeekdays",
+    "toggleWeekdays",
+    "flexWindow",
+    "findFlexibleDates",
+    "continueFlexible",
+    "backFromDetails",
+    "openDetails",
+    "chooseFormat",
+    "updateDetails",
+    "renderExactSuggestions",
+    "setSoundProvided",
+    "syncSoundTech",
+    "toggleTruePotential",
+    "monthsUntil",
+    "updateTP",
+    "toggleRecurring",
+    "updateRecurringUI",
+    "validateAdditionalDate",
+    "addAdditionalDate",
+    "removeAdditionalDate",
+    "renderAdditionalDates",
+    "addMonthsClamped",
+    "generateRecurringDates",
+    "recurringSummaryHTML",
+    "openReview",
+    "seasonal",
+    "rawBase",
+    "soundFee",
+    "techCost",
+    "openQuote",
+    "setExclusive",
+    "calcExclusive",
+    "openBonusAdditions",
+    "selectMerchPackage",
+    "updateMerchPackage",
+    "renderMerchSelection",
+    "continueWithMerch",
+    "skipMerchAndContinue",
+    "merchSummaryHTML",
+    "setTech",
+    "updateTechContinue",
+    "openCheckout",
+    "updateSubmit",
+    "syncDocumentReviewLock",
+    "syncAllDocumentReviewLocks",
+    "openDocumentReview",
+    "closeDocumentReview",
+    "trackDocumentReviewScroll",
+    "completeDocumentReview",
+    "finalBookingAmounts",
+    "renderFinalPriceConfirmation",
+    "prepareSharedDocumentGate",
+    "backFromDocumentGate",
+    "updateSharedGate",
+    "submitShared",
+    "submitBooking",
+    "paProgrammaticEvent",
+    "paNotifyValue",
+    "paSuggestionSuppressed",
+    "paSuppressSuggestionsBriefly",
+    "closeAllSuggestionLists",
+    "setupSuggestionKeyboard",
+    "stateCode",
+    "normalizeZip",
+    "findGroupByElement",
+    "getGroupFields",
+    "markLocationField",
+    "fireLocationChange",
+    "setLocationFields",
+    "localCityMatches",
+    "localZipMatch",
+    "ensureLocationList",
+    "hideLocationList",
+    "renderLocationItems",
+    "escapeHTML",
+    "debounce",
+    "zipToPlaceRemote",
+    "cityToZipRemote",
+    "remoteCitySuggestions",
+    "remoteAddressSuggestions",
+    "localAddressSuggestions",
+    "setupCityPredictive",
+    "setupZipLink",
+    "setupAddressPredictive",
+    "setupLocationIntelligence",
+    "smartClean",
+    "smartKey",
+    "smartUnique",
+    "loadSmartBookingMemory",
+    "saveSmartBookingMemory",
+    "upsertSmart",
+    "rememberVenue",
+    "rememberContact",
+    "rememberEvent",
+    "rememberCurrentEventAndVenue",
+    "smartRank",
+    "allSmartVenues",
+    "allSmartEvents",
+    "allSmartContacts",
+    "smartVenueLocationGroup",
+    "fillVenueSelection",
+    "fillEventSelection",
+    "fillContactSelection",
+    "ensureSmartList",
+    "renderSmartList",
+    "remoteVenueSuggestionsSmart",
+    "enrichVenueSelection",
+    "setupSmartAutocompleteInput",
+    "setupSmartBookingAutofill",
+    "setupAutocomplete",
+    "localDateString",
+    "dateFromInputValue",
+    "dateWithinInputBounds",
+    "openCustomDatePicker",
+    "closeCustomDatePicker",
+    "moveCustomDatePicker",
+    "chooseTodayForCustomPicker",
+    "selectCustomPickerDate",
+    "renderCustomDatePicker"
+  ]
+}

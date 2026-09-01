@@ -1,0 +1,14 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        },
+        "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.tsx"
+    ]
+}

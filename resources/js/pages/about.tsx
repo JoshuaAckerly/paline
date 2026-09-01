@@ -295,7 +295,7 @@ export default function About() {
                                                   : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
                                         }`}
                                     >
-                                        {section.photos.map((photo: {src:string;alt:string}, k: number) => (
+                                        {section.photos.map((photo: { src: string; alt: string; position?: string }, k: number) => (
                                             <div key={k} className="overflow-hidden rounded" style={{ border: '1px solid var(--border)' }}>
                                                 <img
                                                     src={photo.src}
@@ -303,7 +303,7 @@ export default function About() {
                                                     className="w-full object-cover transition-transform duration-500 hover:scale-105"
                                                     style={{
                                                         height: '220px',
-                                                        objectPosition: 'position' in photo ? photo.position : 'center',
+                                                        objectPosition: photo.position ?? 'center',
                                                     }}
                                                     loading="lazy"
                                                 />

@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+
+<!-- VS Code/Copilot migration build v50. Business rules: see .github/copilot-instructions.md -->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book PA LINE</title>
+
+
+  <link rel="stylesheet" href="./src/styles.css">
+  <script defer src="./src/app.js"></script>
+</head>
+<body>
+<div class="app">
+<div class="topbar">
+<button aria-label="PA LINE booking home" class="brand brand-home" onclick="startOver()" type="button">
+<span class="brand-lockup">
+<span class="brand-icon"><span aria-hidden="true" class="rose-art"></span></span>
+<span class="brand-text">
+<span class="brand-name">PA LINE</span>
+<span class="brand-sub">BOOKING</span>
+</span>
+</span>
+</button>
+<div aria-live="polite" class="topbar-progress">
+<div class="topbar-progress-line">
+<span class="step" id="stepLabel">Start</span>
+<span class="step-count" id="stepCount">Choose a path</span>
+</div>
+<div aria-hidden="true" class="journey-track"><span id="journeyFill"></span></div>
+</div>
+<div class="topbar-actions">
+<span class="preview-chip" title="Interactive presentation build. Email, mapping, payment, and secure backend actions are simulated."><span class="preview-dot"></span>INTERACTIVE DEMO</span>
+<button class="btn top-admin-docs" id="legalDocsAdminBtn" onclick="openLegalAdmin()" type="button" title="Demo admin document manager">LEGAL DOCS</button>
+<button class="btn top-start-over hidden" id="startOverBtn" onclick="startOver()" type="button">START OVER</button>
+</div>
+</div>
+<section class="card" id="pageStart">
+<div aria-hidden="true" class="hero-rose"><span aria-hidden="true" class="rose-art"></span></div>
+<span class="badge">PA LINE BOOKING</span>
+<h1 style="margin-top:14px">Let’s make a show happen.</h1>
+<p>Have a date? We’ll check it. Need the right date? We’ll find the best fit. Want PA LINE in your city? Start the demand. Nothing is final until PA LINE reviews and approves the request.</p>
+<div aria-label="Booking information" class="landing-trust">
+<span><strong>NO PAYMENT TODAY</strong><small>Build the request first</small></span>
+<span><strong>PRIVATE PRICING</strong><small>Protected before final review</small></span>
+<span><strong>PA LINE REVIEW</strong><small>Every request is approved manually</small></span>
+</div>
+<div class="mobile-swipe-hint">Swipe to choose a path <span>→</span></div>
+<div class="choice-grid">
+<div class="choice route-date" onclick="goExact()">
+<span aria-hidden="true" class="panel-rose rose-art"></span><h2>I KNOW MY DATE</h2>
+<p>You know the day. Check availability and start building the show.</p>
+<strong>LET’S CHECK IT →</strong>
+</div>
+<div class="choice route-sweetspot" onclick="goFlexible()">
+<span aria-hidden="true" class="panel-rose rose-art"></span><h2>HELP ME FIND THE SWEET SPOT</h2>
+<p>Give us a window and we’ll find dates that fit the schedule, route better, and waste less travel.</p>
+<strong>FIND THE SWEET SPOT →</strong>
+</div>
+<div class="choice route-demand" onclick="goDemand()">
+<span aria-hidden="true" class="panel-rose rose-art"></span><h2>GET OVER HERE</h2>
+<p>No date yet? No problem. Tell us where you want PA LINE and help turn local interest into a real show.</p>
+<strong>START SOME TROUBLE →</strong>
+</div>
+</div>
+<div class="returning-booker-bar" onclick="openReturningAccess()" role="button" tabindex="0">
+<div>
+<span class="badge">RETURNING VENUES &amp; BOOKERS</span>
+<h2>BACK FOR MORE?</h2>
+<p>Already brought PA LINE in before? Sign in, pull up your venue, and make the next one faster.</p>
+</div>
+<strong>BRING US BACK →</strong>
+</div>
+</section>
+<section class="card hidden" id="pageReturningAccess">
+<button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
+<span class="badge" style="margin-top:18px">SECURE RETURNING-BOOKER ACCESS</span>
+<h1 style="margin-top:12px">Good to see you again.</h1>
+<p>Returning booking contacts use a one-time email link. No password to remember, and authorized venues, booking history, and saved details stay connected to the verified account.</p>
+<div class="notice">
+<div class="formgrid">
+<div class="field"><label>Email used for previous PA LINE bookings</label><input autocomplete="email" id="returningEmail" oninput="updateReturningAccess()" type="email"/></div>
+<div class="field"><label>Venue / organization</label><input autocomplete="organization" data-smart-autocomplete="venue" id="returningVenue" oninput="updateReturningAccess()"/></div>
+</div>
+<button class="btn primary" disabled="" id="returningLinkBtn" onclick="simulateReturningMagicLink()" style="margin-top:12px">EMAIL ME A SECURE SIGN-IN LINK</button>
+<div class="notice hidden" id="returningLinkNotice"></div>
+</div>
+<div class="small preview-note"><strong>Interactive demo:</strong> email delivery is simulated so you can move through the verified-account experience.</div>
+</section>
+<section class="card hidden" id="pageReturningHub">
+<button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
+<span class="badge" style="margin-top:18px">RETURNING BOOKER</span>
+<h1 style="margin-top:12px">Let’s do it again.</h1>
+<p id="returningWelcome">Your saved venue profile is ready below.</p>
+<div class="notice">
+<strong>Venue profile</strong>
+<div class="small" style="margin-top:5px">Confirm or update the venue details you want to use for this booking.</div>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Venue / organization</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="returnProfileVenue"/></div>
+<div class="field"><label>Street address</label><input autocomplete="street-address" data-location-role="address" id="returnProfileAddress"/></div>
+<div class="field"><label>City</label><input autocomplete="address-level2" data-location-role="city" id="returnProfileCity"/></div>
+<div class="field"><label>State</label><input autocomplete="address-level1" data-autocomplete="state" data-location-role="state" id="returnProfileState" value="NY"/></div>
+<div class="field"><label>ZIP</label><input autocomplete="postal-code" data-location-role="zip" id="returnProfileZip" inputmode="numeric" maxlength="10"/></div><div class="small location-helper">Start with the address, city, or ZIP. The other location fields will fill themselves when a match is found.</div><div class="small smart-fill-helper">Known venue, event, and booking-contact details can refill related fields as you type.</div>
+<div class="field">
+<label>PA LINE gigs already confirmed through this venue / booking contact this year</label>
+<select id="returnPriorCount" onchange="updateReturningBenefits()">
+<option value="0">None yet</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4 or more</option>
+</select>
+</div>
+</div>
+<div class="small" id="returnBenefitStatus" style="margin-top:10px"></div>
+</div>
+<div class="notice route-savings-demo-card route-savings-alert">
+<div class="route-alert-top">
+  <span class="badge">EXAMPLE ROUTE SAVINGS ALERT</span>
+  <span class="route-alert-pill">NEW</span>
+</div>
+<h2 style="margin-top:10px"><span class="route-alert-money">$240</span> saved on a New York City booking</h2>
+<div class="small">An Albany venue confirmed an adjacent route-friendly date, reducing the protected travel attached to the New York City show. The original booker now chooses what happens to the savings.</div>
+<button class="btn primary" type="button" onclick="openRouteSavingsDemo()" style="margin-top:12px">REVIEW THE $240 SAVINGS →</button>
+</div>
+<div class="choice-grid returning-actions">
+<div class="choice" onclick="startReturningExact()">
+<h2>BOOK ANOTHER DATE</h2>
+<p>Same venue profile, new date.</p>
+<strong>LET’S RUN IT BACK →</strong>
+</div>
+<div class="choice" onclick="startReturningFlexible()">
+<h2>FIND OUR NEXT SWEET SPOT</h2>
+<p>Keep the venue, let PA LINE help choose the best date.</p>
+<strong>FIND THE DATE →</strong>
+</div>
+<div class="choice" onclick="startReturningSeries()">
+<h2>MAKE IT A THING</h2>
+<p>Planning four or more shows? Build the series together and check repeat-booking eligibility.</p>
+<strong>BUILD A SERIES →</strong>
+</div>
+</div>
+</section>
+
+<section class="card hidden" id="pageRouteSavings">
+<button class="btn" onclick="showPage('pageReturningHub','Returning Booker')">← Back</button>
+<span class="badge" style="margin-top:18px">ROUTE SAVINGS</span>
+<h1 id="routeSavingsPageTitle" style="margin-top:12px">Your route got better. Your price did too.</h1>
+<p id="routeSavingsPageIntro">A later confirmed PA LINE show reduced the travel attached to your booking. The savings belongs to your booking, and you decide what happens next.</p>
+
+<div class="notice route-savings-story">
+<div id="routeSavingsLabel" class="badge">ROUTE SAVINGS</div>
+<h2 id="routeSavingsHeadline" style="margin-top:8px">Another venue helped turn your one-off into a route.</h2>
+<div id="routeSavingsStoryText" class="small"></div>
+<div class="route-comparison" aria-label="Route comparison">
+  <div class="route-comparison-row">
+    <span class="route-comparison-label">BEFORE</span>
+    <strong id="routeSavingsBeforeRoute">Depew → New York City → Depew</strong>
+  </div>
+  <div class="route-comparison-arrow">↓ route improved</div>
+  <div class="route-comparison-row improved">
+    <span class="route-comparison-label">AFTER</span>
+    <strong id="routeSavingsAfterRoute">Albany → New York City → Depew</strong>
+  </div>
+</div>
+<div class="route-savings-amount">
+  <div class="route-savings-stat">
+    <div class="small">Protected travel charge</div>
+    <strong id="routeSavingsBefore">$0</strong>
+  </div>
+  <div class="route-savings-stat">
+    <div class="small">Recalculated travel</div>
+    <strong id="routeSavingsAfter">$0</strong>
+  </div>
+  <div class="route-savings-stat saved">
+    <div class="small">You saved</div>
+    <strong id="routeSavingsAmount">$0</strong>
+  </div>
+</div>
+</div>
+
+<div class="notice">
+<strong>What would you like to do with the savings?</strong>
+<div class="small" style="margin-top:5px">No response means the savings automatically stay in your favor: first against any unpaid balance, then back to you. PA LINE only retains an amount if you actively choose reinvestment.</div>
+
+<div class="choice-grid route-savings-options" style="margin-top:12px">
+  <div id="routeSaveReturn" class="choice selected" onclick="chooseRouteSavingsPreset('return')">
+    <span class="route-choice-check">✓</span>
+    <h2>RETURN IT TO ME</h2>
+    <div class="route-option-value" id="routeReturnOptionValue">$240</div>
+    <p>Apply it against anything I still owe, then return any remainder to me.</p>
+    <strong>100% BACK TO ME →</strong>
+  </div>
+  <div id="routeSaveCredit" class="choice" onclick="chooseRouteSavingsPreset('credit')">
+    <span class="route-choice-check">✓</span>
+    <h2>SAVE IT FOR NEXT TIME</h2>
+    <div class="route-option-value" id="routeCreditOptionValue">$240 credit</div>
+    <p>Keep the savings as a PA LINE booking credit attached to my verified account.</p>
+    <strong>100% FUTURE CREDIT →</strong>
+  </div>
+  <div id="routeSaveBuzz" class="choice" onclick="chooseRouteSavingsPreset('buzz')">
+    <span class="route-choice-check">✓</span>
+    <h2>KEEP THE BUZZ MOVING</h2>
+    <div class="route-option-value" id="routeBuzzOptionValue">$240 reinvested</div>
+    <p>Voluntarily reinvest the savings into PA LINE touring, routing, and promotion.</p>
+    <strong>REINVEST IT ALL →</strong>
+  </div>
+  <div id="routeSaveHalf" class="choice" onclick="chooseRouteSavingsPreset('half')">
+    <span class="route-choice-check">✓</span>
+    <h2>SPLIT THE DIFFERENCE</h2>
+    <div class="route-option-value" id="routeHalfOptionValue">$120 back · $120 reinvested</div>
+    <p>Return half to me and put the other half back into keeping the route moving.</p>
+    <strong>50 / 50 →</strong>
+  </div>
+  <div id="routeSaveCustom" class="choice" onclick="chooseRouteSavingsPreset('custom')">
+    <span class="route-choice-check">✓</span>
+    <h2>CHOOSE MY SPLIT</h2>
+    <div class="route-option-value">YOUR CALL</div>
+    <p>Divide the savings between money back, future booking credit, and reinvestment.</p>
+    <strong>BUILD MY SPLIT →</strong>
+  </div>
+</div>
+
+<div id="routeCustomPanel" class="route-allocation hidden">
+  <strong>Custom allocation</strong>
+  <div class="small" style="margin-top:5px">Enter percentages. The three choices must total 100%.</div>
+  <div class="route-custom-grid">
+    <div class="field"><label>Return / reduce balance %</label><input id="routeReturnPct" type="number" min="0" max="100" step="1" value="100" oninput="updateRouteSavingsCustom()"></div>
+    <div class="field"><label>Future booking credit %</label><input id="routeCreditPct" type="number" min="0" max="100" step="1" value="0" oninput="updateRouteSavingsCustom()"></div>
+    <div class="field"><label>Reinvest with PA LINE %</label><input id="routeReinvestPct" type="number" min="0" max="100" step="1" value="0" oninput="updateRouteSavingsCustom()"></div>
+  </div>
+  <div id="routeCustomTotal" class="route-custom-total good">Total: 100%</div>
+</div>
+
+<div class="route-allocation">
+  <strong>Your current choice</strong>
+  <div class="route-allocation-grid">
+    <div class="route-allocation-box return"><div class="small">Return / reduce balance</div><strong id="routeReturnAmount">$0</strong></div>
+    <div class="route-allocation-box credit"><div class="small">Future booking credit</div><strong id="routeCreditAmount">$0</strong></div>
+    <div class="route-allocation-box reinvest"><div class="small">Keep the buzz moving</div><strong id="routeReinvestAmount">$0</strong></div>
+  </div>
+  <div id="routeSavingsSettlementNote" class="small" style="margin-top:10px"></div>
+</div>
+
+<details class="route-savings-disclosure">
+<summary>About reinvestment</summary>
+<div>PA LINE Music, LLC is a for-profit business. Money voluntarily left with PA LINE is a touring / promotional reinvestment, not a charitable or tax-deductible contribution.</div>
+</details>
+</div>
+
+<div id="routeSavingsDecisionNotice" class="notice hidden route-savings-confirmation"></div>
+
+<div class="summary">
+  <div>
+    <div class="small">Route savings available</div>
+    <strong id="routeSavingsFooter">$0</strong>
+  </div>
+  <button id="routeSavingsSubmit" class="btn primary" onclick="submitRouteSavingsElection()">SAVE MY CHOICE</button>
+</div>
+</section>
+
+<section class="card hidden" id="pageExact">
+<button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
+<h1 style="margin-top:18px">What date are you thinking?</h1>
+<p>Choose the exact date you want. Your selected date remains yours unless you choose a different one later.</p>
+<div class="calendar-head">
+<button class="btn" id="prevMonth" onclick="moveMonth(-1)"></button>
+<div class="month-title" id="monthTitle"></div>
+<button class="btn" id="nextMonth" onclick="moveMonth(1)"></button>
+</div>
+<div class="notice calendar-status-note" id="liveCalendarNotice">
+<div class="status-note-icon">✓</div>
+<div><strong>Calendar snapshot loaded</strong>
+<div class="small" style="margin-top:4px">Available dates can be requested. Dates with another PA LINE show are marked <strong>Limited</strong> and can still be checked for a safe second-show window. Final availability is rechecked before acceptance.</div></div>
+</div>
+<div class="calendar" id="calendar"></div>
+<div class="notice hidden" id="exactNotice"></div>
+<div class="summary">
+<div><div class="small">Selected date</div><strong id="exactSelectedText">Choose an available date</strong></div>
+<button class="btn primary" disabled="" id="exactContinue" onclick="continueExact()">LET THE SHOW BEGIN!</button>
+</div>
+</section>
+<section class="card hidden" id="pageFlexible">
+<button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
+<h1 style="margin-top:18px">When are you thinking?</h1>
+<p>You do not need an exact date. Start with a rough date range or season.</p>
+<div class="choice-grid">
+<div class="choice" id="rangeCard" onclick="setFlexMode('range')">
+<h2>Rough Date Range</h2><p>I have a general window in mind.</p><strong>CHOOSE A RANGE →</strong>
+</div>
+<div class="choice" id="seasonCard" onclick="setFlexMode('season')">
+<h2>Season</h2><p>I’m flexible within a broader part of the year.</p><strong>CHOOSE A SEASON →</strong>
+</div>
+</div>
+<div class="notice hidden" id="rangePanel">
+<div class="formgrid">
+<div class="field"><label for="rangeStart">Earliest date</label><input id="rangeStart" type="date"/></div>
+<div class="field"><label for="rangeEnd">Latest date</label><input id="rangeEnd" type="date"/></div>
+</div>
+</div>
+<div class="notice hidden" id="seasonPanel">
+<div class="formgrid">
+<div class="field"><label>Season</label><select id="seasonSelect"><option>Winter</option><option>Spring</option><option>Summer</option><option>Fall</option></select></div>
+<div class="field"><label>Year</label><select id="seasonYear"></select></div>
+</div>
+</div>
+<div class="hidden" id="flexDetails">
+<div class="notice">
+<strong>Where are we playing?</strong>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Venue / organization</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="flexVenue"/></div>
+<div class="field"><label>City</label><input autocomplete="address-level2" data-location-role="city" id="flexCity"/></div>
+<div class="field"><label>State</label><input autocomplete="address-level1" data-autocomplete="state" data-location-role="state" id="flexState" value="NY"/></div>
+<div class="field"><label>ZIP</label><input autocomplete="postal-code" data-location-role="zip" id="flexZip" inputmode="numeric" maxlength="10"/></div>
+</div>
+</div>
+<div class="notice">
+<strong>How flexible are you?</strong>
+<div class="field" style="margin-top:10px"><label>Flexibility</label>
+<select id="flexLevel" onchange="toggleWeekdays()"><option value="very">Very flexible</option><option value="some">Somewhat flexible</option><option value="limited">Limited flexibility</option></select>
+</div>
+<div class="hidden" id="weekdayWrap"><div class="small" style="margin-top:10px">Preferred days</div><div class="weekdays" id="weekdayButtons"></div></div>
+</div>
+<div class="notice">
+<strong>Planning more than one show?</strong>
+<div class="small" style="margin-top:5px">Repeat, recurring, and continuous bookings may qualify for preferred pricing.</div>
+</div>
+<div class="summary">
+<div><strong>Find route-friendly options</strong></div>
+<button class="btn primary" onclick="findFlexibleDates()">FIND THE BEST DATES</button>
+</div>
+<div class="hidden" id="flexResults">
+<h2 style="margin-top:24px">Best date options</h2>
+<p class="presentation-data-note"><strong>Demo routing:</strong> the presentation uses simulated mileage. Final booking calculations use verified road routing.</p>
+<div class="recommendations" id="recommendations"></div>
+<div class="summary">
+<div><div class="small">Selected date</div><strong id="flexSelectedText">Choose an option</strong></div>
+<button class="btn primary" disabled="" id="flexContinue" onclick="continueFlexible()">LET THE SHOW BEGIN!</button>
+</div>
+</div>
+</div>
+</section>
+<section class="card hidden" id="pageDemand">
+<button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
+<h1 style="margin-top:18px">Bring PA LINE To You</h1>
+<p>Tell us where you want to see PA LINE. Your request helps us measure real demand, plan routing, approach venues, and decide where to build future shows.</p>
+<div class="notice">
+<strong>Where should we come?</strong>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>City</label><input autocomplete="address-level2" data-location-role="city" id="demandCity"/></div>
+<div class="field"><label>State</label><input autocomplete="address-level1" data-autocomplete="state" data-location-role="state" id="demandState" value="NY"/></div>
+<div class="field"><label>ZIP</label><input autocomplete="postal-code" data-location-role="zip" id="demandZip" inputmode="numeric" maxlength="10"/></div>
+<div class="field"><label>Preferred venue</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="demandVenue"/></div>
+<div class="field"><label>Alternate venue idea</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="demandVenue2"/></div>
+<div class="field"><label>How many people would likely come with you?</label>
+<select id="demandParty">
+<option value="1">Just me</option><option value="2">2 people</option><option value="4">3–4 people</option>
+<option value="8">5–8 people</option><option value="15">9–15 people</option><option value="25">15+ people</option>
+</select>
+</div>
+</div>
+</div>
+<div class="notice">
+<strong>How connected are you locally?</strong>
+<div class="choice-grid" style="margin-top:12px">
+<div class="choice" id="demandFanCard" onclick="setDemandRole('fan')">
+<h2>Fan</h2><p>I want to see PA LINE here and can help spread the word.</p><strong>SELECT →</strong>
+</div>
+<div class="choice" id="demandConnectorCard" onclick="setDemandRole('connector')">
+<h2>Local Connector</h2><p>I know venues, promoters, organizers, or people who could help.</p><strong>SELECT →</strong>
+</div>
+<div class="choice" id="demandVenueCard" onclick="setDemandRole('venue')">
+<h2>Venue / Promoter</h2><p>I may be able to help bring the show here directly.</p><strong>SELECT →</strong>
+</div>
+</div>
+<div class="field"><label>Anything useful we should know?</label><textarea id="demandNotes" placeholder="I know the owner, I help with a festival, there’s a strong local scene, etc." rows="3"></textarea></div>
+</div>
+<div class="notice">
+<strong>Keep me updated</strong>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Your name</label><input data-smart-autocomplete="contact" id="demandName"/></div>
+<div class="field"><label>Email</label><input id="demandEmail" type="email"/></div>
+<div class="field"><label>Phone</label><input id="demandPhone"/></div>
+<div class="field"><label>Preferred updates</label><select id="demandUpdates"><option>Email</option><option>Text</option><option>Email + Text</option></select></div>
+</div>
+<div class="small" style="margin-top:8px">In the live version, people who opt in could receive updates such as Demand Building, Venue Outreach, Date Being Discussed, Hold Placed, Show Confirmed, and Tickets Available.</div>
+</div>
+<div class="notice">
+<strong>Help create the demand</strong>
+<div class="small" style="margin-top:5px">These actions make the request more useful than a simple vote.</div>
+<div class="addons">
+<label class="addon"><input class="demand-action" type="checkbox" value="Join local street team"/><span>Join the local street team</span></label>
+<label class="addon"><input class="demand-action" type="checkbox" value="Share social content"/><span>Share PA LINE social content</span></label>
+<label class="addon"><input class="demand-action" type="checkbox" value="Follow and subscribe"/><span>Follow / subscribe on social platforms</span></label>
+<label class="addon"><input class="demand-action" type="checkbox" value="Invite friends"/><span>Invite friends to request this city</span></label>
+<label class="addon"><input class="demand-action" type="checkbox" value="Contact venue"/><span>Contact a venue and tell them you want PA LINE</span></label>
+<label class="addon"><input class="demand-action" type="checkbox" value="Promote locally"/><span>Help promote locally if a show happens</span></label>
+</div>
+</div>
+<div class="summary">
+<div><div class="small">Create a local demand request</div><strong id="demandSummary">Add city, contact info, and your role</strong></div>
+<button class="btn primary" disabled="" id="demandSubmit" onclick="submitDemand()">CREATE DEMAND</button>
+</div>
+</section>
+<section class="card hidden" id="pageDemandDone">
+<span class="badge">DEMAND REQUEST CREATED</span>
+<h1 style="margin-top:10px">You helped put PA LINE on the map here.</h1>
+<p>We’ll keep this city request tied to your contact information so you can be updated if it develops into a real booking opportunity.</p>
+<div class="notice" id="demandDoneCard"></div>
+<div class="notice">
+<strong>Keep building momentum</strong>
+<div class="req-list">
+<div class="req-item">Share the city request with friends who would attend.</div>
+<div class="req-item">Follow and share PA LINE content so local awareness grows.</div>
+<div class="req-item">Suggest venues, promoters, festivals, or organizers.</div>
+<div class="req-item">Join the street team and help with local promotion.</div>
+<div class="req-item">Tell venues directly that you want PA LINE in your city.</div>
+</div>
+</div>
+<div class="summary">
+<div><strong id="demandLevel">Demand level: Starting</strong><div class="small" id="demandMetrics"></div></div>
+<button class="btn primary" onclick="location.reload()">BACK TO START</button>
+</div>
+</section>
+<section class="card hidden" id="pageDetails">
+<button class="btn" onclick="backFromDetails()">← Back</button>
+<h1 style="margin-top:18px">Tell us about the show</h1>
+<p id="detailsLead"></p>
+<div class="notice hidden" id="longRangeNotice"><strong>Long-range booking</strong><div class="small" style="margin-top:5px">This date is more than 12 months away. Pricing and certain terms may be subject to reasonable renegotiation as the event approaches.</div></div>
+<div class="notice">
+<div class="formgrid">
+<div class="field"><label>Selected date</label><input id="eventDate" readonly=""/></div>
+<div class="field"><label>Venue name</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="eventVenue"/></div>
+<div class="field"><label>Event name</label><input data-smart-autocomplete="event" id="eventName" placeholder="Start typing an event or series name"/></div>
+<div class="field"><label>Street address</label><input autocomplete="street-address" data-location-role="address" id="eventAddress"/></div>
+<div class="field"><label>City</label><input autocomplete="address-level2" data-location-role="city" id="eventCity"/></div>
+<div class="field"><label>State</label><input autocomplete="address-level1" data-autocomplete="state" data-location-role="state" id="eventState" value="NY"/></div>
+<div class="field"><label>ZIP</label><input autocomplete="postal-code" data-location-role="zip" id="eventZip" inputmode="numeric" maxlength="10"/></div><div class="small location-helper">Start with the address, city, or ZIP. The other location fields will fill themselves when a match is found.</div>
+<div class="field"><label>Event type</label><select id="eventType"><option>Public performance</option><option>Festival</option><option>Private event</option><option>Corporate event</option><option>Wedding</option><option>Fundraiser</option><option>Other</option></select></div>
+<div class="field"><label>Setting</label><select id="eventSetting"><option>Indoor</option><option>Outdoor</option><option>Indoor / Outdoor</option><option>Not sure yet</option></select></div>
+<div class="field"><label>Start time</label><input id="eventStart" max="23:00" min="10:00" type="time" value="19:00"/></div>
+<div class="field"><label>End time</label><input id="eventEnd" type="time" value="22:00"/></div>
+<div class="field"><label>Estimated attendance</label><input id="eventAttendance" min="1" type="number"/></div>
+</div>
+</div>
+<div class="notice">
+<strong>Performance format</strong>
+<div class="choice-grid">
+<div class="choice" id="fmtSolo" onclick="chooseFormat('Solo')"><h2>Solo</h2><p>Trever Stribing solo.</p><strong>SELECT →</strong></div>
+<div class="choice" id="fmtDuo" onclick="chooseFormat('Duo')"><h2>Duo</h2><p>Stripped-down PA LINE duo.</p><strong>SELECT →</strong></div>
+<div class="choice" id="fmtBand" onclick="chooseFormat('Full PA LINE')"><h2>Full PA LINE</h2><p>Full-band PA LINE experience.</p><strong>SELECT →</strong></div>
+</div>
+<div class="formgrid">
+<div class="field"><label>Performance length</label><select id="performanceLength"><option>Up to 60 minutes</option><option selected="">Up to 90 minutes</option><option>Up to 2 hours</option><option>Up to 3 hours / multiple sets</option><option>Custom / discuss</option></select></div>
+<div class="field"><label>Timing notes</label><input data-autocomplete="timing" id="timingNotes"/></div>
+</div>
+</div>
+<div class="notice hidden" id="routeBox"></div><div class="notice hidden" id="limitedAvailabilityBox"></div>
+<div class="notice" id="universalShowWindow">
+<strong>PA LINE scheduling allowance</strong>
+<div class="small" style="margin-top:5px">Every show reserves 2 hours before the performance start and 2 hours after the performance end. Travel time is added outside that reserved show window when routing between engagements.</div>
+<div class="small" id="universalShowWindowTimes" style="margin-top:8px"></div>
+</div>
+<div class="notice hidden" id="exactSuggestions">
+<strong>Your date works.</strong>
+<div class="small" id="exactSuggestionText" style="margin-top:5px"></div>
+<div class="recommendations" id="exactSuggestionCards" style="margin-top:12px"></div>
+<div class="small" style="margin-top:8px">Your original date stays selected unless you choose an alternative.</div>
+</div>
+<div class="notice">
+<strong>Sound / Production</strong>
+<div class="choice-grid">
+<div class="choice" id="soundYes" onclick="setSoundProvided(true)"><h2>Sound Is Provided</h2><p>The venue/event has a suitable PA system.</p><strong>YES →</strong></div>
+<div class="choice" id="soundNo" onclick="setSoundProvided(false)"><h2>Sound Is Not Provided</h2><p>PA LINE will need to provide sound.</p><strong>NO →</strong></div>
+</div>
+<div class="hidden" id="soundPanel">
+<div class="formgrid">
+<div class="field"><label>Qualified house engineer included?</label><select id="houseEngineer" onchange="syncSoundTech()"><option value="unknown">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+<div class="field"><label>Dedicated PA LINE sound tech needed?</label><select id="soundTechNeeded"><option value="no">No</option><option value="yes">Yes</option></select></div>
+<div class="field"><label>Estimated sound tech mileage</label><input id="soundTechMiles" min="0" type="number" value="0"/></div>
+<div class="field"><label>Sound system notes</label><input data-autocomplete="sound" id="soundNotes"/></div>
+</div>
+<div class="small" id="soundGuidance" style="margin-top:8px"></div>
+</div>
+</div>
+<div class="notice">
+<span class="badge">PREMIUM PRODUCTION</span>
+<h2 style="margin-top:7px">TRUE POTENTIAL</h2>
+<p>Make it the best possible show with expanded musicians, production, preparation, and promotion.</p>
+<button class="btn" onclick="toggleTruePotential()">EXPLORE TRUE POTENTIAL</button>
+<div class="hidden" id="tpPanel">
+<div class="notice" id="tpEligibility"></div>
+<div class="notice">
+<strong>Required Production Package</strong>
+<div class="req-list">
+<div class="req-item">Dedicated sound engineer</div><div class="req-item">Stage hands</div><div class="req-item">Appropriate security</div>
+<div class="req-item">Uninterrupted soundcheck morning of or day before</div><div class="req-item">Lighting director with equipment</div>
+<div class="req-item">Peak-optimal audio equipment within room allowance</div><div class="req-item">Heavy shared content promotion with matched promotional expense</div>
+<div class="req-item">Dedicated street team</div><div class="req-item">Three paid rehearsals</div><div class="req-item">Must be booked 6+ months in advance</div>
+</div>
+</div>
+<div class="notice"><strong>Build Your Show</strong><div class="addons" id="tpAddons"></div></div>
+<div class="formgrid">
+<div class="field"><label>Production budget range</label><select id="tpBudget"><option>Not sure yet</option><option>$2,500 to $5,000</option><option>$5,000 to $10,000</option><option>$10,000+</option><option>Build the best version and quote it</option></select></div>
+<div class="field"><label>Creative notes</label><input data-autocomplete="creative" id="tpNotes"/></div>
+</div>
+<label style="display:flex;gap:8px;margin-top:12px"><input id="tpAck" onchange="updateTP()" type="checkbox"/><span><strong>I understand the required production package.</strong></span></label>
+</div>
+</div>
+<div class="notice">
+<strong>Planning more than one show?</strong>
+<div class="small" style="margin-top:5px">Repeat, recurring, and continuous bookings may qualify for preferred pricing. Add the extra dates here so PA LINE can review the whole commitment together.</div>
+<button class="btn" id="recurringToggleBtn" onclick="toggleRecurring()" style="margin-top:10px">ADD MORE DATES</button>
+<div class="hidden" id="recurringPanel" style="margin-top:12px">
+<div class="formgrid">
+<div class="field">
+<label>Booking type</label>
+<select id="recurringType" onchange="updateRecurringUI()">
+<option value="repeat">Repeat booking</option>
+<option value="series">Recurring series</option>
+<option value="continuous">Continuous / residency-style booking</option>
+</select>
+</div>
+<div class="field">
+<label>How should dates be added?</label>
+<select id="recurringFrequency" onchange="updateRecurringUI()">
+<option value="specific">Multiple specific dates</option>
+<option value="weekly">Weekly</option>
+<option value="biweekly">Every other week</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<div class="notice" id="recurringSpecificPanel" style="margin-top:12px">
+<strong>Add specific dates</strong>
+<div class="formgrid" style="margin-top:10px">
+<div class="field"><label>Additional date</label><input id="additionalDateInput" type="date"/></div>
+<div class="field"><label> </label><button class="btn" onclick="addAdditionalDate()" style="width:100%">ADD DATE</button></div>
+</div>
+<div class="req-list" id="additionalDatesList"></div>
+</div>
+<div class="notice hidden" id="recurringAutoPanel" style="margin-top:12px">
+<strong>Generate recurring dates</strong>
+<div class="formgrid" style="margin-top:10px">
+<div class="field"><label>Number of additional bookings</label><input id="recurringCount" max="24" min="1" type="number" value="3"/></div>
+<div class="field"><label> </label><button class="btn" onclick="generateRecurringDates()" style="width:100%">GENERATE DATES</button></div>
+</div>
+<div class="req-list" id="generatedDatesList"></div>
+</div>
+<div class="notice" style="margin-top:12px">
+<strong>Multi-date pricing</strong>
+<div class="small" style="margin-top:5px">Each date keeps its own seasonal rate, surrounding-gig routing, mileage, sound, and production needs. An additional base-rate travel allowance applies to that date only if its combined inbound + outbound drive time exceeds 8 hours. Once a date is confirmed, its travel component becomes a ceiling: later confirmed route improvements can reduce it but cannot increase it. A documented referral that creates the route-improving confirmed show earns the referring venue/booker Route Builder Credit equal to the realized travel savings. Any repeat-booking discount is reviewed after the full series is built so routing efficiency and commitment length can be considered together.</div>
+</div>
+</div>
+</div>
+<div class="notice" id="bookingBenefitsBox">
+<span class="badge">BOOKING BENEFITS</span>
+<h2 style="margin-top:8px">Could this booking qualify for preferred pricing?</h2>
+<div class="formgrid" style="margin-top:12px">
+<div class="field">
+<label>Is this a brand-new PA LINE venue?</label>
+<select id="introVenueStatus" onchange="updateBookingBenefits()">
+<option value="unsure">Not sure</option>
+<option value="new">Yes, first PA LINE booking here</option>
+<option value="returning">No, PA LINE has played here before</option>
+</select>
+</div>
+<div class="field">
+<label>Did another venue / booking contact recommend this booking?</label>
+<input id="referralSource" oninput="updateBookingBenefits()" placeholder="Referring name, venue, or referral code"/>
+</div>
+</div>
+<div class="small" id="bookingBenefitPreview" style="margin-top:10px"></div>
+<div class="small" style="margin-top:8px">Introductory, referral-discount, and repeat-discount values are not hard-coded yet. Route Builder Credit is different: it is based on actual travel savings created when a documented referred show later becomes confirmed and improves the surrounding route.</div>
+</div>
+<div class="summary">
+<div><div class="small">Booking setup</div><strong id="detailsSummary">Complete the required information</strong></div>
+<button class="btn primary" disabled="" id="detailsContinue" onclick="openReview()">BUILD MY BOOKING</button>
+</div>
+</section>
+<section class="card hidden" id="pageReview">
+<button class="btn" onclick="showPage('pageDetails','Event Details')">← Back</button>
+<h1 style="margin-top:18px">Here’s what we have so far</h1>
+<div class="notice" id="reviewCard"></div>
+<div class="summary"><div><strong>Next: secure account &amp; confidentiality</strong><div class="small">The contract and riders are reviewed once at the final step.</div></div><button class="btn primary" onclick="continueToSecurePricing()">CONTINUE</button></div>
+</section>
+<section class="card hidden" id="pageSecureAccess">
+<button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
+<span class="badge" style="margin-top:18px">SECURE ACCESS REQUIRED</span>
+<h1 style="margin-top:12px">Save the booking before we show private pricing.</h1>
+<p>Your account is the secure home for negotiated pricing, venue history, contracts, repeat-booking eligibility, and signed documents.</p>
+<div class="notice">
+<strong>Passwordless sign-in</strong>
+<div class="small" style="margin-top:5px">The production app should email a one-time sign-in link. That gives returning bookers an account without adding another password to remember.</div>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Your name</label><input autocomplete="name" data-smart-autocomplete="contact" id="secureAccountName" oninput="updateSecureAccess()"/></div>
+<div class="field"><label>Business email</label><input autocomplete="email" id="secureAccountEmail" oninput="updateSecureAccess()" type="email"/></div>
+<div class="field"><label>Venue / organization</label><input autocomplete="organization" data-smart-autocomplete="venue" id="secureAccountOrg" oninput="updateSecureAccess()"/></div>
+</div>
+<button class="btn primary" disabled="" id="secureLinkBtn" onclick="simulateSecureLink()" style="margin-top:12px">SEND SECURE SIGN-IN LINK</button>
+<div class="notice hidden" id="secureLinkNotice"></div>
+</div>
+<div class="small preview-note"><strong>Interactive demo:</strong> email delivery is simulated. Private pricing still follows the same verified-account gate shown here.</div>
+</section>
+<section class="card hidden" id="pageConfidentiality">
+<button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
+<span class="badge" style="margin-top:18px">CONFIDENTIAL PRICING</span>
+<h1 style="margin-top:12px">Confidential Pricing &amp; Booking Terms Agreement</h1>
+<p>PA LINE may offer different rates, discounts, guarantees, travel arrangements, production concessions, or other negotiated terms to different venues and booking partners. Those non-public terms should stay between the parties.</p>
+<div class="notice review-required-card" id="reviewCardNDA">
+<strong>Pricing confidentiality</strong><div class="small legal-active-version" id="reviewVersionNDA"></div>
+<div class="small review-rule" style="margin-top:6px">Open the confidentiality terms and scroll to the bottom before the acceptance checkboxes become available.</div>
+<button class="btn review-open-btn" id="reviewBtnNDA" onclick="openDocumentReview('nda')" type="button">OPEN &amp; REVIEW CONFIDENTIALITY TERMS</button>
+</div>
+<div class="notice">
+<div class="formgrid">
+<div class="field"><label>Authorized signer</label><input id="pricingConfName" oninput="updateConfidentialityGate()"/></div>
+<div class="field"><label>Title / role</label><input id="pricingConfTitle" oninput="updateConfidentialityGate()" placeholder="Owner, talent buyer, manager…"/></div>
+</div>
+<label class="agreement-row review-ack locked" id="reviewLabelNDAAck" style="display:flex;gap:10px;margin-top:14px">
+<input disabled="" id="pricingConfAck" onchange="updateConfidentialityGate()" type="checkbox"/>
+<span>I agree to keep PA LINE's non-public negotiated pricing and booking terms confidential as described above.</span>
+</label>
+<label class="agreement-row review-ack locked" id="reviewLabelNDAESign" style="display:flex;gap:10px;margin-top:12px">
+<input disabled="" id="pricingConfESign" onchange="updateConfidentialityGate()" type="checkbox"/>
+<span>I intend my typed name and confirmation to serve as my electronic acceptance of these confidentiality terms for this booking request.</span>
+</label>
+</div>
+<div class="summary">
+<div><div class="small">Private pricing remains locked until accepted</div><strong id="pricingConfStatus">Complete the confidentiality agreement.</strong></div>
+<button class="btn primary" disabled="" id="pricingConfContinue" onclick="acceptConfidentialityAndQuote()">UNLOCK MY QUOTE</button>
+</div>
+</section>
+<section class="card hidden" id="pageQuote">
+<button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
+<span class="badge" style="margin-top:18px">PRICING REVIEW</span>
+<h1 style="margin-top:12px">Here’s what shapes the booking.</h1>
+<p>Your private pricing rules are now unlocked, but the final dollar amount is intentionally held until the last Review &amp; Sign screen, after exclusivity and optional additions are settled.</p>
+<div class="notice" id="quoteBenefitsCard"></div>
+<div class="notice price-factor-note"><strong>Routing &amp; travel</strong><div class="small" style="margin-top:5px">The calculation uses the previous confirmed PA LINE engagement as the inbound origin and the next confirmed engagement as the outbound destination. If either side has no surrounding gig, that side routes to or from 360 Gould Avenue, Depew, NY 14043. Mileage applies to both legs. One additional base-rate travel allowance applies only when the combined inbound + outbound drive time exceeds 8 hours.</div></div>
+<div class="notice route-builder-note"><span class="badge">ROUTE PRICE PROTECTION</span><h2 style="margin-top:8px">Help build the route. Share the savings.</h2><div class="small">When a booking is confirmed, its travel component becomes a ceiling. If PA LINE later confirms another show before or after it and the new surrounding route lowers mileage or removes the over-8-hour base-rate allowance, the earlier booking gets the realized travel savings. Its travel charge can go down, never up, because of a later route change.</div><div class="small" style="margin-top:7px"><strong>ROUTE BUILDER CREDIT:</strong> if the later confirmed show came directly through that venue or booker's documented recommendation, those realized savings are specifically identified as Route Builder Credit.</div><div class="small" style="margin-top:7px">When savings are created, the affected booking contact is notified and can choose to have the savings returned, keep them as future booking credit, voluntarily reinvest some or all with PA LINE, or split the savings between those options.</div></div>
+
+<div class="notice budget-fit-panel">
+  <span class="badge">WORKING BUDGET</span>
+  <h2 style="margin-top:8px">Tell us what you are trying to stay within.</h2>
+  <div class="small">Optional, but helpful. Enter the amount available for the PA LINE performance package, including performance, routing, travel, sound, and production. Optional merch and any requested exclusivity are handled separately. If we can make the show work within your limitation and parameters, we will.</div>
+
+  <div class="budget-input-row">
+    <div class="field budget-field">
+      <label>Working performance budget</label>
+      <div class="money-input-wrap"><span>$</span><input id="bookerBudget" type="number" min="0" step="25" inputmode="decimal" placeholder="Optional" oninput="updateBudgetFit()"></div>
+    </div>
+    <button class="btn" type="button" onclick="clearBookerBudget()">SKIP BUDGET</button>
+  </div>
+
+  <div id="budgetFitResult" class="budget-result hidden"></div>
+
+  <div id="budgetOptions" class="hidden">
+    <div class="small budget-options-intro">That number is below the current configuration. We would rather adjust the show than shut the conversation down.</div>
+    <div class="choice-grid budget-option-grid">
+      <div class="choice budget-choice" id="budgetDateOption" onclick="openBudgetFlexibleDates()">
+        <span class="budget-option-kicker">DATE / SEASON</span>
+        <h2>SHIFT THE TIMELINE</h2>
+        <p>Off-peak and better-routed dates can reduce the performance and travel portions.</p>
+        <strong>FIND A BETTER-FIT DATE →</strong>
+      </div>
+      <div class="choice budget-choice hidden" id="budgetDuoOption" onclick="applyBudgetFormat('Duo')">
+        <span class="budget-option-kicker">FORMAT</span>
+        <h2>MAKE IT A DUO</h2>
+        <p id="budgetDuoText">A duo can lower the performance and production requirement.</p>
+        <strong>TRY DUO →</strong>
+      </div>
+      <div class="choice budget-choice hidden" id="budgetSoloOption" onclick="applyBudgetFormat('Solo')">
+        <span class="budget-option-kicker">FORMAT</span>
+        <h2>MAKE IT SOLO</h2>
+        <p id="budgetSoloText">A solo show is the leanest PA LINE booking format.</p>
+        <strong>TRY SOLO →</strong>
+      </div>
+      <div class="choice budget-choice budget-manual-choice" id="budgetManualOption" onclick="acceptManualBudgetReview()">
+        <span class="budget-option-kicker">KEEP THE PLAN</span>
+        <h2>WORK WITH MY LIMIT</h2>
+        <p>Keep the current request and send it to PA LINE without a priced quote so we can look for a way to make the parameters work.</p>
+        <strong>SUBMIT FOR BUDGET REVIEW →</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notice" id="quoteCard"></div>
+<div class="summary"><div><div class="small">Final price</div><strong id="quoteFinalGuidance">Shown once, immediately before submission</strong></div><button class="btn primary" id="quoteContinue" onclick="showPage('pageExclusive','Exclusivity')">CONTINUE</button></div>
+</section>
+<section class="card hidden" id="pageExclusive">
+<button class="btn" onclick="showPage('pageQuote','Quote')">← Back</button>
+<h1 style="margin-top:18px">Any exclusivity requirements?</h1>
+<div class="choice-grid">
+<div class="choice" id="exNo" onclick="setExclusive(false)"><h2>No Exclusivity</h2><p>No radius clause needed.</p><strong>SELECT →</strong></div>
+<div class="choice" id="exYes" onclick="setExclusive(true)"><h2>Request Exclusivity</h2><p>Request a geographic/time restriction.</p><strong>REVIEW OPTIONS →</strong></div>
+</div>
+<div class="notice hidden" id="exclusivePanel">
+<div class="formgrid">
+<div class="field"><label>Radius</label><select id="exRadius" onchange="calcExclusive()"><option value="25">25 miles</option><option value="50">50 miles</option><option value="75">75 miles</option><option value="100">100 miles</option><option value="150">150 miles</option></select></div>
+<div class="field"><label>Days before</label><select id="exBefore" onchange="calcExclusive()"><option>7</option><option>14</option><option>30</option><option>60</option></select></div>
+<div class="field"><label>Days after</label><select id="exAfter" onchange="calcExclusive()"><option>7</option><option>14</option><option>30</option><option>60</option></select></div>
+<div class="field"><label>Applies to</label><select id="exApplies"><option>Public performances</option><option>Ticketed public performances</option><option>All appearances</option></select></div>
+<div class="field"><label>Exceptions</label><select id="exExceptions"><option>None</option><option>Existing bookings</option><option>Private events</option><option>Festivals</option><option>Discuss with PA LINE</option></select></div>
+</div>
+<div class="small" id="exEstimate" style="margin-top:8px"></div>
+</div>
+<div class="summary"><div><strong id="exSummary">Choose an option</strong></div><button class="btn primary" disabled="" id="exContinue" onclick="showPage('pageTech','Technical Rider')">CONTINUE</button></div>
+</section>
+<section class="card hidden" id="pageTech">
+<button class="btn" onclick="showPage('pageExclusive','Exclusivity')">← Back</button>
+<h1 style="margin-top:18px">Technical Requirements</h1>
+<p>These requirements represent the production setup PA LINE needs to deliver the expected performance. If something cannot be accommodated, tell us.</p>
+<div class="notice">
+<div class="req-list"><div class="req-item"><strong>REQUIRED</strong><div class="small">Safe performance area, reliable power, agreed load-in access, and sufficient setup/soundcheck time.</div></div>
+<div class="req-item"><strong>PLEASE DISCUSS</strong><div class="small">House PA integration, festival backline, shared stages, substitutions, or unusually short changeovers.</div></div>
+<div class="req-item"><strong>REQUESTED</strong><div class="small">Appropriate stage lighting and a production contact.</div></div></div>
+</div>
+<div class="choice-grid">
+<div class="choice" id="techYes" onclick="setTech(true)"><h2>Yes</h2><p>We can accommodate the requirements.</p><strong>SELECT →</strong></div>
+<div class="choice" id="techDiscuss" onclick="setTech(false)"><h2>Needs Discussion</h2><p>Something may need an alternate arrangement.</p><strong>TELL US →</strong></div>
+</div>
+<div class="field hidden" id="techIssuePanel"><label>What needs discussion?</label><textarea id="techIssue" oninput="updateTechContinue()" rows="3"></textarea></div>
+<label style="display:flex;gap:8px;margin-top:14px"><input id="techAck" onchange="updateTechContinue()" type="checkbox"/><span><strong>I have reviewed the technical requirements.</strong></span></label>
+<div class="summary"><div><strong>Almost there</strong></div><button class="btn primary" disabled="" id="techContinue" onclick="openBonusAdditions()">CONTINUE TO BONUS ADDITIONS</button></div>
+</section>
+<section class="card hidden" id="pageBonus">
+<button class="btn" onclick="showPage('pageTech','Technical Rider')">← Back</button>
+<span class="badge" style="margin-top:18px">OPTIONAL BOOKING BONUS</span>
+<h1 style="margin-top:12px">Want to show up in PA LINE colors?</h1>
+<p>Your show is already built. Add merch now and get booking-only bundle pricing for the venue owner, booking contact, crew, or whole team. These offers are available while the booking request is being completed and do not change the performance terms.</p>
+<div class="choice-grid merch-bundle-grid">
+<div class="choice merch-choice" id="merchRep" onclick="selectMerchPackage('rep')">
+<span class="badge">OWNER / BOOKER + PARTNER</span>
+<h2>REP THE BAND!</h2>
+<div class="merch-price">$40</div>
+<p><strong>2 PA LINE shirts</strong><br/>2 stickers + 2 pins included.</p>
+<div class="small">$50 shirt value before the bonus swag. Save $10 on the shirts.</div>
+<strong>ADD IT →</strong>
+</div>
+<div class="choice merch-choice" id="merchCrew" onclick="selectMerchPackage('crew')">
+<span class="badge">CREW FAVORITE</span>
+<h2>GEAR UP THE CREW</h2>
+<div class="merch-price">$75</div>
+<p><strong>4 PA LINE shirts</strong><br/>4 stickers + 4 pins included.</p>
+<div class="small">$100 shirt value. Save $25 before counting the bonus swag.</div>
+<strong>GEAR THEM UP →</strong>
+</div>
+<div class="choice merch-choice" id="merchDream" onclick="selectMerchPackage('dream')">
+<span class="badge">6+ PEOPLE</span>
+<h2>DREAM TEAM SWAG</h2>
+<div class="merch-price">$20 <span>/ shirt</span></div>
+<p><strong>Outfit the whole team.</strong><br/>Every shirt comes with a sticker + pin pack.<br/><strong>10+ shirts unlocks 1 extra shirt FREE for the primary booker / venue contact.</strong></p>
+<div class="small">Minimum 6 shirts. Regular shirt price is $25. Booking-only price saves $5 per shirt.</div>
+<strong>SUPPLY THE TEAM →</strong>
+</div>
+</div>
+<div class="notice merch-booking-only-note">
+<strong>Why add it now?</strong>
+<div class="small" style="margin-top:5px">These bundle prices are tied to the booking request. Add them before submission and PA LINE can have the gear prepared for the show. Standard merch pricing applies later.</div>
+</div>
+<div class="notice hidden" id="merchDetailsPanel">
+<div id="merchSelectedSummary"></div>
+<div class="formgrid" style="margin-top:12px">
+<div class="field hidden" id="dreamQtyField">
+<label>How many people are on the dream team?</label>
+<input id="dreamTeamQty" inputmode="numeric" max="50" min="6" oninput="updateMerchPackage()" type="number" value="6"/>
+</div>
+<div class="field">
+<label>Shirt sizes</label>
+<input id="merchSizes" oninput="updateMerchPackage()" placeholder="Example: 1 M, 2 L, 1 XL"/>
+</div>
+<div class="field">
+<label>Who is the gear for?</label>
+<select id="merchFor" onchange="updateMerchPackage()">
+<option>Venue owner / booking contact</option>
+<option>Venue owner / booker + partner</option>
+<option>Production crew</option>
+<option>Bar / venue team</option>
+<option>Event staff</option>
+<option>Other</option>
+</select>
+</div>
+</div>
+<div class="small" style="margin-top:8px">Final styles/colors are based on available PA LINE merch inventory. If a requested size is unavailable, PA LINE will confirm an alternative before fulfillment.</div>
+</div>
+<div class="summary">
+<div>
+<div class="small">Optional merch add-on</div>
+<strong id="merchTotalDisplay">No merch selected</strong>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+<button class="btn" onclick="skipMerchAndContinue()">NO THANKS</button>
+<button class="btn primary" disabled="" id="merchContinue" onclick="continueWithMerch()">ADD SWAG &amp; CONTINUE</button>
+</div>
+</div>
+</section>
+<section class="card hidden" id="pageCheckout">
+<button class="btn" onclick="showPage('pageBonus','Bonus Additions')">← Back</button>
+<span class="badge" style="margin-top:18px">CONTACT &amp; FINAL CHECK</span>
+<h1 style="margin-top:12px">Almost there.</h1>
+<p>Confirm the booking summary and contact information below. The contract, stage plot, riders, electronic signature, and final price all appear once on the next page.</p>
+<div class="notice" id="checkoutCard"></div>
+<div class="notice hidden" id="checkoutMerchCard"></div>
+<div class="notice">
+<strong>Contact information</strong>
+<div class="formgrid" style="margin-top:12px">
+<div class="field"><label>Your name</label><input data-smart-autocomplete="contact" id="buyerName" oninput="updateSubmit()"/></div>
+<div class="field"><label>Email</label><input id="buyerEmail" oninput="updateSubmit()" type="email"/></div>
+<div class="field"><label>Phone</label><input id="buyerPhone"/></div>
+<div class="field"><label>Organization / venue</label><input data-autocomplete="venue" data-smart-autocomplete="venue" id="buyerOrg"/></div>
+<div class="field"><label>Best way to reach you</label><select id="buyerPref"><option>Email</option><option>Phone</option><option>Text</option></select></div>
+<div class="field"><label>Anything else?</label><input id="buyerNotes"/></div>
+</div>
+</div>
+<div class="notice">
+<strong>Next step</strong>
+<div class="small" style="margin-top:5px">One final page contains the Performance Agreement, Stage Plot, Technical Rider, Personal / Hospitality Rider, electronic signature, final acknowledgment, and final booking-request price.</div>
+</div>
+<div class="summary">
+<div>
+<div class="small">Final required step</div>
+<strong>Review &amp; Sign</strong>
+</div>
+<button class="btn primary" disabled="" id="submitBtn" onclick="prepareSharedDocumentGate('booking')">CONTINUE TO REVIEW &amp; SIGN</button>
+</div>
+</section>
+<section class="card hidden" id="pageDocumentGate">
+<button class="btn" onclick="backFromDocumentGate()">← Back</button>
+<span class="badge">FINAL REQUIRED STEP</span>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px"><span class="brand-icon" style="width:54px;height:54px"><span aria-hidden="true" class="rose-art"></span></span><h1 style="margin:0">Review &amp; Sign</h1></div>
+<p>This is the single document and signature checkpoint before submission. Your booking documents are reviewed and acknowledged here once.</p>
+<div class="notice hidden" id="finalConfidentialityStatus">
+<strong>Confidential Pricing Agreement</strong>
+<div class="small" style="margin-top:5px">Accepted earlier in the secure-pricing step. It is not duplicated here.</div>
+</div>
+<div class="req-list">
+<div class="req-item review-required-card" id="reviewCardAgreement">
+<strong>Performance Agreement</strong><div class="small legal-active-version" id="reviewVersionAgreement"></div>
+<div class="small review-rule">Open the agreement and scroll to the bottom to unlock the acknowledgment.</div>
+<button class="btn review-open-btn" id="reviewBtnAgreement" onclick="openDocumentReview('agreement')" type="button">OPEN &amp; REVIEW AGREEMENT</button>
+<label class="review-ack locked" id="reviewLabelAgreement"><input disabled="" id="sAck1" onchange="updateSharedGate()" type="checkbox"/> <span>I have read and agree to the Performance Agreement as applicable to this request.</span></label>
+</div>
+<div class="req-item review-required-card" id="reviewCardStage">
+<strong>Stage Plot</strong><div class="small legal-active-version" id="reviewVersionStage"></div>
+<div class="small review-rule">Open the stage plot and scroll to the bottom to unlock the acknowledgment.</div>
+<button class="btn review-open-btn" id="reviewBtnStage" onclick="openDocumentReview('stage')" type="button">OPEN &amp; REVIEW STAGE PLOT</button>
+<label class="review-ack locked" id="reviewLabelStage"><input disabled="" id="sAck2" onchange="updateSharedGate()" type="checkbox"/> <span>I have reviewed the stage plot and will disclose limitations.</span></label>
+</div>
+<div class="req-item review-required-card" id="reviewCardTech">
+<strong>Technical Rider</strong><div class="small legal-active-version" id="reviewVersionTech"></div>
+<div class="small review-rule">Open the rider and scroll to the bottom to unlock the acknowledgment.</div>
+<button class="btn review-open-btn" id="reviewBtnTech" onclick="openDocumentReview('tech')" type="button">OPEN &amp; REVIEW TECHNICAL RIDER</button>
+<label class="review-ack locked" id="reviewLabelTech"><input disabled="" id="sAck3" onchange="updateSharedGate()" type="checkbox"/> <span>I have reviewed the Technical Rider.</span></label>
+</div>
+<div class="req-item review-required-card" id="reviewCardHospitality">
+<strong>Personal / Hospitality Rider</strong><div class="small legal-active-version" id="reviewVersionHospitality"></div>
+<div class="small review-rule">Open the rider and scroll to the bottom to unlock the acknowledgment.</div>
+<button class="btn review-open-btn" id="reviewBtnHospitality" onclick="openDocumentReview('hospitality')" type="button">OPEN &amp; REVIEW PERSONAL RIDER</button>
+<label class="review-ack locked" id="reviewLabelHospitality"><input disabled="" id="sAck4" onchange="updateSharedGate()" type="checkbox"/> <span>I have reviewed the Personal / Hospitality Rider.</span></label>
+</div>
+</div>
+<div class="notice">
+<strong>Electronic Signature</strong>
+<div class="formgrid" style="margin-top:10px">
+<div class="field"><label>Full legal name</label><input id="sName" oninput="updateSharedGate()"/></div>
+<div class="field"><label>Title / role</label><input id="sTitle" oninput="updateSharedGate()"/></div>
+<div class="field"><label>Signature</label><input id="sSig" oninput="updateSharedGate()" placeholder="Type full legal name"/></div>
+<div class="field"><label>Date</label><input id="sDate" onchange="updateSharedGate()" type="date"/></div>
+</div>
+<label style="display:flex;gap:8px;margin-top:12px"><input id="sConsent" onchange="updateSharedGate()" type="checkbox"/> I intend my typed name to serve as my electronic signature.</label>
+</div>
+<label style="display:flex;gap:8px;margin-top:14px"><input id="sFinal" onchange="updateSharedGate()" type="checkbox"/> I understand this remains pending PA LINE acceptance and any required payment/contract conditions.</label>
+<div class="small" id="sStatus" style="margin-top:10px">Complete all acknowledgments and signature fields.</div>
+<div class="final-price-confirmation hidden" id="finalPriceConfirmation">
+<span class="badge">FINAL PRICE CONFIRMATION</span>
+<div class="final-price-head">
+<div>
+<div class="small" id="finalPriceLabel">Total attached to this booking request</div>
+<strong id="finalRequestTotal">$0</strong>
+</div>
+<div class="small" id="finalRequestDateCount"></div>
+</div>
+<div class="final-price-breakdown" id="finalPriceBreakdown"></div>
+<div class="small" style="margin-top:10px">Review this amount before submitting. PA LINE still must accept the booking before it becomes confirmed.</div>
+</div>
+<div class="summary final-submit-bar"><div><strong id="sLabel">Submit request</strong><div class="small" id="sFinalPriceEcho"></div></div><button class="btn primary" disabled="" id="sSubmit" onclick="submitShared()">SUBMIT REQUEST</button></div>
+</section>
+
+<section class="card hidden" id="pageLegalAdmin">
+  <button class="btn" onclick="closeLegalAdmin()">← Back</button>
+  <span class="badge" style="margin-top:18px">ADMIN DEMO · LEGAL DOCUMENTS</span>
+  <h1 style="margin-top:12px">Legal Document Manager</h1>
+  <p>Update the active agreement, NDA, stage plot, and riders without changing the booking-flow code. Each change gets its own version label.</p>
+
+  <div class="notice admin-security-note">
+    <strong>Production rule</strong>
+    <div class="small" style="margin-top:5px">This demo stores active document overrides in this browser. The live system should restrict this page to authorized PA LINE administrators, store immutable document versions server-side, and preserve the exact version attached to every signed booking.</div>
+  </div>
+
+  <div class="notice">
+    <div class="formgrid">
+      <div class="field">
+        <label>Document</label>
+        <select id="legalAdminDoc" onchange="loadLegalAdminDocument()">
+          <option value="agreement">Performance Agreement</option>
+          <option value="nda">Confidential Pricing Agreement</option>
+          <option value="stage">Stage Plot</option>
+          <option value="tech">Technical Rider</option>
+          <option value="hospitality">Personal / Hospitality Rider</option>
+        </select>
+      </div>
+      <div class="field"><label>Version label</label><input id="legalAdminVersion" placeholder="Example: 2026.09-v2"></div>
+      <div class="field"><label>Effective date</label><input id="legalAdminEffective" type="date"></div>
+      <div class="field"><label>Display title</label><input id="legalAdminTitle"></div>
+    </div>
+
+    <div class="field legal-editor-field">
+      <label>Document content</label>
+      <textarea id="legalAdminContent" rows="18" spellcheck="false"></textarea>
+    </div>
+
+    <div class="legal-admin-actions">
+      <label class="btn legal-import-btn">IMPORT HTML / TXT<input id="legalAdminFile" type="file" accept=".html,.htm,.txt,.md" onchange="importLegalAdminFile(event)" hidden></label>
+      <button class="btn primary" type="button" onclick="saveLegalAdminDocument()">SAVE AS ACTIVE VERSION</button>
+      <button class="btn" type="button" onclick="resetLegalAdminDocument()">RESET TO BUNDLED VERSION</button>
+      <button class="btn" type="button" onclick="exportLegalDocumentPackage()">EXPORT ACTIVE DOCS JSON</button>
+    </div>
+    <div id="legalAdminStatus" class="small legal-admin-status"></div>
+  </div>
+
+  <div class="notice">
+    <strong>Active versions</strong>
+    <div id="legalVersionTable" class="legal-version-table"></div>
+  </div>
+</section>
+
+<section class="card hidden" id="pageDone">
+<span class="badge">REQUEST RECEIVED</span>
+<h1 style="margin-top:10px">You’re on the calendar radar.</h1>
+<p>Your booking request has been assembled and is ready for PA LINE review.</p>
+<div class="notice" id="doneCard"></div>
+<div class="summary"><div><strong>Status: Pending review</strong><div class="small">No payment has been processed and the date is not contractually confirmed.</div></div><button class="btn primary" onclick="location.reload()">START A NEW BOOKING</button></div>
+</section>
+</div>
+<template id="reviewDocAgreement"><h2>PERFORMANCE AGREEMENT</h2><p>PA LINE Music, LLC</p><p>This Performance Agreement (the "Agreement") is entered into as of {{EXECUTION_DATE}} by and between {{PURCHASER_LEGAL_NAME}} ("Purchaser") and PA LINE Music, LLC, a New York limited liability company ("Performer"). Purchaser and Performer may each be called a "Party" and together the "Parties".</p><h3>1. Contact Information</h3><h3>2. Engagement and Performing Personnel</h3><p>Purchaser engages Performer to provide the live musical performance described in this Agreement and the attached Booking Summary, Technical Rider, and any written addenda accepted by both Parties. PA LINE's current performing personnel include Trever Stribing, Griffin Brady, Andrew Moore, and Michael Bloom. Performer may use substitutes, additional musicians, crew, or a different authorized configuration of PA LINE when reasonably necessary, provided the contracted performance format and overall professional quality are maintained. Individual musicians are not parties to this Agreement solely because they perform at the Event.</p><h3>3. Event and Venue</h3><h3>4. Compensation and Payment</h3><p>The total compensation is the amount shown in the Booking Summary. Unless expressly stated otherwise, the total may include the performance fee, seasonal adjustment, routed mileage, any applicable extended-travel allowance, sound/production fees, dedicated sound technician fees and mileage, approved exclusivity charges, TRUE POTENTIAL production charges, taxes, and other agreed expenses.</p><p>A date is not fully confirmed until this Agreement is signed and any required deposit or retainer is received. Unless otherwise stated in the Booking Summary, all amounts are in U.S. dollars. Purchaser is responsible for any agreed payment-processing, wire, or returned-payment charges.</p><p>Budget Guidance and Negotiated Offer. Purchaser may provide a working performance budget as confidential planning information. A stated budget is not itself an acceptance, guarantee, or binding fee. Where the stated budget can support the requested date, format, routing, sound, and production scope, Performer may issue a negotiated offer within that budget without disclosing internal pricing thresholds, minimums, or alternative lower configurations that were not offered. If the stated budget does not support the requested configuration, Performer may propose a different date or season, smaller performance format, routing adjustment, production change, or other alternative. Purchaser may also submit the requested configuration for manual budget review without a fixed priced quote. In that case, no binding compensation amount exists until Performer issues a written Booking Summary or addendum containing the offered price and Purchaser accepts it.</p><h3>5. Travel and Routing</h3><p>Travel charges are calculated using the routing method stated in the Booking Summary. For routing purposes, travel associated with this Event includes the leg from the prior confirmed PA LINE engagement, or 360 Gould Avenue, Depew, NY 14043 if there is no prior engagement, to this Event, plus the leg from this Event to the next confirmed PA LINE engagement, or 360 Gould Avenue, Depew, NY 14043 if there is no next engagement. Mileage applies to both legs. Inbound and outbound drive time are combined for this Event. If the combined drive time exceeds eight (8) hours, one additional base-rate travel allowance applies as shown in the Booking Summary. If the combined drive time is eight (8) hours or less, no additional base-rate travel allowance applies. Lodging, tolls, parking, airfare, rental vehicles, ferries, border fees, and similar expenses are additional when expressly stated or reasonably required by the agreed itinerary.</p><p>Route Recalculation, Route Savings, and Route Builder Credit. The travel amount associated with a confirmed Event establishes the maximum travel charge for that Event based on the confirmed surrounding PA LINE engagements known when the Event is confirmed. If PA LINE later confirms another engagement before or after this Event and the revised surrounding route reduces the routed mileage charge or eliminates the additional base-rate travel allowance, PA LINE will recalculate this Event's travel component. The travel component for this Event may decrease but will not increase solely because PA LINE later adds or changes surrounding confirmed engagements. Savings are calculated incrementally so the same route savings are not credited twice. Prior route savings are not clawed back solely because a later routing change would otherwise increase travel. If the later confirmed engagement was directly obtained through Purchaser's documented recommendation or referral, the newly realized travel savings will be identified as a ROUTE BUILDER CREDIT. A lead, inquiry, hold, unconfirmed request, cancelled engagement, or routing change that does not reduce the currently protected travel charge does not create new route savings.</p><p>Route Savings Election. When a route recalculation creates new savings for Purchaser's Event, Purchaser may electronically elect to use all or part of the savings to reduce an unpaid balance or receive funds back, retain all or part as a credit toward a future PA LINE booking, voluntarily permit PA LINE to retain all or part for touring, routing, marketing, or promotional activity, or divide the savings among those choices. If Purchaser makes no election, the default is to apply the savings against any unpaid Event balance and treat any remaining amount as due back to Purchaser. Any amount Purchaser voluntarily permits PA LINE Music, LLC to retain is a voluntary business/touring reinvestment and is not represented as a charitable or tax-deductible contribution. The election affects only realized route savings and does not reduce the performance fee, sound or production charges, exclusivity charges, merchandise, taxes, or other unrelated amounts. The Booking Summary or electronic savings receipt may record the allocation and settlement method.</p><h3>6. Sound, Production, Technical Rider, and Hospitality</h3><p>Purchaser must accurately disclose whether suitable sound reinforcement and a qualified house engineer are provided. If Performer provides sound or a dedicated sound technician is required, the applicable charges stated in the Booking Summary apply. The Technical Rider is incorporated into this Agreement. Purchaser will promptly identify any item it cannot accommodate. Performer may approve reasonable substitutions in writing. Hospitality requests, if provided separately, are requests unless specifically identified as mandatory in the Booking Summary or Technical Rider.</p><h3>7. TRUE POTENTIAL / Enhanced Production</h3><p>If TRUE POTENTIAL is selected, it is a custom production package and is not included in an ordinary performance fee. Unless modified in a signed addendum, TRUE POTENTIAL requires at least six (6) months advance booking, a dedicated sound engineer, stage hands, appropriate security, an uninterrupted soundcheck the morning of or day before the Event, a dedicated lighting director with appropriate equipment, peak-optimal audio equipment within the room's practical allowance, a shared promotional campaign with the agreed expense contribution, a dedicated street team, and three (3) paid rehearsals. Additional musicians, including horns, strings, vocals, keys, percussion, guest artists, or other creative personnel, are subject to availability and written quote.</p><p>TRUE POTENTIAL selected: {{TRUE_POTENTIAL_STATUS}}</p><p>Creative / production scope: {{TRUE_POTENTIAL_SCOPE}}</p><h3>8. Purchaser Responsibilities</h3><p>Provide legal access to the Venue, safe load-in/load-out access, suitable power, and a safe performance area.</p><p>Obtain and maintain all permits, licenses, approvals, insurance, and permissions required for the Event and Venue.</p><p>Provide reasonable security and crowd control appropriate to the Event, and keep unauthorized persons away from the stage, backstage, instruments, and production equipment.</p><p>Provide a designated on-site decision-maker with authority to resolve Event and production issues.</p><p>Comply with applicable fire, occupancy, noise, alcohol, accessibility, labor, and safety requirements.</p><p>For outdoor Events, provide a safe, weather-protected stage and electrical system. Performer may stop, delay, or cancel a performance when weather, stage, electrical, crowd, or other conditions create a reasonable safety risk.</p><h3>9. Cancellation, Postponement, and Liquidated Damages</h3><p>Because Performer may decline other work, reserve personnel, arrange travel, rehearse, advertise, and incur nonrecoverable costs in reliance on this booking, Purchaser cancellation may cause losses that are difficult to calculate precisely. The Parties therefore agree that the cancellation amounts stated below are intended as a reasonable estimate of likely loss and not as a penalty. Any deposit or retainer already paid will be credited toward the applicable cancellation amount.</p><p>If a cancellation amount is left blank, Purchaser will be responsible only for amounts otherwise due under this Agreement and Performer's documented, nonrecoverable, Event-specific expenses to the extent permitted by law. A postponement is a cancellation unless Performer agrees in writing to transfer some or all amounts paid to a replacement date.</p><p>Performer may cancel for material Purchaser breach, unsafe conditions, nonpayment, or failure to satisfy a material pre-performance obligation. Performer may also cancel because of legitimate illness, accident, emergency, or other inability to perform. Except for Purchaser breach or a Force Majeure event, if Performer cancels and no mutually acceptable replacement performance is arranged, Performer will refund amounts paid for services not performed. That refund is Purchaser's exclusive monetary remedy except where applicable law requires otherwise.</p><h3>10. Force Majeure</h3><p>Neither Party is liable for failure or delay caused by circumstances beyond that Party's reasonable control, including severe weather, natural disaster, fire, epidemic or public-health emergency, war, terrorism, civil disorder, government order, labor disruption, transportation interruption, border closure, utility failure, or venue closure not caused by the affected Party. The affected Party must give prompt notice when reasonably possible. The Parties will first attempt in good faith to reschedule. Nonrecoverable third-party expenses already incurred for the Event remain payable only if expressly allocated to Purchaser in the Booking Summary or approved in writing.</p><h3>11. Recording, Streaming, Publicity, and Intellectual Property</h3><p>Incidental audience photography and short personal-use clips are permitted unless Performer or Venue announces otherwise. Professional audio recording, multitrack recording, full-set video recording, livestreaming, broadcast, commercial exploitation, or use of Performer's name, logos, likeness, recordings, or performance in advertising beyond ordinary Event promotion requires Performer's prior written approval. Purchaser may use Performer-approved promotional materials solely to promote the Event. Nothing in this Agreement transfers ownership of songs, recordings, trademarks, publicity rights, or other intellectual property.</p><h3>12. Merchandising</h3><p>Performer may sell merchandise at the Venue unless the Booking Summary states otherwise. Any Venue commission, staffing requirement, sales tax handling, or point-of-sale restriction must be disclosed and agreed in writing before the Event. Merchandise terms: {{MERCH_TERMS}}.</p><h3>13. Exclusivity / Radius Clause</h3><p>No geographic or time-based exclusivity applies unless specifically stated below or in the Booking Summary. Any exclusivity restriction must identify its radius, period before and after the Event, covered types of appearances, and agreed exceptions. An exclusivity charge may apply because the restriction can prevent Performer from accepting other work.</p><h3>14. Damage, Safety, and Indemnification</h3><p>Each Party is responsible for its own negligent, reckless, or intentional acts or omissions and those of the persons it controls. Purchaser is responsible for damage to Performer's instruments, equipment, vehicles, or property caused by Purchaser, Venue staff, contractors, or Event attendees, except to the extent caused by Performer. To the fullest extent permitted by law, each Party will defend, indemnify, and hold the other harmless from third-party claims to the extent arising from the indemnifying Party's negligence, willful misconduct, breach of this Agreement, or violation of law. This section does not require either Party to indemnify the other for the other Party's own negligence or willful misconduct.</p><h3>15. Independent Contractor</h3><p>Performer is an independent business and controls the artistic content, personnel, methods, and manner of the Performance, subject to the agreed Event schedule, Venue rules, law, and safety requirements. Nothing in this Agreement creates an employment, partnership, joint venture, agency, or fiduciary relationship between Purchaser and Performer. This section describes the Parties' intended business relationship and does not override any classification required by applicable law.</p><h3>16. Taxes and Withholding</h3><p>Each Party is responsible for its own taxes and legal reporting obligations. Purchaser may make withholding required by law only if Purchaser provides Performer with documentation of the legal basis and any required tax forms or receipts.</p><h3>17. Notices and Electronic Communications</h3><p>Notices may be delivered by personal delivery, nationally recognized courier, or email to the addresses stated in this Agreement. Email notice is effective when sent, provided the sender does not receive a delivery-failure notice. The Parties consent to electronic records and electronic signatures. Electronic signatures and counterparts may be used to execute this Agreement to the extent permitted by law.</p><h3>18. Governing Law; Venue; Disputes</h3><p>New York law governs this Agreement without regard to conflict-of-law rules. Unless applicable law requires otherwise, any court action arising from this Agreement will be brought in a state or federal court with jurisdiction in Erie County, New York. Before filing suit, the Parties will make a good-faith effort to resolve the dispute directly for at least ten (10) business days after written notice of the dispute, unless emergency injunctive relief is reasonably necessary.</p><h3>19. General Terms</h3><p>Entire Agreement. This Agreement, the Booking Summary, Technical Rider, and signed addenda are the entire agreement between the Parties about the Event.</p><p>Order of Precedence. If documents conflict, a signed addendum controls, then the Booking Summary, then this Agreement, then the Technical Rider, unless a document expressly states otherwise.</p><p>Changes. Any material change must be in a writing accepted by authorized representatives of both Parties. Email or electronic approval may satisfy this requirement when it clearly identifies the change.</p><p>Assignment. Purchaser may not assign this Agreement without Performer's written consent. Performer may assign receivables or delegate performance-related duties to qualified personnel while remaining responsible for the contracted services.</p><p>Severability. If a provision is unenforceable, it will be enforced to the maximum lawful extent and the remaining provisions will remain effective.</p><p>Waiver. Failure to enforce a provision once is not a waiver of future enforcement.</p><p>No Third-Party Beneficiaries. This Agreement is for the Parties only unless it expressly states otherwise.</p><p>Authority. Each signer represents that they have authority to bind the Party for whom they sign.</p><h3>20. Booking Summary / Special Terms</h3><h3>21. Signatures</h3><p>By signing, each Party acknowledges that it has read and understands this Agreement, has had an opportunity to ask questions or seek independent legal advice, and agrees to be bound by its terms.</p><p>Template note: This form is designed for PA LINE Music, LLC bookings and should be reviewed by qualified New York counsel before first production use, especially for consumer/private events, international engagements, unusually large guarantees, insurance requirements, or negotiated exclusivity.</p><table><tr><td>PERFORMER</td><td>PURCHASER</td></tr><tr><td>PA LINE Music, LLC
+Business Manager: Trever Stribing
+360 Gould Ave Apt UF
+Depew, NY 14043
+Phone: 716-709-1559
+Email: info@palineofficial.com</td><td>{{PURCHASER_LEGAL_NAME}}
+{{PURCHASER_CONTACT_NAME}}
+{{PURCHASER_ADDRESS}}
+{{PURCHASER_PHONE}}
+{{PURCHASER_EMAIL}}</td></tr></table><table><tr><td>Event / Venue Name</td><td>{{VENUE_NAME}}</td></tr><tr><td>Venue Address</td><td>{{VENUE_ADDRESS}}</td></tr><tr><td>Event Date</td><td>{{EVENT_DATE}}</td></tr><tr><td>Load-In Time</td><td>{{LOAD_IN_TIME}}</td></tr><tr><td>Soundcheck Time</td><td>{{SOUNDCHECK_TIME}}</td></tr><tr><td>Performance Start</td><td>{{START_TIME}}</td></tr><tr><td>Performance End</td><td>{{END_TIME}}</td></tr><tr><td>Performance Format</td><td>{{PERFORMANCE_FORMAT}}</td></tr><tr><td>Performance Length / Sets</td><td>{{PERFORMANCE_LENGTH}}</td></tr><tr><td>Estimated Attendance</td><td>{{ATTENDANCE}}</td></tr><tr><td>Indoor / Outdoor</td><td>{{EVENT_SETTING}}</td></tr></table><table><tr><td>Performance / Booking Total</td><td>{{BOOKING_TOTAL}}</td></tr><tr><td>Deposit / Retainer Due</td><td>{{DEPOSIT_AMOUNT}}</td></tr><tr><td>Deposit Due Date</td><td>{{DEPOSIT_DUE_DATE}}</td></tr><tr><td>Remaining Balance</td><td>{{BALANCE_AMOUNT}}</td></tr><tr><td>Balance Due</td><td>{{BALANCE_DUE_TIME}}</td></tr><tr><td>Payment Method</td><td>{{PAYMENT_METHOD}}</td></tr></table><table><tr><td>Sound Provided by Venue / Event</td><td>{{SOUND_PROVIDED}}</td></tr><tr><td>Qualified House Engineer Included</td><td>{{HOUSE_ENGINEER}}</td></tr><tr><td>PA LINE Sound Tech Required</td><td>{{SOUND_TECH_REQUIRED}}</td></tr><tr><td>Technical Exceptions / Approved Substitutions</td><td>{{TECH_EXCEPTIONS}}</td></tr></table><table><tr><td>Purchaser Cancels</td><td>Amount Due</td></tr><tr><td>More than 60 days before Event</td><td>{{CANCEL_OVER_60}}</td></tr><tr><td>31-60 days before Event</td><td>{{CANCEL_31_60}}</td></tr><tr><td>15-30 days before Event</td><td>{{CANCEL_15_30}}</td></tr><tr><td>8-14 days before Event</td><td>{{CANCEL_8_14}}</td></tr><tr><td>7 days or less / day of Event</td><td>{{CANCEL_7_OR_LESS}}</td></tr></table><table><tr><td>Exclusivity Required</td><td>{{EXCLUSIVITY_REQUIRED}}</td></tr><tr><td>Radius</td><td>{{EXCLUSIVITY_RADIUS}}</td></tr><tr><td>Days Before</td><td>{{EXCLUSIVITY_DAYS_BEFORE}}</td></tr><tr><td>Days After</td><td>{{EXCLUSIVITY_DAYS_AFTER}}</td></tr><tr><td>Covered Appearances</td><td>{{EXCLUSIVITY_SCOPE}}</td></tr><tr><td>Exceptions</td><td>{{EXCLUSIVITY_EXCEPTIONS}}</td></tr><tr><td>Exclusivity Fee</td><td>{{EXCLUSIVITY_FEE}}</td></tr></table><table><tr><td>Travel / Routing Charge</td><td>{{TRAVEL_CHARGE}}</td></tr><tr><td>Sound / Production Charge</td><td>{{SOUND_CHARGE}}</td></tr><tr><td>Sound Tech Charge</td><td>{{SOUND_TECH_CHARGE}}</td></tr><tr><td>TRUE POTENTIAL Charge</td><td>{{TRUE_POTENTIAL_CHARGE}}</td></tr><tr><td>Other Approved Charges / Credits</td><td>{{OTHER_CHARGES_CREDITS}}</td></tr><tr><td>Special Terms</td><td>{{SPECIAL_TERMS}}</td></tr></table><table><tr><td>PA LINE MUSIC, LLC</td><td>PURCHASER</td></tr><tr><td>Authorized Representative: Trever Stribing</td><td>Authorized Representative: {{PURCHASER_SIGNER_NAME}}</td></tr><tr><td>Signature: {{PERFORMER_SIGNATURE}}</td><td>Signature: {{PURCHASER_SIGNATURE}}</td></tr><tr><td>Date: {{PERFORMER_SIGN_DATE}}</td><td>Date: {{PURCHASER_SIGN_DATE}}</td></tr><tr><td>Title: Business Manager / Authorized Representative</td><td>Title: {{PURCHASER_SIGNER_TITLE}}</td></tr></table></template>
+<template id="reviewDocStage"><main><h1>PA LINE 2026 Stage Plot / Planning Baseline</h1><p>This stage plot reflects the current typical four-musician PA LINE configuration. Final channel count and event-specific substitutions are advanced per engagement.</p><div><table><tr><th>Position</th><th>Performer / Source</th><th>Typical Inputs</th><th>Monitoring</th></tr><tr><td>Center</td><td>Trever Stribing<br>Lead vocal, acoustic guitar, foot percussion</br></td><td>Lead vocal processor XLR; acoustic DI; kick/foot percussion as advanced; tambourine/percussion as advanced</td><td>Dedicated mix; clear lead vocal and acoustic priority</td></tr><tr><td>Stage Left</td><td>Andrew Moore<br>Bass, vocal</br></td><td>Bass DI; vocal mic</td><td>Dedicated mix / IEM feed as advanced</td></tr><tr><td>Stage Right</td><td>Griffin Brady<br>Hand percussion, vocal</br></td><td>Vocal; stereo percussion overheads; low percussion / concert bass drum mic as advanced</td><td>Dedicated mix</td></tr><tr><td>Drums</td><td>Michael Bloom<br>Drum kit</br></td><td>Kick, snare, toms, overheads/hat as venue package permits</td><td>Dedicated mix</td></tr></table></div><div><h2>Stage &amp; Monitor Baseline</h2><ul><li>Preferred minimum full-band stage: 20 ft wide × 12 ft deep.</li><li>4 independent monitor mixes minimum for full band.</li><li>Festival / larger-stage applications should provide 4–5 independent mixes depending on final crew/backline plan.</li><li>Venue-quality microphones, stands, cabling, and appropriate active/passive DIs.</li><li>PA LINE may supply select artist-specific equipment.</li></ul></div><p>An event-specific stage plot and final input list, when issued, supersede this planning baseline.</p></main></template>
+<template id="reviewDocTech"><main><h1>PA LINE 2026 Technical Rider</h1><p>This technical rider is part of the performance agreement. Reasonable professional substitutions are welcome when approved in advance.</p><div><h2>Production Overview</h2><ul><li>Professional, properly maintained PA appropriate for the room/capacity and capable of clean full-range coverage at performance level.</li><li>Qualified FOH engineer familiar with live music. Dedicated monitor engineer preferred for larger stages/festivals.</li><li>Professional stage lighting appropriate for the performance environment, with a qualified operator when the event provides lighting.</li><li>Clean, grounded, code-compliant electrical service.</li><li>All house equipment fully functional at load-in, with known limitations disclosed in advance.</li></ul></div><div><h2>Load-In, Soundcheck &amp; Changeover</h2><ul><li>Clearly identified load-in route, nearby secure parking, and reasonable access for instruments, percussion, merch, and production gear.</li><li>Sufficient setup and line-check/soundcheck time based on the event schedule.</li><li>Festival changeovers require appropriate pre-patching and staffing.</li><li>Backline sharing, house drum kit use, percussion substitutions, fly-date packages, or condensed changeovers must be advanced and approved.</li><li>At least two capable stagehands are requested for festival/large-stage load-in and changeover unless otherwise advanced.</li></ul></div><div><h2>Safety</h2><p>PA LINE may pause or decline performance when unsafe stage, electrical, weather, crowd-control, or working conditions create a reasonable risk to performers, crew, venue staff, or guests.</p></div></main></template>
+<template id="reviewDocHospitality"><main><h1>PA LINE 2026 Personal / Hospitality Rider</h1><p>Hospitality should be scaled to the confirmed touring party. Equivalent substitutions are welcome. Please advise PA LINE if an item is unavailable.</p><div><h2>Meals &amp; Beverages</h2><ul><li>A substantial hot meal or reasonable meal buyout for each confirmed band/crew member when the engagement spans a normal meal period.</li><li>Ample cold bottled/canned water or safe refillable water service from load-in through load-out.</li><li>Assorted soft drinks, sparkling water, coffee/tea, and juice are appreciated.</li><li>Fresh fruit, vegetables, protein-forward snacks, chips/crackers, and simple grab-and-go items are appreciated.</li><li>If permitted by venue policy and law, a modest selection of locally brewed beer and Irish whiskey is appreciated but is not a condition of performance.</li></ul></div><div><h2>Food Sensitivities</h2><p>Please avoid mushrooms, peppermint, coconut, and pineapple in food intended for the touring party unless separately labeled and safely isolated. Confirm updated dietary information during advance.</p></div><div><h2>Green Room</h2><ul><li>Private or access-controlled, clean, secure, temperature-controlled room near the stage when venue layout permits.</li><li>Seating for the confirmed touring party, table/work surface, adequate lighting, mirror, trash receptacle, and nearby clean restroom access.</li><li>Wi-Fi credentials when available.</li><li>Clean hand towels and basic toiletries are appreciated. Shower access is strongly preferred on festival/touring dates when available.</li></ul></div><div><h2>Lodging &amp; Parking</h2><ul><li>When lodging is part of the engagement, clean, reputable accommodations reasonably close to the venue unless another arrangement is advanced.</li><li>Room count and occupancy are based on the confirmed touring party and must be approved in advance.</li><li>Secure, legal parking as close as practical to load-in for artist/crew vehicles and trailers.</li></ul></div></main></template>
+<template id="reviewDocNDA">
+<h2>Confidential Pricing &amp; Booking Terms Agreement</h2>
+<p>PA LINE may offer different rates, discounts, guarantees, travel arrangements, production concessions, routing accommodations, preferred-pricing programs, and other negotiated terms to different venues and booking partners. Those non-public terms are confidential business information.</p>
+<h3>Confidential Information</h3>
+<p>For this booking process, confidential information includes non-public PA LINE pricing, negotiated performance fees, discounts, guarantees, custom concessions, routing arrangements, travel allowances, production charges, exclusivity pricing, preferred-pricing offers, and other deal terms that are not intentionally made public by PA LINE.</p>
+<h3>Permitted Use</h3>
+<p>The authorized booking contact may use confidential information only to evaluate, approve, administer, account for, or fulfill this PA LINE booking. The information may be shared with employees, owners, event partners, accountants, attorneys, insurers, or other professional advisers who reasonably need it for the booking and who are expected to treat it confidentially.</p>
+<h3>Restricted Disclosure</h3>
+<p>The booking contact agrees not to publish, post, distribute, forward, publicly compare, or disclose PA LINE's non-public pricing or negotiated deal terms to unrelated third parties, competing venues, promoters, artists, agents, or members of the public without PA LINE's written permission, except where disclosure is required by law.</p>
+<h3>Different Venues May Have Different Terms</h3>
+<p>The booking contact understands that different dates, markets, venues, event types, routing conditions, production needs, repeat-booking relationships, referral programs, seasonal demand, and other circumstances may result in different pricing or terms. A price offered for one engagement does not establish a required price for another engagement.</p>
+<h3>Required Disclosure</h3>
+<p>If disclosure is legally required, the booking contact should, where legally permitted, give PA LINE reasonable notice so PA LINE can seek appropriate protection or limit the disclosure.</p>
+<h3>Electronic Acceptance</h3>
+<p>By electronically accepting these terms, the authorized booking contact confirms that they have authority to accept them for the booking party and intend that acceptance to apply to the confidential pricing and booking information disclosed through this request.</p>
+<p><strong>Prototype legal note:</strong> This confidentiality language is a business-rule draft for the prototype and should be reviewed by qualified counsel before production use.</p>
+</template>
+<div aria-labelledby="documentReviewTitle" aria-modal="true" class="document-review-modal hidden" id="documentReviewModal" role="dialog">
+<div class="document-review-shell">
+<div class="document-review-head">
+<div>
+<span class="badge">REQUIRED REVIEW</span>
+<h2 id="documentReviewTitle">Review document</h2>
+<div class="small" id="documentReviewInstruction">Scroll to the bottom to unlock the acknowledgment checkbox.</div>
+</div>
+<button aria-label="Close review" class="same-day-close" onclick="closeDocumentReview()" type="button">×</button>
+</div>
+<div class="document-review-scroll" id="documentReviewScroll" onscroll="trackDocumentReviewScroll()">
+<article class="document-review-body" id="documentReviewBody"></article>
+<div class="document-review-end" id="documentReviewEnd">
+<strong>END OF DOCUMENT</strong>
+<div class="small">You have reached the bottom. The related acknowledgment is now available.</div>
+</div>
+</div>
+<div class="document-review-footer">
+<div class="review-progress-wrap">
+<div class="review-progress" id="documentReviewProgress">Scroll through the document to continue.</div>
+<div aria-hidden="true" class="review-scroll-track"><span id="documentReviewProgressFill"></span></div>
+</div>
+<button class="btn" id="documentReviewCloseBtn" onclick="closeDocumentReview()" type="button">CLOSE</button>
+</div>
+</div>
+</div>
+<div aria-labelledby="customDatePickerTitle" aria-modal="true" class="custom-date-picker hidden" id="customDatePicker" role="dialog">
+<div class="custom-date-picker-card">
+<div class="custom-date-picker-head">
+<button aria-label="Previous month" class="date-nav-button" onclick="moveCustomDatePicker(-1)" type="button">‹</button>
+<strong id="customDatePickerTitle">Choose a date</strong>
+<button aria-label="Next month" class="date-nav-button" onclick="moveCustomDatePicker(1)" type="button">›</button>
+</div>
+<div class="custom-date-picker-month" id="customDatePickerMonth"></div>
+<div class="custom-date-picker-actions">
+<button class="btn" onclick="closeCustomDatePicker()" type="button">CANCEL</button>
+<button class="btn" onclick="chooseTodayForCustomPicker()" type="button">TODAY</button>
+</div>
+</div>
+</div>
+<div aria-labelledby="limitedDateTitle" aria-modal="true" class="same-day-modal hidden" id="limitedDateModal" role="dialog">
+<div class="same-day-modal-card">
+<button aria-label="Close" class="same-day-close" onclick="closeLimitedDateModal()">×</button>
+<span class="badge">LIMITED AVAILABILITY</span>
+<h2 id="limitedDateTitle">This date already has a PA LINE show.</h2>
+<div id="limitedDateBody"></div>
+<div class="same-day-modal-actions">
+<button class="btn" onclick="closeLimitedDateModal()">CHOOSE ANOTHER DATE</button>
+<button class="btn primary" id="limitedDateConfirm" onclick="confirmLimitedDate()">REQUEST THIS DATE</button>
+</div>
+</div>
+</div>
+
+<footer class="app-footer">
+<span class="footer-brand"><span aria-hidden="true" class="rose-art"></span><span>PA LINE</span></span>
+<span>Booking preview</span>
+<span class="footer-sep">•</span>
+<span>Availability, routing, authentication, and payments are simulated until the production integrations are connected.</span>
+</footer>
+</body>
+</html>

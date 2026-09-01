@@ -57,6 +57,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                                 {n.label}
                             </Link>
                         ))}
+                        <a
+                            href="/booking/"
+                            className="text-sm font-semibold tracking-widest uppercase transition-colors"
+                            style={{ color: 'var(--primary)', WebkitTapHighlightColor: 'transparent' }}
+                        >
+                            Book PA LINE
+                        </a>
                     </nav>
                     {/* Mobile hamburger */}
                     <button
@@ -96,6 +103,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                                 {n.label}
                             </Link>
                         ))}
+                        <a
+                            href="/booking/"
+                            className="text-sm font-semibold tracking-widest uppercase py-3 px-2 transition-colors rounded"
+                            style={{ color: 'var(--primary)', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                        >
+                            Book PA LINE
+                        </a>
                     </nav>
                 </div>
             </header>
