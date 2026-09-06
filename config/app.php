@@ -69,6 +69,39 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Emails
+    |--------------------------------------------------------------------------
+    |
+    | Comma-separated list of email addresses permitted to access the /admin
+    | panel once authenticated.
+    |
+    */
+
+    'admin_emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('ADMIN_EMAILS'))))),
+
+    // Starter password assigned to newly-created admin users by `php artisan admin:sync-users`.
+    'admin_default_password' => env('ADMIN_DEFAULT_PASSWORD', '00000000'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Auth Method
+    |--------------------------------------------------------------------------
+    |
+    | 'password': /admin/login is an email + password form (dev/preview, where
+    | outbound mail may not be configured/reachable).
+    | 'magic-link': /admin/login reuses the passwordless magic-link flow (real
+    | production, where outbound mail is reliable).
+    |
+    | Deliberately NOT derived from APP_ENV — the preview host sets
+    | APP_ENV=production for unrelated reasons (debug/error pages) but still
+    | needs password auth, so this must be set explicitly per environment.
+    |
+    */
+
+    'admin_auth_method' => env('ADMIN_AUTH_METHOD', 'password'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

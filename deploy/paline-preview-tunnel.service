@@ -1,0 +1,14 @@
+[Unit]
+Description=Paline preview reverse tunnel to AWS
+After=network-online.target paline-preview.service
+Wants=network-online.target
+Requires=paline-preview.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -N -T -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -i /home/joshua/.ssh/paline-preview-tunnel -R 127.0.0.1:18091:127.0.0.1:8091 ubuntu@3.151.185.242
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

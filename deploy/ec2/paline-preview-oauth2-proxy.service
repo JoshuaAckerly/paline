@@ -1,0 +1,20 @@
+[Unit]
+Description=OAuth2 Proxy for Paline preview
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/oauth2-proxy/paline-preview.env
+ExecStart=/usr/local/bin/oauth2-proxy
+Restart=on-failure
+RestartSec=5
+User=oauth2-proxy
+Group=oauth2-proxy
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

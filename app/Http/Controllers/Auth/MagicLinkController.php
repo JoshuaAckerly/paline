@@ -48,7 +48,7 @@ class MagicLinkController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return redirect(config('booking.authentication.redirect_after_login'));
+        return redirect()->intended(config('booking.authentication.redirect_after_login'));
     }
 
     public function destroy(Request $request): JsonResponse

@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\SocialLinkController;
+use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BookingRequestController;
@@ -56,3 +62,32 @@ Route::prefix('auth')->group(function (): void {
 });
 
 Route::post('/contact', [ContactController::class, 'send']);
+
+// Guest-only admin login; Laravel's default auth exception handler redirects here
+// (named 'login') and stores the originally requested /admin URL as "intended".
+Route::get('/admin/login', fn () => Inertia::render('admin/login', [
+    'authMethod' => config('app.admin_auth_method'),
+]))->name('login');
+Route::post('/admin/login', [AdminLoginController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('admin.login.store');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (): void {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/messages', [ContactMessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{message}', [ContactMessageController::class, 'show'])->name('messages.show');
+    Route::delete('/messages/{message}', [ContactMessageController::class, 'destroy'])->name('messages.destroy');
+
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+
+    Route::get('/socials', [SocialLinkController::class, 'index'])->name('socials.index');
+    Route::post('/socials', [SocialLinkController::class, 'store'])->name('socials.store');
+    Route::put('/socials/{social}', [SocialLinkController::class, 'update'])->name('socials.update');
+    Route::delete('/socials/{social}', [SocialLinkController::class, 'destroy'])->name('socials.destroy');
+
+    Route::get('/seo', [SeoController::class, 'index'])->name('seo.index');
+    Route::get('/seo/{pageKey}/edit', [SeoController::class, 'edit'])->name('seo.edit');
+    Route::put('/seo/{pageKey}', [SeoController::class, 'update'])->name('seo.update');
+});
+

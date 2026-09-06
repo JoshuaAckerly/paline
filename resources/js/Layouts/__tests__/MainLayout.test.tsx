@@ -19,6 +19,14 @@ vi.mock('@inertiajs/react', () => ({
             return inertia.unsubscribe;
         }),
     },
+    usePage: () => ({
+        props: {
+            socialLinks: [
+                { platform: 'Facebook', url: 'https://www.facebook.com/PALineOfficial' },
+                { platform: 'Instagram', url: 'https://www.instagram.com/palineofficial/' },
+            ],
+        },
+    }),
 }));
 
 describe('MainLayout', () => {

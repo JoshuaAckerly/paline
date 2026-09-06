@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -10,8 +10,14 @@ const nav = [
     { label: 'Contact', href: '/contact' },
 ];
 
+interface SocialLink {
+    platform: string;
+    url: string;
+}
+
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
+    const { socialLinks } = usePage().props as unknown as { socialLinks: SocialLink[] };
 
     // Close mobile menu on Inertia navigation
     useEffect(() => {
@@ -139,69 +145,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             >
                 {/* Social links — wrap on small screens */}
                 <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 mb-6">
-                    <a
-                        href="https://www.facebook.com/PALineOfficial"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        Facebook
-                    </a>
-                    <a
-                        href="https://www.instagram.com/palineofficial/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        Instagram
-                    </a>
-                    <a
-                        href="https://x.com/PALineOfficial"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        X
-                    </a>
-                    <a
-                        href="https://open.spotify.com/artist/2OArsWhucdqcTIh9FenCiO"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        Spotify
-                    </a>
-                    <a
-                        href="https://music.apple.com/us/artist/pa-line/971265800"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        Apple Music
-                    </a>
-                    <a
-                        href="https://www.youtube.com/@palineofficial"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        YouTube
-                    </a>
-                    <a
-                        href="https://music.amazon.com/artists/B01L1B73TC/pa-line"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs tracking-widest uppercase transition-colors hover:text-white"
-                        style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                        Amazon
-                    </a>
+                    {socialLinks?.map((link) => (
+                        <a
+                            key={link.platform}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs tracking-widest uppercase transition-colors hover:text-white"
+                            style={{ color: 'var(--muted)', WebkitTapHighlightColor: 'transparent' }}
+                        >
+                            {link.platform}
+                        </a>
+                    ))}
                 </div>
                 <p>© {new Date().getFullYear()} PA Line. All rights reserved.</p>
                 <p className="mt-2">
@@ -214,6 +169,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     >
                         Graveyard Jokes Studios
                     </a>
+                </p>
+                <p className="mt-2">
+                    <Link href="/admin/login" className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+                        Admin
+                    </Link>
                 </p>
             </footer>
         </div>

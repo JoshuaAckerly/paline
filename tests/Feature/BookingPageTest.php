@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class BookingPageTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_the_booking_route_opens_the_production_inertia_page(): void
     {
         $this->get('/booking')

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -14,6 +15,13 @@ class ContactController extends Controller
             'subject' => 'nullable|string|max:255',
             'message' => 'required|string',
         ]);
+
+        try {
+            ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
+        } catch (\Exception $e) {
+            // Storage failure shouldn't block the notification email below.
+            \Log::error($e->getMessage());
+        }
 
         try {
             Mail::raw(
