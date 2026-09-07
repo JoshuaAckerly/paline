@@ -20,5 +20,5 @@ createServer(
                 ).default,
             setup: ({ App, props }) => <App {...props} />,
         }),
-    13720, // paline SSR port
+    13722, // paline SSR port (13720/13721 are used by other sites on this host)
 );

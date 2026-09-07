@@ -6,7 +6,7 @@ set -e
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 # Configuration
-SSR_PORT=13720
+SSR_PORT=13722
 PROJECT_NAME="paline"
 DEPLOY_PATH="/var/www/paline"
 PHP_VERSION="8.3"
