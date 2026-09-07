@@ -54,6 +54,9 @@ Route::middleware('booking.access')->group(function (): void {
     Route::delete('/booking-requests/{bookingRequest}/dates/{bookingDate}', [BookingRequestController::class, 'destroyDate'])
         ->middleware('throttle:30,1')
         ->name('booking-requests.dates.destroy');
+    Route::post('/booking-requests/{bookingRequest}/submit', [BookingRequestController::class, 'submit'])
+        ->middleware('throttle:20,1')
+        ->name('booking-requests.submit');
     Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
         ->middleware('throttle:30,1')
         ->name('routing.calculate');

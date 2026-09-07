@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Contracts\GeocodingProvider;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\BookingStatus;
 use App\Domain\Booking\BudgetFitEvaluator;
 use App\Domain\Booking\PerformanceFormat;
 use App\Domain\Booking\RecurringDateGenerator;
@@ -529,5 +530,31 @@ class BookingRequestController extends Controller
         $bookingDate->delete();
 
         return response()->json(status: 204);
+    }
+
+    public function submit(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+    ): JsonResponse {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingRequest->primary_date === null || $bookingRequest->performance_format === null) {
+            throw ValidationException::withMessages(['booking' => 'Complete the earlier booking steps before submitting.']);
+        }
+
+        // Additional dates are optional, so submission never requires them.
+        if ($bookingRequest->status === BookingStatus::Draft) {
+            $bookingRequest->update([
+                'status' => BookingStatus::Submitted,
+                'submitted_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'submitted',
+            'submitted_at' => $bookingRequest->submitted_at->toIso8601String(),
+        ]);
     }
 }

@@ -49,6 +49,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Add performance format, duration, sound, and TRUE POTENTIAL request steps.
 - [x] Add recurring booking generation and server-backed per-date availability review.
 - [x] Add budget-fit and merch steps.
+- [x] Add a way to complete/submit the booking from the recurring-dates step, with or without additional dates (interim `submitted` status ahead of the full Phase 5 secure-pricing/legal gate below).
 
 ## Phase 5: secure pricing and legal
 

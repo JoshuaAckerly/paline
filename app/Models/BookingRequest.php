@@ -29,6 +29,7 @@ class BookingRequest extends Model
         'house_engineer_provided', 'true_potential_requested',
         'working_budget', 'budget_status',
         'merch_package', 'merch_quantity', 'merch_total', 'merch_sizes', 'merch_recipient',
+        'submitted_at',
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ class BookingRequest extends Model
             'true_potential_requested' => 'boolean',
             'performance_format' => PerformanceFormat::class,
             'budget_status' => BudgetFitStatus::class,
+            'submitted_at' => 'datetime',
         ];
     }
 

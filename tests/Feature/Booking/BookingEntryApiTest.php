@@ -6,6 +6,7 @@ use App\Contracts\GeocodingProvider;
 use App\Contracts\RoutingProvider;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\BookingStatus;
 use App\Domain\Booking\BudgetFitStatus;
 use App\Domain\Booking\PerformanceFormat;
 use App\Models\BookingRequest;
@@ -528,6 +529,66 @@ class BookingEntryApiTest extends TestCase
             'draft_token' => $draft['token'],
             'merch_package' => 'none',
         ])->assertOk()->assertJsonPath('merch_total', 0);
+    }
+
+    public function test_a_booking_can_be_submitted_with_only_the_primary_date(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+
+        $response = $this->postJson('/booking-requests/'.$draft['id'].'/submit', [
+            'draft_token' => $draft['token'],
+        ]);
+
+        $response->assertOk()->assertJsonPath('status', 'submitted');
+
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertSame(BookingStatus::Submitted, $booking->status);
+        $this->assertNotNull($booking->submitted_at);
+    }
+
+    public function test_a_booking_can_be_submitted_after_adding_additional_dates(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+        $this->postJson('/booking-requests/'.$draft['id'].'/dates', [
+            'draft_token' => $draft['token'], 'booking_type' => 'repeat',
+            'mode' => 'specific', 'dates' => ['2027-04-11'],
+        ])->assertOk();
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/submit', [
+            'draft_token' => $draft['token'],
+        ])->assertOk()->assertJsonPath('status', 'submitted');
+
+        $this->assertSame(BookingStatus::Submitted, BookingRequest::findOrFail($draft['id'])->status);
+    }
+
+    public function test_submitting_requires_production_details_to_be_completed(): void
+    {
+        $draft = $this->createDetailedDraft('2027-04-10');
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/submit', [
+            'draft_token' => $draft['token'],
+        ])->assertUnprocessable()->assertJsonValidationErrors('booking');
+    }
+
+    public function test_submitting_requires_a_valid_draft_token(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/submit', [
+            'draft_token' => 'wrong-token',
+        ])->assertUnprocessable()->assertJsonValidationErrors('draft');
+    }
+
+    public function test_resubmitting_an_already_submitted_booking_keeps_the_original_timestamp(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+        $this->postJson('/booking-requests/'.$draft['id'].'/submit', ['draft_token' => $draft['token']])->assertOk();
+        $firstSubmittedAt = BookingRequest::findOrFail($draft['id'])->submitted_at;
+
+        $this->postJson('/booking-requests/'.$draft['id'].'/submit', ['draft_token' => $draft['token']])
+            ->assertOk()->assertJsonPath('status', 'submitted');
+
+        $this->assertTrue($firstSubmittedAt->equalTo(BookingRequest::findOrFail($draft['id'])->submitted_at));
     }
 
     /** @return array{id: string, token: string} */
