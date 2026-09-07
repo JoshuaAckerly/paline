@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\BookingAllowedEmailController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LegalDocumentController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\SocialLinkController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\BookingAccessController;
 use App\Http\Controllers\BookingRequestController;
 use App\Http\Controllers\DemandController;
 use App\Http\Controllers\RoutingController;
@@ -22,31 +25,43 @@ Route::get('/music', fn () => Inertia::render('music'))->name('music');
 Route::get('/shows', fn () => Inertia::render('shows', ['shows' => fetchUpcomingShows()]))->name('shows');
 Route::get('/about', fn () => Inertia::render('about'))->name('about');
 Route::get('/contact', fn () => Inertia::render('contact'))->name('contact');
-Route::get('/booking', fn () => Inertia::render('booking'))->name('booking');
 
-Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
-Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
-Route::post('/booking-requests', [BookingRequestController::class, 'store'])
-    ->middleware('throttle:20,1')
-    ->name('booking-requests.store');
-Route::patch('/booking-requests/{bookingRequest}', [BookingRequestController::class, 'update'])
-    ->middleware('throttle:30,1')
-    ->name('booking-requests.update');
-Route::patch('/booking-requests/{bookingRequest}/production', [BookingRequestController::class, 'updateProduction'])
-    ->middleware('throttle:30,1')
-    ->name('booking-requests.production.update');
-Route::post('/booking-requests/{bookingRequest}/dates', [BookingRequestController::class, 'storeDates'])
-    ->middleware('throttle:30,1')
-    ->name('booking-requests.dates.store');
-Route::delete('/booking-requests/{bookingRequest}/dates/{bookingDate}', [BookingRequestController::class, 'destroyDate'])
-    ->middleware('throttle:30,1')
-    ->name('booking-requests.dates.destroy');
+Route::get('/booking/access', [BookingAccessController::class, 'show'])->name('booking.access');
+
+Route::middleware('booking.access')->group(function (): void {
+    Route::get('/booking', fn () => Inertia::render('booking'))->name('booking');
+
+    Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
+    Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
+    Route::post('/booking-requests', [BookingRequestController::class, 'store'])
+        ->middleware('throttle:20,1')
+        ->name('booking-requests.store');
+    Route::patch('/booking-requests/{bookingRequest}', [BookingRequestController::class, 'update'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.update');
+    Route::patch('/booking-requests/{bookingRequest}/production', [BookingRequestController::class, 'updateProduction'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.production.update');
+    Route::patch('/booking-requests/{bookingRequest}/budget', [BookingRequestController::class, 'updateBudget'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.budget.update');
+    Route::patch('/booking-requests/{bookingRequest}/merch', [BookingRequestController::class, 'updateMerch'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.merch.update');
+    Route::post('/booking-requests/{bookingRequest}/dates', [BookingRequestController::class, 'storeDates'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.dates.store');
+    Route::delete('/booking-requests/{bookingRequest}/dates/{bookingDate}', [BookingRequestController::class, 'destroyDate'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.dates.destroy');
+    Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
+        ->middleware('throttle:30,1')
+        ->name('routing.calculate');
+});
+
 Route::post('/demand', [DemandController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('demand.store');
-Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
-    ->middleware('throttle:30,1')
-    ->name('routing.calculate');
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/magic-link', [MagicLinkController::class, 'store'])
@@ -89,5 +104,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/seo', [SeoController::class, 'index'])->name('seo.index');
     Route::get('/seo/{pageKey}/edit', [SeoController::class, 'edit'])->name('seo.edit');
     Route::put('/seo/{pageKey}', [SeoController::class, 'update'])->name('seo.update');
+
+    Route::get('/legal', [LegalDocumentController::class, 'index'])->name('legal.index');
+    Route::post('/legal', [LegalDocumentController::class, 'store'])->name('legal.store');
+    Route::post('/legal/{legalDocument}/activate', [LegalDocumentController::class, 'activate'])->name('legal.activate');
+
+    Route::get('/booking-access', [BookingAllowedEmailController::class, 'index'])->name('booking-access.index');
+    Route::post('/booking-access', [BookingAllowedEmailController::class, 'store'])->name('booking-access.store');
+    Route::delete('/booking-access/{bookingAllowedEmail}', [BookingAllowedEmailController::class, 'destroy'])->name('booking-access.destroy');
 });
 

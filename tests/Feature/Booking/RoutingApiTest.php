@@ -5,11 +5,16 @@ namespace Tests\Feature\Booking;
 use App\Contracts\RoutingProvider;
 use App\Services\MapboxRoutingProvider;
 use App\Services\UnavailableRoutingProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\ActsAsAllowedBookingUser;
 use Tests\TestCase;
 
 class RoutingApiTest extends TestCase
 {
+    use ActsAsAllowedBookingUser;
+    use RefreshDatabase;
+
     private array $payload = [
         'origin' => ['latitude' => 42.9039, 'longitude' => -78.6923],
         'destination' => ['latitude' => 42.8864, 'longitude' => -78.8784],

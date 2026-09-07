@@ -4,10 +4,10 @@ import axios from 'axios';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, LoaderCircle, MapPin, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
-type Path = 'start' | 'exact' | 'flexible' | 'details' | 'production' | 'recurring' | 'demand' | 'returning';
+type Path = 'start' | 'exact' | 'flexible' | 'details' | 'production' | 'budget' | 'merch' | 'recurring' | 'demand' | 'returning';
 type AvailabilityState = 'available' | 'limited' | 'held' | 'blocked';
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
-type CandidateDate = { id: string; date: string; state: AvailabilityState };
+type CandidateDate = { id: string; date: string; state: AvailabilityState; miles?: number | null };
 type BookingDraftResponse = { id: string; draft_token: string; dates: CandidateDate[]; routing_status: string | null };
 type ActiveDraft = BookingDraftResponse & { selectedDate: string };
 type ReviewedDate = CandidateDate & { primary: boolean };
@@ -76,7 +76,9 @@ export default function Booking() {
                             {path === 'exact' && <ExactDate onContinue={continueDraft} />}
                             {path === 'flexible' && <FlexibleDate onContinue={continueDraft} />}
                             {path === 'details' && draft && <BookingDetails draft={draft} onContinue={() => setPath('production')} />}
-                            {path === 'production' && draft && <ProductionOptions draft={draft} onContinue={() => setPath('recurring')} />}
+                            {path === 'production' && draft && <ProductionOptions draft={draft} onContinue={() => setPath('budget')} />}
+                            {path === 'budget' && draft && <BudgetFit draft={draft} onContinue={() => setPath('merch')} />}
+                            {path === 'merch' && draft && <Merch draft={draft} onContinue={() => setPath('recurring')} />}
                             {path === 'recurring' && draft && <RecurringDates draft={draft} />}
                             {path === 'demand' && <Demand />}
                             {path === 'returning' && <ReturningAccess />}
@@ -229,7 +231,7 @@ function FlexibleDate({ onContinue }: { onContinue: (draft: ActiveDraft) => void
         }
     };
 
-    return <div className="max-w-2xl"><FlowHeader eyebrow="Flexible date · Step 1" title="Find the sweet spot." description="Tell us where and when. Suggestions preserve your original window and never silently replace it." /><form onSubmit={createDraft} className="grid gap-5 border p-6 md:grid-cols-2 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><label htmlFor="flex-city" className="text-xs font-semibold uppercase">City<input id="flex-city" required value={city} onChange={(event) => updatePreference(setCity, event.target.value)} autoComplete="address-level2" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-state" className="text-xs font-semibold uppercase">State<input id="flex-state" required value={state} onChange={(event) => updatePreference(setState, event.target.value)} autoComplete="address-level1" className={`${fieldClass} mt-2`} style={fieldStyle} maxLength={64} /></label><label htmlFor="flex-start" className="text-xs font-semibold uppercase">Window starts<input id="flex-start" required value={windowStartsOn} onChange={(event) => updatePreference(setWindowStartsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-end" className="text-xs font-semibold uppercase">Window ends<input id="flex-end" required value={windowEndsOn} onChange={(event) => updatePreference(setWindowEndsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50 md:col-span-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Find date options</button>{requestState === 'success' && <div role="status" className="space-y-3 border-l-2 p-4 md:col-span-2" style={{ borderColor: '#69c587', backgroundColor: 'var(--bg)' }}><strong className="uppercase">Choose a date</strong>{candidates.length > 0 ? <div className="grid gap-2 sm:grid-cols-2">{candidates.map((candidate) => <button type="button" key={candidate.id} onClick={() => draft && onContinue({ ...draft, selectedDate: candidate.date })} className="flex min-h-12 items-center justify-between border p-3 text-left text-sm hover:bg-black/20" style={{ borderColor: 'var(--border)' }}><strong>{candidate.date}</strong><span className="uppercase" style={{ color: 'var(--muted)' }}>{candidate.state}</span></button>)}</div> : <p className="text-sm" style={{ color: 'var(--muted)' }}>No requestable dates are currently visible in that window.</p>}<p className="text-sm" style={{ color: 'var(--muted)' }}>Calendar results are live. Route ranking remains pending until the venue location can be verified.</p></div>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300 md:col-span-2">We couldn’t save this window or verify its dates. Check the range and try again.</p>}</form></div>;
+    return <div className="max-w-2xl"><FlowHeader eyebrow="Flexible date · Step 1" title="Find the sweet spot." description="Tell us where and when. Suggestions preserve your original window and never silently replace it." /><form onSubmit={createDraft} className="grid gap-5 border p-6 md:grid-cols-2 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><label htmlFor="flex-city" className="text-xs font-semibold uppercase">City<input id="flex-city" required value={city} onChange={(event) => updatePreference(setCity, event.target.value)} autoComplete="address-level2" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-state" className="text-xs font-semibold uppercase">State<input id="flex-state" required value={state} onChange={(event) => updatePreference(setState, event.target.value)} autoComplete="address-level1" className={`${fieldClass} mt-2`} style={fieldStyle} maxLength={64} /></label><label htmlFor="flex-start" className="text-xs font-semibold uppercase">Window starts<input id="flex-start" required value={windowStartsOn} onChange={(event) => updatePreference(setWindowStartsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><label htmlFor="flex-end" className="text-xs font-semibold uppercase">Window ends<input id="flex-end" required value={windowEndsOn} onChange={(event) => updatePreference(setWindowEndsOn, event.target.value)} type="date" className={`${fieldClass} mt-2`} style={fieldStyle} /></label><button type="submit" disabled={requestState === 'loading' || requestState === 'success'} className="inline-flex min-h-12 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50 md:col-span-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Find date options</button>{requestState === 'success' && <div role="status" className="space-y-3 border-l-2 p-4 md:col-span-2" style={{ borderColor: '#69c587', backgroundColor: 'var(--bg)' }}><strong className="uppercase">Choose a date</strong>{candidates.length > 0 ? <div className="grid gap-2 sm:grid-cols-2">{candidates.map((candidate) => <button type="button" key={candidate.id} onClick={() => draft && onContinue({ ...draft, selectedDate: candidate.date })} className="flex min-h-12 items-center justify-between border p-3 text-left text-sm hover:bg-black/20" style={{ borderColor: 'var(--border)' }}><strong>{candidate.date}</strong><span className="uppercase" style={{ color: 'var(--muted)' }}>{candidate.miles != null ? `${candidate.miles} mi` : candidate.state}</span></button>)}</div> : <p className="text-sm" style={{ color: 'var(--muted)' }}>No requestable dates are currently visible in that window.</p>}<p className="text-sm" style={{ color: 'var(--muted)' }}>{draft?.routing_status === 'verified' ? 'These dates are ranked by verified server-side routing distance.' : 'Calendar results are live. Route ranking remains pending until routing can be verified.'}</p></div>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300 md:col-span-2">We couldn’t save this window or verify its dates. Check the range and try again.</p>}</form></div>;
 }
 
 function BookingDetails({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
@@ -289,6 +291,86 @@ function ProductionOptions({ draft, onContinue }: { draft: ActiveDraft; onContin
     };
 
     return <div className="max-w-3xl"><FlowHeader eyebrow="Performance & production · Step 3" title="Build the right show." description="Choose the PA LINE format and tell us what production the venue can provide. Pricing remains private until verified access." /><form onSubmit={saveProduction} className="space-y-8 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><fieldset><legend className="mb-4 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Performance format</legend><div className="grid gap-px border md:grid-cols-3" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--border)' }}>{[['solo', 'Solo', 'Trever Stribing solo.'], ['duo', 'Duo', 'A stripped-down PA LINE duo.'], ['full_pa_line', 'Full PA LINE', 'The full-band experience.']].map(([value, title, description]) => <label key={value} className="min-h-36 cursor-pointer p-5" style={{ backgroundColor: performanceFormat === value ? 'color-mix(in srgb, var(--primary) 12%, var(--bg-card))' : 'var(--bg-card)' }}><input type="radio" name="performance-format" value={value} checked={performanceFormat === value} onChange={() => setPerformanceFormat(value)} className="mr-3" /><strong className="uppercase">{title}</strong><span className="mt-4 block text-sm leading-6" style={{ color: 'var(--muted)' }}>{description}</span></label>)}</div></fieldset><SelectField id="performance-length" label="Performance length" value={performanceLength} onChange={setPerformanceLength} options={[["60", "Up to 60 minutes"], ["90", "Up to 90 minutes"], ["120", "Up to 2 hours"], ["180", "Up to 3 hours / multiple sets"]]} /><fieldset><legend className="mb-4 text-sm font-bold uppercase" style={{ color: 'var(--primary)' }}>Sound system</legend><div className="grid gap-3 sm:grid-cols-2"><ChoiceButton selected={soundProvided === true} onClick={() => setSoundProvided(true)} title="Sound is provided" description="The venue has a suitable PA system." /><ChoiceButton selected={soundProvided === false} onClick={() => { setSoundProvided(false); setHouseEngineer('unknown'); }} title="PA LINE provides sound" description="Format-based sound fees will apply." /></div></fieldset>{soundProvided === true && <SelectField id="house-engineer" label="Qualified house engineer included?" value={houseEngineer} onChange={setHouseEngineer} options={[["unknown", "Choose one"], ["yes", "Yes"], ["no", "No"]]} />}<fieldset className="border-l-2 p-5" style={{ borderColor: truePotentialEligible ? 'var(--primary)' : 'var(--border)', backgroundColor: 'var(--bg)' }}><legend className="px-2 text-sm font-bold uppercase">TRUE POTENTIAL</legend><p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>Expanded musicians, production, preparation, and promotion require a custom quote and at least six months of lead time.</p><label className="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" checked={truePotential} disabled={!truePotentialEligible} onChange={(event) => setTruePotential(event.target.checked)} className="mt-0.5 h-5 w-5" /><span>{truePotentialEligible ? 'Request a TRUE POTENTIAL custom production review.' : 'This date is inside the six-month production window.'}</span></label></fieldset><button type="submit" disabled={requestState === 'loading' || requestState === 'success' || soundProvided === null || (soundProvided && houseEngineer === 'unknown')} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : requestState === 'success' ? <Check className="h-4 w-4" /> : null}{requestState === 'success' ? 'Production saved' : 'Save production options'}</button>{requestState === 'success' && <p role="status" className="text-sm" style={{ color: 'var(--muted)' }}>Performance and production choices are saved. Recurring dates and booking preferences come next.</p>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">Production choices could not be saved. Review the selections and try again.</p>}</form></div>;
+}
+
+const MERCH_PACKAGES: Record<string, { label: string; description: string; quantity?: number; total?: number }> = {
+    rep: { label: 'REP THE BAND!', description: '2 shirts + matching stickers and pins.', quantity: 2, total: 40 },
+    crew: { label: 'GEAR UP THE CREW', description: '4 shirts + matching stickers and pins.', quantity: 4, total: 75 },
+    dream: { label: 'DREAM TEAM SWAG', description: '6+ shirts at $20 each, plus a free booker shirt at 10+.' },
+};
+
+function BudgetFit({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
+    const [budget, setBudget] = useState('');
+    const [requestState, setRequestState] = useState<RequestState>('idle');
+    const [outcome, setOutcome] = useState<{ status: string; canContinue: boolean } | null>(null);
+
+    const submitBudget = async (workingBudget: number | null, manualReviewRequested = false) => {
+        setRequestState('loading');
+        try {
+            const response = await axios.patch<{ status: string; can_continue?: boolean }>(`/booking-requests/${draft.id}/budget`, {
+                draft_token: draft.draft_token,
+                working_budget: workingBudget,
+                manual_review_requested: manualReviewRequested,
+            });
+            setOutcome({ status: response.data.status, canContinue: response.data.can_continue ?? true });
+            setRequestState('success');
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    const checkBudget = (event: FormEvent) => {
+        event.preventDefault();
+        const amount = Number(budget);
+        submitBudget(amount > 0 ? amount : null);
+    };
+
+    const messages: Record<string, string> = {
+        workable: 'That budget looks workable. A itemized offer will be shown immediately before submission.',
+        adjustment_needed: 'The current format and routing sit above that budget. Adjust the plan below, or send it to PA LINE for manual review.',
+        manual_review: 'Noted. This booking will go to PA LINE for a manual budget review without a fixed quote attached yet.',
+        skipped: 'No working budget set. Pricing will be shown in full at Review & Sign.',
+    };
+
+    return <div className="max-w-2xl"><FlowHeader eyebrow="Working budget · Step 4" title="Tell us what you're trying to stay within." description="Optional, but helpful. This covers performance, routing, travel, sound, and production. Merch and exclusivity are handled separately." /><form onSubmit={checkBudget} className="space-y-5 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><label htmlFor="working-budget" className="block text-xs font-semibold uppercase">Working performance budget<input id="working-budget" type="number" min="0" step="25" placeholder="Optional" value={budget} onChange={(event) => { setBudget(event.target.value); setOutcome(null); }} className={`${fieldClass} mt-2`} style={fieldStyle} /></label><div className="flex flex-wrap gap-3"><button type="submit" disabled={requestState === 'loading'} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Check budget fit</button><button type="button" onClick={() => { setBudget(''); submitBudget(null); }} className="inline-flex min-h-12 items-center justify-center border px-6 text-sm font-semibold uppercase" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>Skip budget</button></div>{outcome && <div role="status" className="border-l-2 p-4" style={{ borderColor: outcome.status === 'adjustment_needed' ? 'var(--primary)' : '#69c587', backgroundColor: 'var(--bg)' }}><strong className="uppercase">{outcome.status.replace('_', ' ')}</strong><p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>{messages[outcome.status]}</p>{outcome.status === 'adjustment_needed' && <button type="button" onClick={() => submitBudget(Number(budget), true)} className="mt-3 inline-flex min-h-11 items-center justify-center border px-5 text-xs font-semibold uppercase" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>Send for manual budget review anyway</button>}</div>}{requestState === 'error' && <p role="alert" className="text-sm text-red-300">The budget could not be saved. Please try again.</p>}<button type="button" onClick={onContinue} disabled={outcome !== null && !outcome.canContinue} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>Continue</button></form></div>;
+}
+
+function Merch({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
+    const [selected, setSelected] = useState<string>('none');
+    const [quantity, setQuantity] = useState('6');
+    const [sizes, setSizes] = useState('');
+    const [recipient, setRecipient] = useState('');
+    const [requestState, setRequestState] = useState<RequestState>('idle');
+
+    const saveMerch = async (event: FormEvent) => {
+        event.preventDefault();
+        setRequestState('loading');
+        try {
+            await axios.patch(`/booking-requests/${draft.id}/merch`, {
+                draft_token: draft.draft_token,
+                merch_package: selected,
+                quantity: selected === 'dream' ? Number(quantity) : undefined,
+                sizes: selected === 'none' ? undefined : sizes,
+                recipient: selected === 'none' ? undefined : recipient || undefined,
+            });
+            setRequestState('success');
+            onContinue();
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    const skipMerch = async () => {
+        setRequestState('loading');
+        try {
+            await axios.patch(`/booking-requests/${draft.id}/merch`, { draft_token: draft.draft_token, merch_package: 'none' });
+            onContinue();
+        } catch {
+            setRequestState('error');
+        }
+    };
+
+    return <div className="max-w-3xl"><FlowHeader eyebrow="Bonus additions · Step 5" title="Want some merch with that?" description="Optional add-on merch packages for the venue or booking team. Final styles/colors depend on available inventory." /><form onSubmit={saveMerch} className="space-y-7 border p-6 md:p-8" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}><div className="grid gap-3 sm:grid-cols-3">{Object.entries(MERCH_PACKAGES).map(([key, pkg]) => <ChoiceButton key={key} selected={selected === key} onClick={() => setSelected(key)} title={pkg.label} description={pkg.description} />)}</div>{selected === 'dream' && <TextField id="merch-quantity" label="Quantity (6+)" type="number" min="6" max="50" value={quantity} onChange={setQuantity} />}{selected !== 'none' && <><TextField id="merch-sizes" label="Sizes needed" value={sizes} onChange={setSizes} /><TextField id="merch-recipient" label="Who is this for? (optional)" required={false} value={recipient} onChange={setRecipient} /></>}<div className="flex flex-wrap gap-3"><button type="submit" disabled={requestState === 'loading' || (selected !== 'none' && !sizes.trim())} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>{requestState === 'loading' && <LoaderCircle className="h-4 w-4 animate-spin" />} Add and continue</button><button type="button" onClick={skipMerch} className="inline-flex min-h-12 items-center justify-center border px-6 text-sm font-semibold uppercase" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>No thanks</button></div>{requestState === 'error' && <p role="alert" className="text-sm text-red-300">Merch selection could not be saved. Please try again.</p>}</form></div>;
 }
 
 function RecurringDates({ draft }: { draft: ActiveDraft }) {

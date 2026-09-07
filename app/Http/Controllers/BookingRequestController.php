@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\GeocodingProvider;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\BudgetFitEvaluator;
 use App\Domain\Booking\PerformanceFormat;
 use App\Domain\Booking\RecurringDateGenerator;
 use App\Domain\Booking\RecurringFrequency;
+use App\Exceptions\GeocodingUnavailableException;
 use App\Models\BookingDate;
 use App\Models\BookingRequest;
 use App\Models\Contact;
 use App\Models\Venue;
 use App\Services\BookingDraftAccess;
 use App\Services\BookingCalendar;
+use App\Services\FlexibleDateRouter;
+use App\Services\PreliminaryQuoteEstimator;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,8 +28,12 @@ use Illuminate\Validation\ValidationException;
 
 class BookingRequestController extends Controller
 {
-    public function store(Request $request, BookingCalendar $calendar): JsonResponse
-    {
+    public function store(
+        Request $request,
+        BookingCalendar $calendar,
+        GeocodingProvider $geocoding,
+        FlexibleDateRouter $router,
+    ): JsonResponse {
         $validated = $request->validate([
             'source_path' => ['required', Rule::enum(BookingSourcePath::class)],
             'primary_date' => ['required_if:source_path,exact', 'nullable', 'date_format:Y-m-d'],
@@ -50,8 +59,9 @@ class BookingRequestController extends Controller
         }
 
         $draftToken = Str::random(64);
+        $ranking = null;
 
-        $booking = DB::transaction(function () use ($calendar, $draftToken, $sourcePath, $validated) {
+        $booking = DB::transaction(function () use ($calendar, $draftToken, $sourcePath, $validated, $geocoding, $router, &$ranking) {
             $booking = BookingRequest::create([
                 'anonymous_token_hash' => hash('sha256', $draftToken),
                 'source_path' => $sourcePath,
@@ -87,17 +97,19 @@ class BookingRequestController extends Controller
                 fn (array $date) => in_array($date['state'], [AvailabilityState::Available->value, AvailabilityState::Limited->value], true),
             ));
 
-            usort($candidates, fn (array $left, array $right) => [
-                $left['state'] === AvailabilityState::Available->value ? 0 : 1,
-                $left['date'],
-            ] <=> [
-                $right['state'] === AvailabilityState::Available->value ? 0 : 1,
-                $right['date'],
-            ]);
+            $destination = null;
 
-            foreach (array_slice($candidates, 0, 5) as $candidate) {
+            try {
+                $destination = $geocoding->geocode($validated['city'], $validated['state']);
+            } catch (GeocodingUnavailableException) {
+                $destination = null;
+            }
+
+            $ranking = $router->rank($candidates, $destination);
+
+            foreach ($ranking['candidates'] as $candidate) {
                 $booking->dates()->create([
-                    'date' => $candidate['date'],
+                    'date' => CarbonImmutable::createFromFormat('!Y-m-d', $candidate['date']),
                     'availability_status' => $candidate['state'],
                 ]);
             }
@@ -105,15 +117,18 @@ class BookingRequestController extends Controller
             return $booking;
         });
 
+        $milesByDate = collect($ranking['candidates'] ?? [])->keyBy('date');
+
         return response()->json([
             'id' => $booking->id,
             'draft_token' => $draftToken,
             'source_path' => $sourcePath->value,
-            'routing_status' => $sourcePath === BookingSourcePath::Flexible ? 'verification_pending' : null,
+            'routing_status' => $sourcePath === BookingSourcePath::Flexible ? ($ranking['status'] ?? 'verification_pending') : null,
             'dates' => $booking->dates()->get()->map(fn ($date) => [
                 'id' => $date->id,
                 'date' => $date->date->toDateString(),
                 'state' => $date->availability_status->value,
+                'miles' => $milesByDate->get($date->date->toDateString())['miles'] ?? null,
             ])->all(),
         ], 201);
     }
@@ -123,6 +138,7 @@ class BookingRequestController extends Controller
         BookingRequest $bookingRequest,
         BookingDraftAccess $draftAccess,
         BookingCalendar $calendar,
+        GeocodingProvider $geocoding,
     ): JsonResponse {
         $credentials = $request->validate([
             'draft_token' => ['required', 'string', 'max:255'],
@@ -172,9 +188,18 @@ class BookingRequestController extends Controller
             throw ValidationException::withMessages(['event.end' => 'The event end time must be after its start time.']);
         }
 
-        DB::transaction(function () use ($bookingRequest, $validated): void {
+        DB::transaction(function () use ($bookingRequest, $validated, $geocoding): void {
             $venue = $bookingRequest->venue ?? new Venue;
             $venue->fill($validated['venue'])->save();
+
+            if ($venue->latitude === null || $venue->longitude === null) {
+                try {
+                    $coordinates = $geocoding->geocode($venue->city, $venue->state, $venue->postal_code);
+                    $venue->update(['latitude' => $coordinates->latitude, 'longitude' => $coordinates->longitude]);
+                } catch (GeocodingUnavailableException) {
+                    // Travel estimates fall back gracefully when the venue location can't yet be verified.
+                }
+            }
 
             $contact = $bookingRequest->contact ?? new Contact;
             $contact->fill([
@@ -266,6 +291,94 @@ class BookingRequestController extends Controller
             'sound_provided' => $bookingRequest->sound_provided,
             'house_engineer_provided' => $bookingRequest->house_engineer_provided,
             'true_potential_requested' => $bookingRequest->true_potential_requested,
+        ]);
+    }
+
+    public function updateBudget(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+        BudgetFitEvaluator $evaluator,
+        PreliminaryQuoteEstimator $quoteEstimator,
+    ): JsonResponse {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingRequest->performance_format === null || $bookingRequest->sound_provided === null) {
+            throw ValidationException::withMessages([
+                'draft' => 'Complete performance and production options before setting a working budget.',
+            ]);
+        }
+
+        $validated = $request->validate([
+            'working_budget' => ['nullable', 'integer', 'min:1'],
+            'manual_review_requested' => ['sometimes', 'boolean'],
+        ]);
+
+        if ($validated['working_budget'] === null) {
+            $bookingRequest->update(['working_budget' => null, 'budget_status' => null]);
+
+            return response()->json(['status' => 'skipped']);
+        }
+
+        $workingBudget = $validated['working_budget'];
+
+        $outcome = ($validated['manual_review_requested'] ?? false)
+            ? $evaluator->requestManualReview($workingBudget)
+            : $evaluator->evaluate(
+                $workingBudget,
+                $quoteEstimator->estimate($bookingRequest),
+                $bookingRequest->true_potential_requested,
+            );
+
+        $bookingRequest->update([
+            'working_budget' => $outcome->workingBudget,
+            'budget_status' => $outcome->status,
+        ]);
+
+        // The computed internal amount never leaves the server; only the fit outcome is exposed.
+        return response()->json([
+            'status' => $outcome->status->value,
+            'can_continue' => $outcome->canContinue,
+            'priced_quote_allowed' => $outcome->pricedQuoteAllowed,
+        ]);
+    }
+
+    public function updateMerch(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingDraftAccess $draftAccess,
+    ): JsonResponse {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        $validated = $request->validate([
+            'merch_package' => ['required', Rule::in(['none', 'rep', 'crew', 'dream'])],
+            'quantity' => ['required_if:merch_package,dream', 'nullable', 'integer', 'min:6', 'max:50'],
+            'sizes' => ['required_unless:merch_package,none', 'nullable', 'string', 'max:255'],
+            'recipient' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        [$quantity, $total] = match ($validated['merch_package']) {
+            'none' => [0, 0],
+            'rep' => [2, 40],
+            'crew' => [4, 75],
+            'dream' => [$validated['quantity'], $validated['quantity'] * 20],
+        };
+
+        $bookingRequest->update([
+            'merch_package' => $validated['merch_package'],
+            'merch_quantity' => $quantity,
+            'merch_total' => $total,
+            'merch_sizes' => $validated['merch_package'] === 'none' ? null : ($validated['sizes'] ?? null),
+            'merch_recipient' => $validated['merch_package'] === 'none' ? null : ($validated['recipient'] ?? null),
+        ]);
+
+        return response()->json([
+            'status' => 'merch_saved',
+            'merch_package' => $bookingRequest->merch_package,
+            'merch_quantity' => $bookingRequest->merch_quantity,
+            'merch_total' => $bookingRequest->merch_total,
         ]);
     }
 

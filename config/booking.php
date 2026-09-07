@@ -5,6 +5,11 @@ return [
         'magic_link_expiration_minutes' => 20,
         'redirect_after_login' => '/booking/',
     ],
+    'home_base' => [
+        'label' => '360 Gould Avenue, Depew, NY 14043',
+        'latitude' => 42.9034,
+        'longitude' => -78.6986,
+    ],
     'scheduling' => [
         'booking_horizon_months' => 24,
         'earliest_performance_start_minutes' => 10 * 60,

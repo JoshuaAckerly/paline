@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domain\Booking\BookingSourcePath;
 use App\Domain\Booking\BookingStatus;
+use App\Domain\Booking\BudgetFitStatus;
 use App\Domain\Booking\PerformanceFormat;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,8 @@ class BookingRequest extends Model
         'estimated_attendance', 'performance_format', 'performance_length_minutes',
         'booking_type', 'recurrence_frequency', 'sound_provided',
         'house_engineer_provided', 'true_potential_requested',
+        'working_budget', 'budget_status',
+        'merch_package', 'merch_quantity', 'merch_total', 'merch_sizes', 'merch_recipient',
     ];
 
     protected function casts(): array
@@ -40,6 +43,7 @@ class BookingRequest extends Model
             'house_engineer_provided' => 'boolean',
             'true_potential_requested' => 'boolean',
             'performance_format' => PerformanceFormat::class,
+            'budget_status' => BudgetFitStatus::class,
         ];
     }
 

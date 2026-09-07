@@ -147,6 +147,13 @@ describe('Booking', () => {
             true_potential_requested: false,
         });
 
+        expect(await screen.findByRole('heading', { name: "Tell us what you're trying to stay within." })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Skip budget' }));
+        await user.click(await screen.findByRole('button', { name: 'Continue' }));
+
+        expect(await screen.findByRole('heading', { name: 'Want some merch with that?' })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'No thanks' }));
+
         expect(await screen.findByRole('heading', { name: 'Add more dates.' })).toBeInTheDocument();
         await user.selectOptions(screen.getByLabelText('How should dates be added?'), 'recurring');
         await user.selectOptions(screen.getByLabelText('Frequency'), 'monthly');

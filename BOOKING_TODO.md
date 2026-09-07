@@ -37,7 +37,7 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [x] Integrate the authoritative internal PA LINE engagement, hold, and block calendar.
 - [x] Integrate Mapbox Directions behind a routing provider with a verification-pending fallback.
 - [x] Recalculate availability for exact dates and flexible windows on the server.
-- [ ] Rank flexible dates with verified server-side routing after venue geocoding.
+- [x] Rank flexible dates with verified server-side routing after venue geocoding.
 
 ## Phase 4: booking experience
 
@@ -48,10 +48,11 @@ The v50 ZIP is a standalone prototype reference. Do not extract it over this Lar
 - [ ] Add venue, event, and contact suggestions that preserve manual input.
 - [x] Add performance format, duration, sound, and TRUE POTENTIAL request steps.
 - [x] Add recurring booking generation and server-backed per-date availability review.
-- [ ] Add budget-fit and merch steps.
+- [x] Add budget-fit and merch steps.
 
 ## Phase 5: secure pricing and legal
 
+- [x] Add a versioned legal-document admin manager (server-side, immutable versions, replacing the prototype's localStorage editor). Public Review & Sign consumption of these documents is still pending below.
 - [ ] Gate individualized pricing behind verified access and confidentiality acceptance.
 - [ ] Store immutable legal document versions and acceptance audit records.
 - [ ] Build one final Review & Sign checkpoint with scroll-to-unlock acknowledgments.

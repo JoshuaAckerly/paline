@@ -10,10 +10,12 @@ use App\Models\CalendarBlock;
 use App\Models\Engagement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Tests\Concerns\ActsAsAllowedBookingUser;
 use Tests\TestCase;
 
 class AvailabilityApiTest extends TestCase
 {
+    use ActsAsAllowedBookingUser;
     use RefreshDatabase;
 
     protected function setUp(): void

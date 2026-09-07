@@ -2,18 +2,26 @@
 
 namespace Tests\Feature\Booking;
 
+use App\Contracts\GeocodingProvider;
+use App\Contracts\RoutingProvider;
 use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
+use App\Domain\Booking\BudgetFitStatus;
 use App\Domain\Booking\PerformanceFormat;
 use App\Models\BookingRequest;
 use App\Models\CalendarBlock;
 use App\Models\DemandSignal;
+use App\Services\MapboxGeocodingProvider;
+use App\Services\MapboxRoutingProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use Tests\Concerns\ActsAsAllowedBookingUser;
 use Tests\TestCase;
 
 class BookingEntryApiTest extends TestCase
 {
+    use ActsAsAllowedBookingUser;
     use RefreshDatabase;
 
     public function test_an_exact_date_creates_an_anonymous_draft_with_server_availability(): void
@@ -59,6 +67,30 @@ class BookingEntryApiTest extends TestCase
         $this->assertSame('Buffalo', $booking->preferred_city);
         $this->assertSame('NY', $booking->preferred_state);
         $this->assertFalse($booking->dates->contains(fn ($date) => $date->date->toDateString() === '2026-10-11'));
+    }
+
+    public function test_a_flexible_window_ranks_candidates_by_verified_routing_when_providers_are_configured(): void
+    {
+        Http::fake([
+            '*/geocoding/v5/*' => Http::response(['features' => [['center' => [-78.8784, 42.8864]]]]),
+            '*/directions/v5/*' => Http::response(['routes' => [['distance' => 16093.44, 'duration' => 1800]]]),
+        ]);
+        $this->app->instance(GeocodingProvider::class, new MapboxGeocodingProvider('test-token', 'https://api.mapbox.com'));
+        $this->app->instance(RoutingProvider::class, new MapboxRoutingProvider('test-token', 'https://api.mapbox.com'));
+
+        $response = $this->postJson('/booking-requests', [
+            'source_path' => 'flexible',
+            'city' => 'Buffalo',
+            'state' => 'NY',
+            'window_starts_on' => '2026-10-10',
+            'window_ends_on' => '2026-10-13',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('routing_status', 'verified')
+            ->assertJsonPath('dates.0.miles', 20);
+
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), '/geocoding/v5/mapbox.places/'));
     }
 
     public function test_an_exact_draft_is_rejected_if_the_date_is_no_longer_requestable(): void
@@ -392,6 +424,110 @@ class BookingEntryApiTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('dates');
 
         $this->assertSame(25, BookingRequest::findOrFail($draft['id'])->dates()->count());
+    }
+
+    public function test_a_workable_budget_is_stored_without_exposing_the_internal_amount(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+
+        $response = $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [
+            'draft_token' => $draft['token'],
+            'working_budget' => 100000,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('status', 'workable')
+            ->assertJsonPath('can_continue', true)
+            ->assertJsonMissingPath('required_internal_amount');
+
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertSame(100000, $booking->working_budget);
+        $this->assertSame(BudgetFitStatus::Workable, $booking->budget_status);
+    }
+
+    public function test_a_short_budget_requires_an_adjustment_before_continuing(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [
+            'draft_token' => $draft['token'],
+            'working_budget' => 1,
+        ])->assertOk()
+            ->assertJsonPath('status', 'adjustment_needed')
+            ->assertJsonPath('can_continue', false);
+    }
+
+    public function test_true_potential_always_requires_manual_budget_review(): void
+    {
+        Carbon::setTestNow('2026-09-01');
+        $draft = $this->createDetailedDraft('2027-04-10');
+        $this->patchJson('/booking-requests/'.$draft['id'].'/production', [
+            'draft_token' => $draft['token'],
+            'performance_format' => 'full_pa_line',
+            'performance_length_minutes' => 120,
+            'sound_provided' => false,
+            'house_engineer_provided' => null,
+            'true_potential_requested' => true,
+        ])->assertOk();
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [
+            'draft_token' => $draft['token'],
+            'working_budget' => 5000,
+        ])->assertOk()
+            ->assertJsonPath('status', 'manual_review')
+            ->assertJsonPath('priced_quote_allowed', false);
+    }
+
+    public function test_skipping_the_budget_clears_any_prior_selection(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+        $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [
+            'draft_token' => $draft['token'], 'working_budget' => 100000,
+        ])->assertOk();
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [
+            'draft_token' => $draft['token'], 'working_budget' => null,
+        ])->assertOk()->assertJsonPath('status', 'skipped');
+
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertNull($booking->working_budget);
+        $this->assertNull($booking->budget_status);
+    }
+
+    public function test_a_merch_package_can_be_selected_and_totaled(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+
+        $response = $this->patchJson('/booking-requests/'.$draft['id'].'/merch', [
+            'draft_token' => $draft['token'],
+            'merch_package' => 'dream',
+            'quantity' => 10,
+            'sizes' => 'assorted M-XL',
+            'recipient' => 'Venue team',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('merch_package', 'dream')
+            ->assertJsonPath('merch_quantity', 10)
+            ->assertJsonPath('merch_total', 200);
+
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertSame('Venue team', $booking->merch_recipient);
+    }
+
+    public function test_merch_requires_sizes_unless_declined(): void
+    {
+        $draft = $this->createProductionDraft('2027-01-01');
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/merch', [
+            'draft_token' => $draft['token'],
+            'merch_package' => 'rep',
+        ])->assertUnprocessable()->assertJsonValidationErrors('sizes');
+
+        $this->patchJson('/booking-requests/'.$draft['id'].'/merch', [
+            'draft_token' => $draft['token'],
+            'merch_package' => 'none',
+        ])->assertOk()->assertJsonPath('merch_total', 0);
     }
 
     /** @return array{id: string, token: string} */

@@ -7,6 +7,8 @@ const sections = [
     { label: 'Analytics', href: '/admin/analytics', description: 'Site visits and traffic.' },
     { label: 'Socials', href: '/admin/socials', description: 'Footer social links.' },
     { label: 'SEO', href: '/admin/seo', description: 'Per-page meta, Open Graph, and sitemap settings.' },
+    { label: 'Legal Documents', href: '/admin/legal', description: 'Versioned agreements, riders, and NDAs.' },
+    { label: 'Booking Access', href: '/admin/booking-access', description: 'Emails allowed into the booking preview.' },
 ];
 
 export default function AdminDashboard() {
