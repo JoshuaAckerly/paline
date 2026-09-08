@@ -10,6 +10,7 @@ Environment=APP_ENV=production
 Environment=APP_DEBUG=false
 Environment=APP_URL=https://paline-preview.graveyardjokes.com
 Environment=LOG_CHANNEL=stderr
+Environment=BOOKING_ACCESS_BYPASS=true
 ExecStart=/usr/bin/php artisan serve --host=127.0.0.1 --port=8091
 Restart=on-failure
 RestartSec=5

@@ -11,6 +11,10 @@ class EnsureBookingAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if (config('booking.access_bypass')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if (! $user) {

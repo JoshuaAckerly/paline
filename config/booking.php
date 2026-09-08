@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Preview VM sits behind its own Google OAuth gate (oauth2-proxy), so the
+    // app's own magic-link allowlist gate is redundant there and can be skipped.
+    // Must stay false in real production, which has no OAuth layer in front of it.
+    'access_bypass' => env('BOOKING_ACCESS_BYPASS', false),
+
     'authentication' => [
         'magic_link_expiration_minutes' => 20,
         'redirect_after_login' => '/booking/',
