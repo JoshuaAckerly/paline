@@ -16,6 +16,15 @@ class BookingPageTest extends TestCase
         $this->get('/booking')->assertRedirect('https://demo.palineofficial.com');
     }
 
+    public function test_an_inertia_xhr_visit_gets_a_client_side_location_response_not_a_blocked_xhr_redirect(): void
+    {
+        $version = hash_file('xxh128', public_path('build/manifest.json'));
+
+        $this->get('/booking', ['X-Inertia' => 'true', 'X-Inertia-Version' => $version])
+            ->assertStatus(409)
+            ->assertHeader('X-Inertia-Location', 'https://demo.palineofficial.com');
+    }
+
     public function test_the_v50_prototype_remains_available_as_a_reference(): void
     {
         $this->assertFileExists(public_path('booking-prototype/index.html'));
