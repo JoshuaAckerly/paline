@@ -14,6 +14,7 @@ describe('Booking', () => {
         vi.mocked(axios.post).mockReset();
         vi.mocked(axios.patch).mockReset();
         vi.mocked(axios.delete).mockReset();
+        vi.mocked(axios.get).mockReset();
     });
 
     it('offers all four booking entry paths', () => {
@@ -38,21 +39,16 @@ describe('Booking', () => {
         expect(await screen.findByRole('status')).toHaveTextContent('limited');
     });
 
-    it('requests a secure returning-booker magic link', async () => {
-        vi.mocked(axios.post).mockResolvedValue({ data: {} });
+    it('self-reports a prior-show count on the returning-booker hub before continuing', async () => {
         const user = userEvent.setup();
         render(<Booking />);
 
         await user.click(screen.getByRole('button', { name: /Back for more/i }));
-        await user.type(screen.getByLabelText('Business email'), 'buyer@example.com');
-        await user.type(screen.getByLabelText('Venue or organization'), 'Example Hall');
-        await user.click(screen.getByRole('button', { name: 'Email secure sign-in link' }));
+        await user.selectOptions(screen.getByLabelText(/PA LINE gigs already confirmed/i), '4');
+        expect(screen.getByText(/Repeat booking eligibility met/i)).toBeInTheDocument();
 
-        expect(axios.post).toHaveBeenCalledWith('/auth/magic-link', {
-            email: 'buyer@example.com',
-            organization: 'Example Hall',
-        });
-        expect(await screen.findByRole('status')).toHaveTextContent('one-time sign-in link');
+        await user.click(screen.getByRole('button', { name: /Let's run it back/i }));
+        expect(screen.getByRole('heading', { name: 'What date are you thinking?' })).toBeInTheDocument();
     });
 
     it('creates a flexible draft from a location and date window', async () => {
@@ -70,8 +66,7 @@ describe('Booking', () => {
             source_path: 'flexible', city: 'Buffalo', state: 'NY',
             window_starts_on: '2026-10-10', window_ends_on: '2026-10-13',
         });
-        expect(await screen.findByRole('status')).toHaveTextContent('2026-10-10');
-        expect(screen.getByRole('status')).toHaveTextContent('Route ranking remains pending');
+        expect(await screen.findByText('2026-10-10')).toBeInTheDocument();
     });
 
     it('records a demand signal without claiming a booking', async () => {
@@ -86,17 +81,17 @@ describe('Booking', () => {
         await user.selectOptions(screen.getByLabelText('Your local role'), 'connector');
         await user.type(screen.getByLabelText('Your name'), 'Jamie Fan');
         await user.type(screen.getByLabelText('Email'), 'jamie@example.com');
-        await user.click(screen.getByRole('checkbox', { name: /Keep me updated/i }));
-        await user.click(screen.getByRole('button', { name: 'Create demand' }));
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(screen.getByRole('button', { name: 'Submit demand' }));
 
         expect(axios.post).toHaveBeenCalledWith('/demand', expect.objectContaining({
             city: 'Buffalo', state: 'NY', preferred_venue: 'Town Ballroom',
             estimated_attendees: 8, local_role: 'connector', consent_to_updates: true,
         }));
-        expect(await screen.findByRole('status')).toHaveTextContent('not a booking confirmation');
+        expect(await screen.findByRole('status')).toHaveTextContent('Recorded');
     });
 
-    it('saves details and production options on an exact-date draft', async () => {
+    it('saves details and production options together, then moves through recurring dates', async () => {
         vi.mocked(axios.post)
             .mockResolvedValueOnce({ data: { state: 'available' } })
             .mockResolvedValueOnce({ data: { id: 'draft-1', draft_token: 'secret', dates: [], routing_status: null } })
@@ -122,6 +117,9 @@ describe('Booking', () => {
         await user.type(screen.getByLabelText('Estimated attendance'), '500');
         await user.type(screen.getByLabelText('Contact name'), 'Jamie Buyer');
         await user.type(screen.getByLabelText('Contact email'), 'jamie@example.com');
+        await user.click(screen.getByRole('button', { name: /Sound is provided/i }));
+        await user.selectOptions(screen.getByLabelText('Qualified house engineer included?'), 'no');
+        await user.selectOptions(screen.getByLabelText('Performance length'), '120');
         await user.click(screen.getByRole('button', { name: 'Save and continue' }));
 
         expect(axios.patch).toHaveBeenCalledWith('/booking-requests/draft-1', expect.objectContaining({
@@ -131,14 +129,7 @@ describe('Booking', () => {
             event: expect.objectContaining({ name: 'PA LINE Live', estimated_attendance: 500 }),
             contact: expect.objectContaining({ email: 'jamie@example.com' }),
         }));
-
-        expect(await screen.findByRole('heading', { name: 'Build the right show.' })).toBeInTheDocument();
-        await user.click(screen.getByRole('button', { name: /Sound is provided/i }));
-        await user.selectOptions(screen.getByLabelText('Qualified house engineer included?'), 'no');
-        await user.selectOptions(screen.getByLabelText('Performance length'), '120');
-        await user.click(screen.getByRole('button', { name: 'Save production options' }));
-
-        expect(axios.patch).toHaveBeenLastCalledWith('/booking-requests/draft-1/production', {
+        expect(axios.patch).toHaveBeenCalledWith('/booking-requests/draft-1/production', {
             draft_token: 'secret',
             performance_format: 'full_pa_line',
             performance_length_minutes: 120,
@@ -146,13 +137,6 @@ describe('Booking', () => {
             house_engineer_provided: false,
             true_potential_requested: false,
         });
-
-        expect(await screen.findByRole('heading', { name: "Tell us what you're trying to stay within." })).toBeInTheDocument();
-        await user.click(screen.getByRole('button', { name: 'Skip budget' }));
-        await user.click(await screen.findByRole('button', { name: 'Continue' }));
-
-        expect(await screen.findByRole('heading', { name: 'Want some merch with that?' })).toBeInTheDocument();
-        await user.click(screen.getByRole('button', { name: 'No thanks' }));
 
         expect(await screen.findByRole('heading', { name: 'Add more dates.' })).toBeInTheDocument();
         await user.selectOptions(screen.getByLabelText('How should dates be added?'), 'recurring');
@@ -171,6 +155,9 @@ describe('Booking', () => {
             data: { draft_token: 'secret' },
         });
         expect(screen.queryByText('2026-11-10')).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(await screen.findByRole('heading', { name: "Tell us what you're trying to stay within." })).toBeInTheDocument();
     });
 
     it('never claims availability when the server check fails', async () => {

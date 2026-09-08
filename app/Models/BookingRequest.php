@@ -29,7 +29,11 @@ class BookingRequest extends Model
         'house_engineer_provided', 'true_potential_requested',
         'working_budget', 'budget_status',
         'merch_package', 'merch_quantity', 'merch_total', 'merch_sizes', 'merch_recipient',
-        'submitted_at',
+        'submitted_at', 'secured_at', 'prior_qualified_shows',
+        'exclusivity_requested', 'exclusivity_radius_miles', 'exclusivity_days_before',
+        'exclusivity_days_after', 'exclusivity_applies_to', 'exclusivity_exceptions', 'exclusivity_fee',
+        'tech_rider_status', 'tech_rider_issue', 'tech_rider_acknowledged_at',
+        'confirmed_at', 'confirmed_travel_charge',
     ];
 
     protected function casts(): array
@@ -46,6 +50,10 @@ class BookingRequest extends Model
             'performance_format' => PerformanceFormat::class,
             'budget_status' => BudgetFitStatus::class,
             'submitted_at' => 'datetime',
+            'secured_at' => 'datetime',
+            'exclusivity_requested' => 'boolean',
+            'tech_rider_acknowledged_at' => 'datetime',
+            'confirmed_at' => 'datetime',
         ];
     }
 
@@ -77,5 +85,20 @@ class BookingRequest extends Model
     public function holds(): HasMany
     {
         return $this->hasMany(BookingHold::class);
+    }
+
+    public function documentReviews(): HasMany
+    {
+        return $this->hasMany(BookingDocumentReview::class);
+    }
+
+    public function legalAcknowledgments(): HasMany
+    {
+        return $this->hasMany(BookingLegalAcknowledgment::class);
+    }
+
+    public function routeSavingsEvents(): HasMany
+    {
+        return $this->hasMany(RouteSavingsEvent::class);
     }
 }

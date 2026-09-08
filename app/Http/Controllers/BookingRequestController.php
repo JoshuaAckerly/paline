@@ -7,6 +7,7 @@ use App\Domain\Booking\AvailabilityState;
 use App\Domain\Booking\BookingSourcePath;
 use App\Domain\Booking\BookingStatus;
 use App\Domain\Booking\BudgetFitEvaluator;
+use App\Domain\Booking\ExclusivityCalculator;
 use App\Domain\Booking\PerformanceFormat;
 use App\Domain\Booking\RecurringDateGenerator;
 use App\Domain\Booking\RecurringFrequency;
@@ -14,9 +15,11 @@ use App\Exceptions\GeocodingUnavailableException;
 use App\Models\BookingDate;
 use App\Models\BookingRequest;
 use App\Models\Contact;
+use App\Models\Organization;
 use App\Models\Venue;
 use App\Services\BookingDraftAccess;
 use App\Services\BookingCalendar;
+use App\Services\BookingUserAccess;
 use App\Services\FlexibleDateRouter;
 use App\Services\PreliminaryQuoteEstimator;
 use Carbon\CarbonImmutable;
@@ -556,5 +559,123 @@ class BookingRequestController extends Controller
             'status' => 'submitted',
             'submitted_at' => $bookingRequest->submitted_at->toIso8601String(),
         ]);
+    }
+
+    /**
+     * "Secure Access" from the prototype, adapted to this app's architecture: the
+     * booker is already authenticated (the whole /booking route requires it), so
+     * this step claims the anonymous draft for that authenticated user instead of
+     * sending a second magic link, then unlocks the confidentiality/pricing steps.
+     */
+    public function claim(Request $request, BookingRequest $bookingRequest, BookingDraftAccess $draftAccess): JsonResponse
+    {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        if ($bookingRequest->venue_id === null) {
+            throw ValidationException::withMessages(['booking' => 'Complete the event details before securing this booking.']);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'organization' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = $request->user();
+
+        DB::transaction(function () use ($bookingRequest, $validated, $user): void {
+            $organization = Organization::firstOrCreate(
+                ['name' => $validated['organization']],
+                ['type' => 'other'],
+            );
+            $organization->users()->syncWithoutDetaching([$user->id => ['role' => 'booker']]);
+
+            $venue = $bookingRequest->venue;
+            if ($venue !== null && $venue->organization_id === null) {
+                $venue->update(['organization_id' => $organization->id]);
+            }
+
+            $bookingRequest->update([
+                'requester_user_id' => $user->id,
+                'secured_at' => now(),
+                'status' => BookingStatus::ConfidentialityRequired,
+            ]);
+        });
+
+        return response()->json([
+            'status' => 'secured',
+            'secured_at' => $bookingRequest->fresh()->secured_at->toIso8601String(),
+        ]);
+    }
+
+    public function updateReturningProfile(Request $request, BookingRequest $bookingRequest, BookingDraftAccess $draftAccess): JsonResponse
+    {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        $validated = $request->validate([
+            'prior_qualified_shows' => ['required', 'integer', 'min:0', 'max:4'],
+        ]);
+
+        $bookingRequest->update($validated);
+
+        return response()->json([
+            'status' => 'returning_profile_saved',
+            'prior_qualified_shows' => $bookingRequest->prior_qualified_shows,
+            'repeat_eligible' => $bookingRequest->prior_qualified_shows >= 4,
+        ]);
+    }
+
+    public function updateExclusivity(
+        Request $request,
+        BookingRequest $bookingRequest,
+        BookingUserAccess $access,
+        ExclusivityCalculator $calculator,
+    ): JsonResponse {
+        $access->authorize($bookingRequest, $request->user());
+
+        $validated = $request->validate([
+            'requested' => ['required', 'boolean'],
+            'radius_miles' => ['required_if:requested,true', 'nullable', Rule::in([25, 50, 75, 100, 150])],
+            'days_before' => ['required_if:requested,true', 'nullable', Rule::in([7, 14, 30, 60])],
+            'days_after' => ['required_if:requested,true', 'nullable', Rule::in([7, 14, 30, 60])],
+            'applies_to' => ['required_if:requested,true', 'nullable', Rule::in(['public_performances', 'ticketed_public_performances', 'all_appearances'])],
+            'exceptions' => ['required_if:requested,true', 'nullable', Rule::in(['none', 'existing_bookings', 'private_events', 'festivals', 'discuss_with_pa_line'])],
+        ]);
+
+        $fee = $validated['requested']
+            ? $calculator->calculateFee($validated['radius_miles'], $validated['days_before'], $validated['days_after'])
+            : null;
+
+        $bookingRequest->update([
+            'exclusivity_requested' => $validated['requested'],
+            'exclusivity_radius_miles' => $validated['requested'] ? $validated['radius_miles'] : null,
+            'exclusivity_days_before' => $validated['requested'] ? $validated['days_before'] : null,
+            'exclusivity_days_after' => $validated['requested'] ? $validated['days_after'] : null,
+            'exclusivity_applies_to' => $validated['requested'] ? $validated['applies_to'] : null,
+            'exclusivity_exceptions' => $validated['requested'] ? $validated['exceptions'] : null,
+            'exclusivity_fee' => $fee,
+        ]);
+
+        return response()->json(['status' => 'exclusivity_saved', 'exclusivity_fee' => $fee]);
+    }
+
+    public function updateTechnicalRider(Request $request, BookingRequest $bookingRequest, BookingUserAccess $access): JsonResponse
+    {
+        $access->authorize($bookingRequest, $request->user());
+
+        $validated = $request->validate([
+            'can_accommodate' => ['required', 'boolean'],
+            'issue' => ['required_if:can_accommodate,false', 'nullable', 'string', 'max:2000'],
+            'acknowledged' => ['required', 'accepted'],
+        ]);
+
+        $bookingRequest->update([
+            'tech_rider_status' => $validated['can_accommodate'] ? 'can_accommodate' : 'needs_discussion',
+            'tech_rider_issue' => $validated['can_accommodate'] ? null : $validated['issue'],
+            'tech_rider_acknowledged_at' => now(),
+        ]);
+
+        return response()->json(['status' => 'technical_rider_saved']);
     }
 }

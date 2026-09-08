@@ -37,17 +37,73 @@ class PreliminaryQuoteEstimator
 
         $base = $this->pricing->seasonAdjustedBase($format, $date);
         $sound = $this->pricing->soundFee($format, (bool) $booking->sound_provided);
-        $travel = $this->estimateTravel($booking, $base);
+        $travel = $this->travelDetails($booking, $base);
 
-        return $base + $sound + $travel;
+        return $base + $sound + $travel['mileageCost'] + $travel['extendedAllowance'];
     }
 
-    private function estimateTravel(BookingRequest $booking, int $seasonAdjustedBase): int
+    /**
+     * Full itemized breakdown for the public quote-reveal step. Never called until the
+     * booker has accepted the confidentiality agreement (checked by the caller).
+     *
+     * @return array{
+     *     priced: bool,
+     *     reason?: string,
+     *     format?: string,
+     *     seasonMultiplier?: float,
+     *     performanceBase?: int,
+     *     soundFee?: int,
+     *     mileage?: float,
+     *     mileageCost?: int,
+     *     driveHours?: float,
+     *     extendedTravelAllowance?: int,
+     *     soundTechnicianCost?: int,
+     *     total?: int,
+     * }
+     */
+    public function itemize(BookingRequest $booking): array
+    {
+        if ($booking->true_potential_requested) {
+            return ['priced' => false, 'reason' => 'true_potential'];
+        }
+
+        if ($booking->budget_status?->value === 'manual_review') {
+            return ['priced' => false, 'reason' => 'manual_review'];
+        }
+
+        $format = $booking->performance_format ?? PerformanceFormat::FullPaLine;
+        $date = $booking->primary_date ?? CarbonImmutable::today();
+
+        $base = $this->pricing->seasonAdjustedBase($format, $date);
+        $sound = $this->pricing->soundFee($format, (bool) $booking->sound_provided);
+        $travel = $this->travelDetails($booking, $base);
+        $needsTechnician = (bool) $booking->sound_provided && $booking->house_engineer_provided === false;
+        $technicianCost = $this->pricing->soundTechnicianCost($travel['miles'], $needsTechnician);
+
+        return [
+            'priced' => true,
+            'format' => $format->value,
+            'seasonMultiplier' => $this->pricing->seasonMultiplier($date),
+            'performanceBase' => $base,
+            'soundFee' => $sound,
+            'mileage' => $travel['miles'],
+            'mileageCost' => $travel['mileageCost'],
+            'driveHours' => $travel['driveHours'],
+            'extendedTravelAllowance' => $travel['extendedAllowance'],
+            'soundTechnicianCost' => $technicianCost,
+            'total' => $base + $sound + $travel['mileageCost'] + $travel['extendedAllowance'] + $technicianCost,
+        ];
+    }
+
+    /**
+     * @return array{miles: float, driveHours: float, mileageCost: int, extendedAllowance: int}
+     */
+    private function travelDetails(BookingRequest $booking, int $seasonAdjustedBase): array
     {
         $venue = $booking->venue;
 
         if ($venue === null) {
-            return 0;
+            return ['miles' => 0.0, 'driveHours' => 0.0, 'mileageCost' => 0, 'extendedAllowance' => 0];
         }
 
         try {
@@ -58,12 +114,17 @@ class PreliminaryQuoteEstimator
             $outbound = $this->routing->calculate($this->homeBase, $destination);
             $inbound = $this->routing->calculate($destination, $this->homeBase);
         } catch (GeocodingUnavailableException|RoutingUnavailableException) {
-            return 0;
+            return ['miles' => 0.0, 'driveHours' => 0.0, 'mileageCost' => 0, 'extendedAllowance' => 0];
         }
 
         $miles = $outbound->miles + $inbound->miles;
         $driveHours = ($outbound->driveMinutes + $inbound->driveMinutes) / 60;
 
-        return $this->pricing->mileageCost($miles) + $this->pricing->extendedTravelAllowance($seasonAdjustedBase, $driveHours);
+        return [
+            'miles' => $miles,
+            'driveHours' => $driveHours,
+            'mileageCost' => $this->pricing->mileageCost($miles),
+            'extendedAllowance' => $this->pricing->extendedTravelAllowance($seasonAdjustedBase, $driveHours),
+        ];
     }
 }

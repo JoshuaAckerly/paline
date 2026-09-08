@@ -7,6 +7,7 @@ use App\Contracts\RoutingProvider;
 use App\Domain\Booking\AvailabilityService;
 use App\Domain\Booking\BudgetFitEvaluator;
 use App\Domain\Booking\Coordinates;
+use App\Domain\Booking\ExclusivityCalculator;
 use App\Domain\Booking\LegalAcknowledgmentService;
 use App\Domain\Booking\PricingCalculator;
 use App\Domain\Booking\RecurringDateGenerator;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(BudgetFitEvaluator::class);
         $this->app->singleton(LegalAcknowledgmentService::class);
         $this->app->singleton(RouteSavingsCalculator::class);
+        $this->app->singleton(ExclusivityCalculator::class);
         $this->app->singleton(BookingCalendar::class);
 
         $this->app->singleton(

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\BookingAllowedEmailController;
+use App\Http\Controllers\Admin\BookingRequestController as AdminBookingRequestController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LegalDocumentController;
@@ -11,9 +12,12 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BookingAccessController;
+use App\Http\Controllers\BookingDocumentController;
+use App\Http\Controllers\BookingQuoteController;
 use App\Http\Controllers\BookingRequestController;
 use App\Http\Controllers\DemandController;
 use App\Http\Controllers\RoutingController;
+use App\Http\Controllers\RouteSavingsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ContactController;
@@ -57,6 +61,39 @@ Route::middleware('booking.access')->group(function (): void {
     Route::post('/booking-requests/{bookingRequest}/submit', [BookingRequestController::class, 'submit'])
         ->middleware('throttle:20,1')
         ->name('booking-requests.submit');
+    Route::patch('/booking-requests/{bookingRequest}/returning-profile', [BookingRequestController::class, 'updateReturningProfile'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.returning-profile.update');
+    Route::post('/booking-requests/{bookingRequest}/secure-access', [BookingRequestController::class, 'claim'])
+        ->middleware('throttle:20,1')
+        ->name('booking-requests.secure-access');
+    Route::patch('/booking-requests/{bookingRequest}/exclusivity', [BookingRequestController::class, 'updateExclusivity'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.exclusivity.update');
+    Route::patch('/booking-requests/{bookingRequest}/technical-rider', [BookingRequestController::class, 'updateTechnicalRider'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.technical-rider.update');
+    Route::get('/booking-requests/{bookingRequest}/documents/{documentKey}', [BookingDocumentController::class, 'show'])
+        ->middleware('throttle:60,1')
+        ->name('booking-requests.documents.show');
+    Route::post('/booking-requests/{bookingRequest}/documents/{documentKey}/reviewed', [BookingDocumentController::class, 'markReviewed'])
+        ->middleware('throttle:60,1')
+        ->name('booking-requests.documents.reviewed');
+    Route::post('/booking-requests/{bookingRequest}/confidentiality', [BookingDocumentController::class, 'acceptConfidentiality'])
+        ->middleware('throttle:20,1')
+        ->name('booking-requests.confidentiality.accept');
+    Route::post('/booking-requests/{bookingRequest}/documents/sign', [BookingDocumentController::class, 'sign'])
+        ->middleware('throttle:20,1')
+        ->name('booking-requests.documents.sign');
+    Route::get('/booking-requests/{bookingRequest}/quote', [BookingQuoteController::class, 'show'])
+        ->middleware('throttle:60,1')
+        ->name('booking-requests.quote.show');
+    Route::get('/route-savings/{routeSavingsEvent}', [RouteSavingsController::class, 'show'])
+        ->middleware('throttle:60,1')
+        ->name('route-savings.show');
+    Route::post('/route-savings/{routeSavingsEvent}/elect', [RouteSavingsController::class, 'elect'])
+        ->middleware('throttle:20,1')
+        ->name('route-savings.elect');
     Route::post('/routing/calculate', [RoutingController::class, 'calculate'])
         ->middleware('throttle:30,1')
         ->name('routing.calculate');
@@ -115,5 +152,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/booking-access', [BookingAllowedEmailController::class, 'index'])->name('booking-access.index');
     Route::post('/booking-access', [BookingAllowedEmailController::class, 'store'])->name('booking-access.store');
     Route::delete('/booking-access/{bookingAllowedEmail}', [BookingAllowedEmailController::class, 'destroy'])->name('booking-access.destroy');
+
+    Route::get('/bookings', [AdminBookingRequestController::class, 'index'])->name('bookings.index');
+    Route::post('/bookings/{bookingRequest}/confirm', [AdminBookingRequestController::class, 'confirm'])->name('bookings.confirm');
 });
 
