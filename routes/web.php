@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\BookingAllowedEmailController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\PrototypeInquiryController as AdminPrototypeInquiryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LegalDocumentController;
 use App\Http\Controllers\Admin\SeoController;
@@ -29,7 +30,9 @@ Route::get('/contact', fn () => Inertia::render('contact'))->name('contact');
 Route::get('/booking/access', [BookingAccessController::class, 'show'])->name('booking.access');
 
 Route::middleware('booking.access')->group(function (): void {
-    Route::get('/booking', fn () => Inertia::render('booking'))->name('booking');
+    // The integrated booking flow is offline for now; code stays in place.
+    // Real bookings currently go through the exact-copy static site instead.
+    Route::get('/booking', fn () => redirect()->away('https://demo.palineofficial.com'))->name('booking');
 
     Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
     Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
@@ -96,6 +99,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/messages', [ContactMessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{message}', [ContactMessageController::class, 'show'])->name('messages.show');
     Route::delete('/messages/{message}', [ContactMessageController::class, 'destroy'])->name('messages.destroy');
+
+    Route::get('/prototype-inquiries', [AdminPrototypeInquiryController::class, 'index'])->name('prototype-inquiries.index');
+    Route::get('/prototype-inquiries/{prototypeInquiry}', [AdminPrototypeInquiryController::class, 'show'])->name('prototype-inquiries.show');
+    Route::delete('/prototype-inquiries/{prototypeInquiry}', [AdminPrototypeInquiryController::class, 'destroy'])->name('prototype-inquiries.destroy');
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 

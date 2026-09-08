@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Concerns\ActsAsAllowedBookingUser;
 use Tests\TestCase;
 
@@ -12,11 +11,9 @@ class BookingPageTest extends TestCase
     use ActsAsAllowedBookingUser;
     use RefreshDatabase;
 
-    public function test_the_booking_route_opens_the_production_inertia_page(): void
+    public function test_the_booking_route_redirects_to_the_exact_copy_site(): void
     {
-        $this->get('/booking')
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('booking'));
+        $this->get('/booking')->assertRedirect('https://demo.palineofficial.com');
     }
 
     public function test_the_v50_prototype_remains_available_as_a_reference(): void

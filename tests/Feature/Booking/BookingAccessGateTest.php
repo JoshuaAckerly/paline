@@ -30,7 +30,7 @@ class BookingAccessGateTest extends TestCase
         $user = User::factory()->create(['email' => 'approved@example.com']);
         BookingAllowedEmail::create(['email' => 'Approved@Example.com']);
 
-        $this->actingAs($user)->get('/booking')->assertOk();
+        $this->actingAs($user)->get('/booking')->assertRedirect('https://demo.palineofficial.com');
     }
 
     public function test_an_unauthenticated_json_request_is_rejected_without_a_redirect(): void
