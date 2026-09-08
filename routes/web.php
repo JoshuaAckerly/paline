@@ -73,6 +73,12 @@ Route::middleware('booking.access')->group(function (): void {
     Route::patch('/booking-requests/{bookingRequest}/technical-rider', [BookingRequestController::class, 'updateTechnicalRider'])
         ->middleware('throttle:30,1')
         ->name('booking-requests.technical-rider.update');
+    Route::patch('/booking-requests/{bookingRequest}/format', [BookingRequestController::class, 'updateFormat'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.format.update');
+    Route::patch('/booking-requests/{bookingRequest}/checkout', [BookingRequestController::class, 'updateCheckout'])
+        ->middleware('throttle:30,1')
+        ->name('booking-requests.checkout.update');
     Route::get('/booking-requests/{bookingRequest}/documents/{documentKey}', [BookingDocumentController::class, 'show'])
         ->middleware('throttle:60,1')
         ->name('booking-requests.documents.show');

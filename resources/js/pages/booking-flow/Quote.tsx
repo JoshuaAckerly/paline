@@ -53,6 +53,21 @@ export function Quote({ draft, onContinue }: { draft: ActiveDraft; onContinue: (
                         <div className="col-span-full border-t pt-4" style={{ borderColor: 'var(--border)' }}><div className="text-xs uppercase" style={{ color: 'var(--muted)' }}>Total</div><strong className="text-2xl">{money(quote.total ?? 0)}</strong></div>
                     </div>
                 )}
+                {quote && quote.priced && (
+                    <div className="border-l-2 p-4" style={{ borderColor: 'var(--primary)', backgroundColor: 'var(--bg)' }}>
+                        <strong className="text-xs font-bold uppercase" style={{ color: 'var(--primary)' }}>Route price protection</strong>
+                        <h3 className="mt-1 font-semibold">Help build the route. Share the savings.</h3>
+                        <p className="mt-2 text-sm leading-6" style={{ color: 'var(--muted)' }}>
+                            Once this booking is confirmed, its travel component becomes a ceiling. If PA LINE later confirms another show before or after it and the new surrounding route lowers mileage or removes the over-8-hour allowance, this booking gets the realized travel savings. Its travel charge can go down, never up, because of a later route change.
+                        </p>
+                        <p className="mt-2 text-sm leading-6" style={{ color: 'var(--muted)' }}>
+                            <strong>Route Builder Credit:</strong> if the later confirmed show came directly through this venue or booker's documented recommendation, those realized savings are specifically identified as Route Builder Credit.
+                        </p>
+                        <p className="mt-2 text-sm leading-6" style={{ color: 'var(--muted)' }}>
+                            When savings are created, the affected booking contact is notified and can choose to have the savings returned, keep them as future booking credit, voluntarily reinvest some or all with PA LINE, or split the savings between those options.
+                        </p>
+                    </div>
+                )}
                 <button type="button" onClick={onContinue} disabled={!quote} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>Continue</button>
             </div>
         </div>

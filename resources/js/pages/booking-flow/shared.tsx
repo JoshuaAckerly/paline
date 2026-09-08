@@ -6,13 +6,13 @@ export type Path =
     | 'start' | 'exact' | 'flexible' | 'demand' | 'returning-hub'
     | 'details' | 'recurring' | 'budget'
     | 'secure-access' | 'confidentiality' | 'quote' | 'exclusivity' | 'technical-rider'
-    | 'merch' | 'document-gate';
+    | 'merch' | 'checkout' | 'document-gate';
 
 export type AvailabilityState = 'available' | 'limited' | 'held' | 'blocked';
 export type RequestState = 'idle' | 'loading' | 'success' | 'error';
 export type CandidateDate = { id: string; date: string; state: AvailabilityState; miles?: number | null };
 export type BookingDraftResponse = { id: string; draft_token: string; dates: CandidateDate[]; routing_status: string | null };
-export type ActiveDraft = BookingDraftResponse & { selectedDate: string; priorQualifiedShows?: number };
+export type ActiveDraft = BookingDraftResponse & { selectedDate: string; priorQualifiedShows?: number; performanceFormat?: string };
 export type ReviewedDate = CandidateDate & { primary: boolean };
 export type RejectedDate = { date: string; reason: string };
 

@@ -271,6 +271,7 @@ class BookingEntryApiTest extends TestCase
             'sound_provided' => true,
             'house_engineer_provided' => false,
             'true_potential_requested' => true,
+            'true_potential_budget_range' => 'not_sure',
         ])->assertOk()
             ->assertJsonPath('status', 'production_saved')
             ->assertJsonPath('performance_format', 'full_pa_line')
@@ -294,6 +295,7 @@ class BookingEntryApiTest extends TestCase
             'sound_provided' => false,
             'house_engineer_provided' => null,
             'true_potential_requested' => true,
+            'true_potential_budget_range' => 'not_sure',
         ])->assertUnprocessable()->assertJsonValidationErrors('true_potential_requested');
 
         $this->assertNull(BookingRequest::findOrFail($draft['id'])->performance_format);
@@ -469,6 +471,7 @@ class BookingEntryApiTest extends TestCase
             'sound_provided' => false,
             'house_engineer_provided' => null,
             'true_potential_requested' => true,
+            'true_potential_budget_range' => 'not_sure',
         ])->assertOk();
 
         $this->patchJson('/booking-requests/'.$draft['id'].'/budget', [

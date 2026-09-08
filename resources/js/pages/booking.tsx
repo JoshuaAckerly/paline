@@ -13,6 +13,7 @@ import { Quote } from './booking-flow/Quote';
 import { Exclusivity } from './booking-flow/Exclusivity';
 import { TechnicalRider } from './booking-flow/TechnicalRider';
 import { Merch } from './booking-flow/Merch';
+import { Checkout } from './booking-flow/Checkout';
 import { DocumentGate } from './booking-flow/DocumentGate';
 
 export default function Booking() {
@@ -56,15 +57,16 @@ export default function Booking() {
                             {path === 'exact' && <ExactDate onContinue={continueDraft} />}
                             {path === 'flexible' && <FlexibleDate onContinue={continueDraft} />}
                             {path === 'demand' && <Demand />}
-                            {path === 'details' && draft && <Details draft={draft} onContinue={() => setPath('recurring')} />}
+                            {path === 'details' && draft && <Details draft={draft} onContinue={(format) => { setDraft((current) => current && { ...current, performanceFormat: format }); setPath('recurring'); }} />}
                             {path === 'recurring' && draft && <RecurringDatesPanel draft={draft} onContinue={() => setPath('budget')} />}
-                            {path === 'budget' && draft && <BudgetFit draft={draft} onContinue={() => setPath('secure-access')} />}
+                            {path === 'budget' && draft && <BudgetFit draft={draft} onContinue={() => setPath('secure-access')} onShiftDate={() => setPath('flexible')} />}
                             {path === 'secure-access' && draft && <SecureAccess draft={draft} onContinue={() => setPath('confidentiality')} />}
                             {path === 'confidentiality' && draft && <Confidentiality draft={draft} onContinue={() => setPath('quote')} />}
                             {path === 'quote' && draft && <Quote draft={draft} onContinue={() => setPath('exclusivity')} />}
                             {path === 'exclusivity' && draft && <Exclusivity draft={draft} onContinue={() => setPath('technical-rider')} />}
                             {path === 'technical-rider' && draft && <TechnicalRider draft={draft} onContinue={() => setPath('merch')} />}
-                            {path === 'merch' && draft && <Merch draft={draft} onContinue={() => setPath('document-gate')} />}
+                            {path === 'merch' && draft && <Merch draft={draft} onContinue={() => setPath('checkout')} />}
+                            {path === 'checkout' && draft && <Checkout draft={draft} onContinue={() => setPath('document-gate')} />}
                             {path === 'document-gate' && draft && <DocumentGate draft={draft} />}
                         </div>
                     )}

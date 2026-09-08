@@ -34,6 +34,8 @@ class BookingRequest extends Model
         'exclusivity_days_after', 'exclusivity_applies_to', 'exclusivity_exceptions', 'exclusivity_fee',
         'tech_rider_status', 'tech_rider_issue', 'tech_rider_acknowledged_at',
         'confirmed_at', 'confirmed_travel_charge',
+        'true_potential_budget_range', 'true_potential_notes',
+        'contact_preference', 'contact_notes',
     ];
 
     protected function casts(): array

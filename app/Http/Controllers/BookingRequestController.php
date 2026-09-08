@@ -265,6 +265,8 @@ class BookingRequestController extends Controller
             'sound_provided' => ['required', 'boolean'],
             'house_engineer_provided' => ['nullable', 'boolean'],
             'true_potential_requested' => ['required', 'boolean'],
+            'true_potential_budget_range' => ['required_if:true_potential_requested,true', 'nullable', Rule::in(['not_sure', '2500_5000', '5000_10000', '10000_plus', 'quote_the_best'])],
+            'true_potential_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         if ($validated['sound_provided'] && ($validated['house_engineer_provided'] ?? null) === null) {
@@ -284,6 +286,12 @@ class BookingRequestController extends Controller
             ...$validated,
             'house_engineer_provided' => $validated['sound_provided']
                 ? ($validated['house_engineer_provided'] ?? null)
+                : null,
+            'true_potential_budget_range' => $validated['true_potential_requested']
+                ? $validated['true_potential_budget_range']
+                : null,
+            'true_potential_notes' => $validated['true_potential_requested']
+                ? ($validated['true_potential_notes'] ?? null)
                 : null,
         ]);
 
@@ -677,5 +685,48 @@ class BookingRequestController extends Controller
         ]);
 
         return response()->json(['status' => 'technical_rider_saved']);
+    }
+
+    /**
+     * Budget-fit alternative: swap performance format only, leaving sound/TRUE
+     * POTENTIAL choices untouched, so the budget check can be re-run immediately.
+     */
+    public function updateFormat(Request $request, BookingRequest $bookingRequest, BookingDraftAccess $draftAccess): JsonResponse
+    {
+        $credentials = $request->validate(['draft_token' => ['required', 'string', 'max:255']]);
+        $draftAccess->authorize($bookingRequest, $credentials['draft_token']);
+
+        $validated = $request->validate(['format' => ['required', Rule::enum(PerformanceFormat::class)]]);
+
+        $bookingRequest->update(['performance_format' => $validated['format']]);
+
+        return response()->json(['status' => 'format_saved', 'performance_format' => $bookingRequest->performance_format->value]);
+    }
+
+    public function updateCheckout(Request $request, BookingRequest $bookingRequest, BookingUserAccess $access): JsonResponse
+    {
+        $access->authorize($bookingRequest, $request->user());
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:40'],
+            'organization' => ['nullable', 'string', 'max:255'],
+            'preference' => ['required', Rule::in(['email', 'phone', 'text'])],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $bookingRequest->contact?->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+        ]);
+
+        $bookingRequest->update([
+            'contact_preference' => $validated['preference'],
+            'contact_notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json(['status' => 'checkout_saved']);
     }
 }

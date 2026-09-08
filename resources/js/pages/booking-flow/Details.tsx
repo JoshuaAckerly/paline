@@ -10,13 +10,15 @@ import { ChoiceButton, FlowHeader, SelectField, TextField } from './shared';
  * used to be two separate wizard steps (BookingDetails + ProductionOptions)
  * into a single continuous form/page, saved via the same two PATCH endpoints.
  */
-export function Details({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
+export function Details({ draft, onContinue }: { draft: ActiveDraft; onContinue: (format: string) => void }) {
     const [form, setForm] = useState({ venueName: '', streetAddress: '', city: '', state: 'NY', postalCode: '', eventName: '', eventType: 'public_performance', setting: 'indoor', start: '19:00', end: '22:00', attendance: '', contactName: '', contactEmail: '', contactPhone: '' });
     const [performanceFormat, setPerformanceFormat] = useState('full_pa_line');
     const [performanceLength, setPerformanceLength] = useState('90');
     const [soundProvided, setSoundProvided] = useState<boolean | null>(null);
     const [houseEngineer, setHouseEngineer] = useState('unknown');
     const [truePotential, setTruePotential] = useState(false);
+    const [tpBudgetRange, setTpBudgetRange] = useState('not_sure');
+    const [tpNotes, setTpNotes] = useState('');
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const update = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
 
@@ -42,6 +44,8 @@ export function Details({ draft, onContinue }: { draft: ActiveDraft; onContinue:
                 sound_provided: soundProvided,
                 house_engineer_provided: soundProvided ? houseEngineer === 'yes' : null,
                 true_potential_requested: truePotential,
+                true_potential_budget_range: truePotential ? tpBudgetRange : undefined,
+                true_potential_notes: truePotential ? tpNotes || undefined : undefined,
             });
             if (draft.priorQualifiedShows !== undefined) {
                 await axios.patch(`/booking-requests/${draft.id}/returning-profile`, {
@@ -50,7 +54,7 @@ export function Details({ draft, onContinue }: { draft: ActiveDraft; onContinue:
                 });
             }
             setRequestState('success');
-            onContinue();
+            onContinue(performanceFormat);
         } catch {
             setRequestState('error');
         }
@@ -108,11 +112,31 @@ export function Details({ draft, onContinue }: { draft: ActiveDraft; onContinue:
                 {soundProvided === true && <SelectField id="house-engineer" label="Qualified house engineer included?" value={houseEngineer} onChange={setHouseEngineer} options={[['unknown', 'Choose one'], ['yes', 'Yes'], ['no', 'No']]} />}
                 <fieldset className="border-l-2 p-5" style={{ borderColor: truePotentialEligible ? 'var(--primary)' : 'var(--border)', backgroundColor: 'var(--bg)' }}>
                     <legend className="px-2 text-sm font-bold uppercase">TRUE POTENTIAL</legend>
-                    <p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>Expanded musicians, production, preparation, and promotion require a custom quote and at least six months of lead time.</p>
+                    <p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>Make it the best possible show with expanded musicians, production, preparation, and promotion. Requires a custom quote and at least six months of lead time.</p>
+                    {truePotentialEligible && (
+                        <div className="mt-4 border p-4" style={{ borderColor: 'var(--border)' }}>
+                            <strong className="text-xs font-bold uppercase" style={{ color: 'var(--primary)' }}>Required production package</strong>
+                            <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2" style={{ color: 'var(--muted)' }}>
+                                {[
+                                    'Dedicated sound engineer', 'Stage hands', 'Appropriate security',
+                                    'Uninterrupted soundcheck morning of or day before', 'Lighting director with equipment',
+                                    'Peak-optimal audio equipment within room allowance',
+                                    'Heavy shared content promotion with matched promotional expense',
+                                    'Dedicated street team', 'Three paid rehearsals', 'Must be booked 6+ months in advance',
+                                ].map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                        </div>
+                    )}
                     <label className="mt-4 flex items-start gap-3 text-sm">
                         <input type="checkbox" checked={truePotential} disabled={!truePotentialEligible} onChange={(event) => setTruePotential(event.target.checked)} className="mt-0.5 h-5 w-5" />
                         <span>{truePotentialEligible ? 'Request a TRUE POTENTIAL custom production review.' : 'This date is inside the six-month production window.'}</span>
                     </label>
+                    {truePotential && (
+                        <div className="mt-4 grid gap-5 md:grid-cols-2">
+                            <SelectField id="tp-budget" label="Production budget range" value={tpBudgetRange} onChange={setTpBudgetRange} options={[['not_sure', 'Not sure yet'], ['2500_5000', '$2,500 to $5,000'], ['5000_10000', '$5,000 to $10,000'], ['10000_plus', '$10,000+'], ['quote_the_best', 'Build the best version and quote it']]} />
+                            <TextField id="tp-notes" label="Creative notes (optional)" required={false} value={tpNotes} onChange={setTpNotes} />
+                        </div>
+                    )}
                 </fieldset>
                 <button type="submit" disabled={requestState === 'loading' || requestState === 'success' || !canSubmit} className="inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 text-sm font-semibold uppercase disabled:opacity-50" style={{ backgroundColor: 'var(--primary)', color: 'var(--bg)' }}>
                     {requestState === 'loading' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : requestState === 'success' ? <Check className="h-4 w-4" /> : null}

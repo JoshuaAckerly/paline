@@ -4,8 +4,9 @@ import { FormEvent, useState } from 'react';
 import type { ActiveDraft, RequestState } from './shared';
 import { FlowHeader, fieldClass, fieldStyle } from './shared';
 
-export function BudgetFit({ draft, onContinue }: { draft: ActiveDraft; onContinue: () => void }) {
+export function BudgetFit({ draft, onContinue, onShiftDate }: { draft: ActiveDraft; onContinue: () => void; onShiftDate: () => void }) {
     const [budget, setBudget] = useState('');
+    const [format, setFormat] = useState(draft.performanceFormat ?? 'full_pa_line');
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [outcome, setOutcome] = useState<{ status: string; canContinue: boolean } | null>(null);
 
@@ -30,9 +31,20 @@ export function BudgetFit({ draft, onContinue }: { draft: ActiveDraft; onContinu
         submitBudget(amount > 0 ? amount : null);
     };
 
+    const switchFormat = async (nextFormat: 'duo' | 'solo') => {
+        setRequestState('loading');
+        try {
+            await axios.patch(`/booking-requests/${draft.id}/format`, { draft_token: draft.draft_token, format: nextFormat });
+            setFormat(nextFormat);
+            await submitBudget(Number(budget) || null);
+        } catch {
+            setRequestState('error');
+        }
+    };
+
     const messages: Record<string, string> = {
         workable: 'That budget looks workable. An itemized quote follows after the confidentiality agreement.',
-        adjustment_needed: 'The current format and routing sit above that budget. Adjust the plan below, or send it to PA LINE for manual review.',
+        adjustment_needed: 'That number is below the current configuration. We would rather adjust the show than shut the conversation down.',
         manual_review: 'Noted. This booking will go to PA LINE for a manual budget review without a fixed quote attached yet.',
         skipped: 'No working budget set. Full pricing follows after the confidentiality agreement.',
     };
@@ -52,7 +64,34 @@ export function BudgetFit({ draft, onContinue }: { draft: ActiveDraft; onContinu
                     <div role="status" className="border-l-2 p-4" style={{ borderColor: outcome.status === 'adjustment_needed' ? 'var(--primary)' : '#69c587', backgroundColor: 'var(--bg)' }}>
                         <strong className="uppercase">{outcome.status.replace('_', ' ')}</strong>
                         <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>{messages[outcome.status]}</p>
-                        {outcome.status === 'adjustment_needed' && <button type="button" onClick={() => submitBudget(Number(budget), true)} className="mt-3 inline-flex min-h-11 items-center justify-center border px-5 text-xs font-semibold uppercase" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>Send for manual budget review anyway</button>}
+                        {outcome.status === 'adjustment_needed' && (
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                <button type="button" onClick={onShiftDate} className="min-h-24 border p-3 text-left" style={{ borderColor: 'var(--border)' }}>
+                                    <span className="block text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>Date / season</span>
+                                    <strong className="mt-1 block">Shift the timeline</strong>
+                                    <span className="mt-1 block text-xs" style={{ color: 'var(--muted)' }}>Off-peak, better-routed dates →</span>
+                                </button>
+                                {format !== 'duo' && (
+                                    <button type="button" onClick={() => switchFormat('duo')} className="min-h-24 border p-3 text-left" style={{ borderColor: 'var(--border)' }}>
+                                        <span className="block text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>Format</span>
+                                        <strong className="mt-1 block">Make it a duo</strong>
+                                        <span className="mt-1 block text-xs" style={{ color: 'var(--muted)' }}>Try duo →</span>
+                                    </button>
+                                )}
+                                {format !== 'solo' && (
+                                    <button type="button" onClick={() => switchFormat('solo')} className="min-h-24 border p-3 text-left" style={{ borderColor: 'var(--border)' }}>
+                                        <span className="block text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>Format</span>
+                                        <strong className="mt-1 block">Make it solo</strong>
+                                        <span className="mt-1 block text-xs" style={{ color: 'var(--muted)' }}>Try solo →</span>
+                                    </button>
+                                )}
+                                <button type="button" onClick={() => submitBudget(Number(budget), true)} className="min-h-24 border p-3 text-left" style={{ borderColor: 'var(--primary)' }}>
+                                    <span className="block text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>Keep the plan</span>
+                                    <strong className="mt-1 block">Work with my limit</strong>
+                                    <span className="mt-1 block text-xs" style={{ color: 'var(--muted)' }}>Submit for budget review →</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
                 {requestState === 'error' && <p role="alert" className="text-sm text-red-300">The budget could not be saved. Please try again.</p>}

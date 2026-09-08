@@ -4,6 +4,7 @@ namespace Tests\Feature\Booking;
 
 use App\Contracts\RoutingProvider;
 use App\Domain\Booking\BookingStatus;
+use App\Domain\Booking\PerformanceFormat;
 use App\Domain\Booking\RouteEstimate;
 use App\Models\BookingRequest;
 use App\Models\LegalDocument;
@@ -112,6 +113,60 @@ class BookingSecureFlowTest extends TestCase
         ])->assertOk();
 
         $this->assertSame('needs_discussion', $booking->fresh()->tech_rider_status);
+    }
+
+    public function test_budget_fit_format_switch_updates_performance_format_only(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+
+        $response = $this->patchJson('/booking-requests/'.$draft['id'].'/format', [
+            'draft_token' => $draft['token'],
+            'format' => 'duo',
+        ]);
+
+        $response->assertOk()->assertJsonPath('performance_format', 'duo');
+        $this->assertSame(PerformanceFormat::Duo, BookingRequest::findOrFail($draft['id'])->performance_format);
+    }
+
+    public function test_checkout_saves_contact_preference_and_notes(): void
+    {
+        $booking = $this->claimedBooking('2027-04-10');
+
+        $response = $this->patchJson('/booking-requests/'.$booking->id.'/checkout', [
+            'name' => 'Jamie Buyer',
+            'email' => 'jamie@example.com',
+            'phone' => '716-555-0100',
+            'organization' => 'Town Ballroom Presents',
+            'preference' => 'text',
+            'notes' => 'Please call after 5pm.',
+        ]);
+
+        $response->assertOk()->assertJsonPath('status', 'checkout_saved');
+        $booking->refresh();
+        $this->assertSame('text', $booking->contact_preference);
+        $this->assertSame('Please call after 5pm.', $booking->contact_notes);
+        $this->assertSame('716-555-0100', $booking->contact->phone);
+    }
+
+    public function test_true_potential_can_store_budget_range_and_notes(): void
+    {
+        $draft = $this->createProductionDraft('2027-04-10');
+
+        $response = $this->patchJson('/booking-requests/'.$draft['id'].'/production', [
+            'draft_token' => $draft['token'],
+            'performance_format' => 'full_pa_line',
+            'performance_length_minutes' => 120,
+            'sound_provided' => false,
+            'house_engineer_provided' => null,
+            'true_potential_requested' => true,
+            'true_potential_budget_range' => '5000_10000',
+            'true_potential_notes' => 'Would love string section.',
+        ]);
+
+        $response->assertOk();
+        $booking = BookingRequest::findOrFail($draft['id']);
+        $this->assertSame('5000_10000', $booking->true_potential_budget_range);
+        $this->assertSame('Would love string section.', $booking->true_potential_notes);
     }
 
     public function test_returning_profile_self_reports_prior_qualified_shows(): void
