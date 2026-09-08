@@ -38,12 +38,14 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $isAdmin = $user !== null && in_array($user->email, config('app.admin_emails', []), true);
 
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $user?->only(['id', 'name', 'email']),
-                'isAdmin' => $user !== null && in_array($user->email, config('app.admin_emails', []), true),
+                'isAdmin' => $isAdmin,
+                'canManagePrototypeSite' => $isAdmin || ($user !== null && in_array($user->email, config('app.prototype_admin_emails', []), true)),
             ],
             'socialLinks' => SocialLink::active()->get(['platform', 'url']),
             'pageSeo' => PageSeo::forPath($request->path()),

@@ -2,16 +2,21 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
 import axios from 'axios';
 
-const nav = [
+const fullAdminNav = [
     { label: 'Dashboard', href: '/admin' },
     { label: 'Messages', href: '/admin/messages' },
     { label: 'Analytics', href: '/admin/analytics' },
     { label: 'Socials', href: '/admin/socials' },
     { label: 'SEO', href: '/admin/seo' },
+    { label: 'Prototype Site', href: '/admin/prototype-site' },
 ];
 
+const prototypeSiteNav = [{ label: 'Prototype Site', href: '/admin/prototype-site' }];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const { isAdmin, canManagePrototypeSite } = (props as unknown as { auth: { isAdmin: boolean; canManagePrototypeSite: boolean } }).auth;
+    const nav = isAdmin ? fullAdminNav : prototypeSiteNav;
 
     const logout = async () => {
         await axios.post('/auth/logout');

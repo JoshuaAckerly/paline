@@ -21,6 +21,11 @@
 /public/storage
 /storage/*.key
 /storage/pail
+
+# Published via the admin prototype-site importer, not git; deploy-production.sh's
+# `git reset --hard` must never clobber whatever's currently live.
+/public/exact-copy-site/index.html
+/public/exact-copy-site/PA_LINE_PUBLIC_BOOKING.html
 /vendor
 _ide_helper.php
 Homestead.json

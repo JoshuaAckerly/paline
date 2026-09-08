@@ -84,6 +84,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Prototype-Site Admin Emails
+    |--------------------------------------------------------------------------
+    |
+    | Scoped access: these emails can only manage the prototype-site importer
+    | (/admin/prototype-site) and never the rest of /admin (messages, prototype
+    | inquiries, etc. carry real customer PII). Kept separate from admin_emails.
+    |
+    */
+
+    'prototype_admin_emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('PROTOTYPE_ADMIN_EMAILS'))))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Auth Method
     |--------------------------------------------------------------------------
     |

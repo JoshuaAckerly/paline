@@ -16,8 +16,9 @@ class SyncAdminUsers extends Command
     public function handle(): int
     {
         $defaultPassword = config('app.admin_default_password');
+        $emails = [...config('app.admin_emails', []), ...config('app.prototype_admin_emails', [])];
 
-        foreach (config('app.admin_emails', []) as $email) {
+        foreach (array_unique($emails) as $email) {
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [

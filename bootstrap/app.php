@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'booking.access' => \App\Http\Middleware\EnsureBookingAccess::class,
+            'prototype-site.manage' => \App\Http\Middleware\EnsureCanManagePrototypeSite::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

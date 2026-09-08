@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\BookingAllowedEmailController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\PrototypeInquiryController as AdminPrototypeInquiryController;
+use App\Http\Controllers\Admin\PrototypeSiteController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LegalDocumentController;
 use App\Http\Controllers\Admin\SeoController;
@@ -127,5 +128,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/booking-access', [BookingAllowedEmailController::class, 'index'])->name('booking-access.index');
     Route::post('/booking-access', [BookingAllowedEmailController::class, 'store'])->name('booking-access.store');
     Route::delete('/booking-access/{bookingAllowedEmail}', [BookingAllowedEmailController::class, 'destroy'])->name('booking-access.destroy');
+});
+
+// Scoped access (e.g. Trevor): manage the public prototype import/publish flow
+// only, never the rest of /admin (which carries real customer PII).
+Route::middleware(['auth', 'prototype-site.manage'])->prefix('admin')->name('admin.')->group(function (): void {
+    Route::get('/prototype-site', [PrototypeSiteController::class, 'edit'])->name('prototype-site.edit');
+    Route::post('/prototype-site', [PrototypeSiteController::class, 'store'])->name('prototype-site.store');
+    Route::get('/prototype-site/{prototypeSiteVersion}/preview', [PrototypeSiteController::class, 'preview'])->name('prototype-site.preview');
+    Route::post('/prototype-site/{prototypeSiteVersion}/publish', [PrototypeSiteController::class, 'publish'])->name('prototype-site.publish');
 });
 
