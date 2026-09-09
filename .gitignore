@@ -31,3 +31,32 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Loose prototype/reference files dropped into the project root — not part of the app.
+/*.html
+/*.js
+/*.css
+/*.bat
+/*.mjs
+/*.webmanifest
+/*.png
+/*.zip
+/copilot-instructions.md
+/extensions.json
+/BUSINESS_RULES.md
+/ROADMAP.md
+/COPILOT_START_PROMPT*.md
+/README\ (3).md
+/RUN_THIS_FIRST.md
+/START_DEV_SERVER.bat
+/VALIDATE_PROJECT.bat
+/WEB_DEVELOPER_HANDOFF_v51.md
+/package\ (1).json
+/pa-line-rose*.png
+
+# Windows-style duplicate download files (e.g. "file (1).md")
+*\ (1).*
+*\ (2).*
+*\ (3).*
+*\ (4).*
+*\ (5).*

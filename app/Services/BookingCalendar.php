@@ -33,7 +33,7 @@ class BookingCalendar
             ->where('status', EngagementStatus::Confirmed)
             ->exists();
 
-        return $this->availability->stateFor($day, $confirmed, $held, $blocked, $today);
+        return $this->availability->stateFor($day, $confirmed, $held, $blocked, $today ?? now());
     }
 
     /** @return list<array{date: string, state: string}> */
