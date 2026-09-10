@@ -1,4 +1,4 @@
-// PA LINE local prototype v7.7
+// PA LINE beta cache cleanup worker
 // Caching is intentionally disabled so new builds cannot be hidden by an old cache.
 self.addEventListener("install", event => {
   self.skipWaiting();

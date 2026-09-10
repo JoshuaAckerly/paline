@@ -1,3 +1,5 @@
+> LEGACY REFERENCE ONLY. This document predates the current PA LINE Platform Beta. Use `/CURRENT_SOURCE_OF_TRUTH.md` for current development.
+
 Read `.github/copilot-instructions.md`, `docs/COPILOT_CONTEXT.md`, `docs/BUSINESS_RULES.md`, and `docs/SAFE_REFACTOR_PLAN.md` before changing code.
 
 This is the approved PA LINE booking prototype migrated into VS Code. Preserve behavior first.

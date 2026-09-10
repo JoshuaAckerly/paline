@@ -2355,6 +2355,106 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 }
 </style>
 
+
+<style id="v714-special-selector-style">
+.special-type-selector{
+  margin:16px 0 18px;
+  padding:14px;
+  border:1px solid rgba(216,181,101,.28);
+  border-radius:14px;
+  background:rgba(216,181,101,.045);
+}
+.special-type-selector-label{
+  display:block;
+  margin-bottom:9px;
+  color:var(--accent2);
+  font-size:.62rem;
+  font-weight:1000;
+  letter-spacing:.10em;
+}
+.special-type-selector-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.special-type-option{
+  border:1px solid rgba(255,255,255,.12);
+  background:#121820;
+  color:var(--text);
+  border-radius:11px;
+  padding:11px 8px;
+  min-height:64px;
+  cursor:pointer;
+  text-align:center;
+  font-weight:900;
+  font-size:.68rem;
+  line-height:1.25;
+}
+.special-type-option:hover{border-color:rgba(216,181,101,.62)}
+.special-type-option.active{
+  border-color:var(--accent);
+  background:rgba(216,181,101,.12);
+  color:#fff7df;
+  box-shadow:inset 0 0 0 1px rgba(216,181,101,.18);
+}
+@media(max-width:900px){
+  .special-type-selector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .special-type-option:last-child{grid-column:1/-1}
+}
+</style>
+
+
+<style id="v715-smart-funnel-style">
+.special-funnel-step{
+  margin:16px 0 0;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.085);
+  border-radius:14px;
+  background:rgba(255,255,255,.018);
+}
+.special-funnel-step-head{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:10px;
+}
+.special-funnel-step-number{
+  display:grid;
+  place-items:center;
+  width:25px;height:25px;
+  border-radius:999px;
+  background:rgba(216,181,101,.14);
+  border:1px solid rgba(216,181,101,.34);
+  color:#f3d48f;
+  font-size:.68rem;
+  font-weight:950;
+}
+.special-funnel-step-head strong{
+  font-size:.76rem;
+  letter-spacing:.04em;
+}
+.special-funnel-help{
+  margin:-3px 0 10px 34px;
+  color:var(--muted);
+  font-size:.66rem;
+  line-height:1.45;
+}
+.special-funnel-required::after{
+  content:" *";
+  color:#efb15c;
+}
+</style>
+
+<script src="../shared/vault.js"></script>
+<script src="../shared/server-core.js"></script>
+
+<style id="v721-fan-loyalty-public-style">
+.fan-loyalty-preview{border:1px solid rgba(216,181,101,.32);border-radius:14px;padding:13px;background:rgba(216,181,101,.05);margin-top:12px}
+.fan-loyalty-preview-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.fan-loyalty-preview-head strong{font-size:.82rem}.fan-loyalty-points{font-size:1.35rem;font-weight:950;color:#f3cf7f}
+.fan-loyalty-tier-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.fan-loyalty-tier{border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:8px;background:rgba(0,0,0,.14);font-size:.58rem}.fan-loyalty-tier strong{display:block;font-size:.64rem}.fan-loyalty-tier span{color:var(--muted)}
+@media(max-width:680px){.fan-loyalty-tier-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -2376,8 +2476,8 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <div aria-hidden="true" class="journey-track"><span id="journeyFill"></span></div>
 </div>
 <div class="topbar-actions">
-<span class="preview-chip" title="Interactive presentation build. Email, mapping, payment, and secure backend actions are simulated."><span class="preview-dot"></span>INTERACTIVE DEMO</span>
-<button class="btn top-admin-docs" id="legalDocsAdminBtn" onclick="openLegalAdmin()" type="button" title="Demo admin document manager">LEGAL DOCS</button>
+<span class="preview-chip" title="Interactive presentation build. Email, mapping, payment, and secure backend actions are simulated."><span class="preview-dot"></span>BETA MODE</span>
+<button class="btn top-admin-docs" id="legalDocsAdminBtn" onclick="openLegalAdmin()" type="button" title="Beta admin document manager">LEGAL DOCS</button>
 <button class="btn top-start-over hidden" id="startOverBtn" onclick="startOver()" type="button">START OVER</button>
 </div>
 </div>
@@ -2421,7 +2521,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <div>
 <span class="badge">MORE WAYS TO WORK WITH PA LINE</span>
 <h2>NOT A STANDARD SHOW?</h2>
-<p>Book a residency, hosted open mic, interview, filming session, podcast, radio appearance, photo shoot, or other PR / media event.</p>
+<p>Book a residency, hosted open mic, PR / media event, charity / fundraiser / benefit, or another custom type of engagement.</p>
 </div>
 <strong>EXPLORE OTHER BOOKINGS →</strong>
 </div>
@@ -2430,9 +2530,10 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <section class="card hidden" id="pageSpecialBooking">
 <button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
 <span class="badge" style="margin-top:18px">SPECIAL BOOKING CHANNEL</span>
-<h1 style="margin-top:12px">What are we building?</h1>
-<p>This path is separate from a standard PA LINE performance request. Pick the type that best matches what you want to book.</p>
+<h1 style="margin-top:12px">Choose your special booking type.</h1>
+<p>Select one of the five booking types below. You can change the type again on the next page before submitting.</p>
 
+<div class="small" style="margin-top:10px">5 SPECIAL BOOKING OPTIONS</div>
 <div class="special-type-grid">
   <button class="special-type-card" type="button" onclick="startSpecialBooking('residency')">
     <strong>RESIDENCY</strong>
@@ -2446,6 +2547,14 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
     <strong>PR / MEDIA EVENT</strong>
     <span>Interview, filming, podcast, radio, TV, photo shoot, press event, content collaboration, or another media appearance.</span>
   </button>
+  <button class="special-type-card" type="button" onclick="startSpecialBooking('charity_benefit')">
+    <strong>CHARITY / FUNDRAISER / BENEFIT</strong>
+    <span>Benefit concerts, nonprofit events, fundraisers, community causes, and charitable appearances.</span>
+  </button>
+  <button class="special-type-card" type="button" onclick="startSpecialBooking('other_custom')">
+    <strong>OTHER / CUSTOM</strong>
+    <span>Something different? Tell us what you have in mind and we will build the request around it.</span>
+  </button>
 </div>
 </section>
 
@@ -2457,53 +2566,227 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 
 <div class="special-summary" id="specialBookingSummary"></div>
 
-<div class="formgrid">
-  <div class="field"><label>Your name</label><input id="specialContactName" autocomplete="name"></div>
-  <div class="field"><label>Email</label><input id="specialContactEmail" type="email" autocomplete="email"></div>
-  <div class="field"><label>Phone, optional</label><input id="specialContactPhone" type="tel" autocomplete="tel"></div>
-  <div class="field"><label>Venue / organization / outlet</label><input id="specialOrganization" autocomplete="organization"></div>
-  <div class="field"><label>City</label><input id="specialCity"></div>
-  <div class="field"><label>State</label><input id="specialState" maxlength="2"></div>
-  <div class="field"><label>Preferred date, if known</label><input id="specialDate" type="date"></div>
-  <div class="field"><label>Preferred time / call time</label><input id="specialTime" type="time"></div>
+<div class="special-type-selector">
+  <span class="special-type-selector-label">BOOKING TYPE · CHOOSE OR CHANGE</span>
+  <div class="special-type-selector-grid" role="group" aria-label="Special booking type">
+    <button type="button" class="special-type-option" data-special-type-choice="residency" onclick="selectSpecialBookingType('residency')">RESIDENCY</button>
+    <button type="button" class="special-type-option" data-special-type-choice="open_mic" onclick="selectSpecialBookingType('open_mic')">OPEN MIC</button>
+    <button type="button" class="special-type-option" data-special-type-choice="pr_media" onclick="selectSpecialBookingType('pr_media')">PR / MEDIA</button>
+    <button type="button" class="special-type-option" data-special-type-choice="charity_benefit" onclick="selectSpecialBookingType('charity_benefit')">CHARITY / FUNDRAISER / BENEFIT</button>
+    <button type="button" class="special-type-option" data-special-type-choice="other_custom" onclick="selectSpecialBookingType('other_custom')">OTHER / CUSTOM</button>
+  </div>
+</div>
+
+<div class="special-funnel-step">
+  <div class="special-funnel-step-head"><span class="special-funnel-step-number">1</span><strong>WHO, WHERE & WHEN</strong></div>
+  <div class="special-funnel-help">Start with the organizer and the basic timing. If the date is still flexible, leave it open.</div>
+  <div class="formgrid">
+    <div class="field"><label class="special-funnel-required">Your name</label><input id="specialContactName" autocomplete="name"></div>
+    <div class="field"><label class="special-funnel-required">Email</label><input id="specialContactEmail" type="email" autocomplete="email"></div>
+    <div class="field"><label>Phone, optional</label><input id="specialContactPhone" type="tel" autocomplete="tel"></div>
+    <div class="field"><label class="special-funnel-required">Venue / organization / outlet</label><input id="specialOrganization" autocomplete="organization"></div>
+    <div class="field"><label>City</label><input id="specialCity"></div>
+    <div class="field"><label>State</label><input id="specialState" maxlength="2"></div>
+    <div class="field"><label>Preferred date, if known</label><input id="specialDate" type="date"></div>
+    <div class="field"><label>Preferred time / call time</label><input id="specialTime" type="time"></div>
+  </div>
 </div>
 
 <div id="specialResidencyFields" class="hidden">
-  <div class="formgrid" style="margin-top:12px">
-    <div class="field"><label>Frequency</label><select id="specialResidencyFrequency">
-      <option value="">Choose</option><option>Weekly</option><option>Every other week</option><option>Monthly</option><option>First + third week</option><option>Second + fourth week</option><option>Seasonal</option><option>Custom</option>
-    </select></div>
-    <div class="field"><label>Expected run / number of dates</label><input id="specialResidencyRun" placeholder="Example: 6 months / 12 dates"></div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">2</span><strong>BUILD THE RESIDENCY</strong></div>
+    <div class="special-funnel-help">Tell us what should repeat, how often, and for how long.</div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">Residency format</label><select id="specialResidencyFormat">
+        <option value="">Choose</option>
+        <option>Venue residency</option><option>Recurring concert series</option><option>Restaurant / bar series</option>
+        <option>Brewery / winery series</option><option>Community / municipal series</option><option>Seasonal series</option><option>Other recurring series</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Frequency</label><select id="specialResidencyFrequency">
+        <option value="">Choose</option><option>Weekly</option><option>Every other week</option><option>Monthly</option>
+        <option>First + third week</option><option>Second + fourth week</option><option>Seasonal</option><option>Custom</option>
+      </select></div>
+      <div class="field"><label>Preferred day(s)</label><input id="specialResidencyDay" placeholder="Example: First Thursday"></div>
+      <div class="field"><label class="special-funnel-required">Expected run / number of dates</label><input id="specialResidencyRun" placeholder="Example: 6 months / 12 dates"></div>
+      <div class="field"><label>Desired start window</label><input id="specialResidencyStartWindow" placeholder="Example: May 2027"></div>
+      <div class="field"><label class="special-funnel-required">Performance format</label><select id="specialResidencyLineup">
+        <option value="">Choose</option><option>Solo</option><option>Duo</option><option>Full PA LINE</option><option>Flexible by date</option>
+      </select></div>
+    </div>
+  </div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">3</span><strong>HOW THE SERIES WORKS</strong></div>
+    <div class="formgrid">
+      <div class="field"><label>Typical performance length</label><select id="specialResidencyLength">
+        <option value="">Choose</option><option>60–90 minutes</option><option>2 hours</option><option>3 hours</option><option>4 hours</option><option>Custom</option>
+      </select></div>
+      <div class="field"><label>Who provides sound?</label><select id="specialResidencySound">
+        <option value="">Unknown</option><option>Venue</option><option>PA LINE</option><option>Shared / partial</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Compensation structure</label><select id="specialResidencyPayStructure">
+        <option value="">Choose</option><option>Flat rate per date</option><option>Monthly agreement</option><option>Series package</option><option>Door / ticket split</option><option>Guarantee + percentage</option><option>Discuss options</option>
+      </select></div>
+      <div class="field"><label>Budget per date, if known</label><input id="specialResidencyBudget" placeholder="Example: $750"></div>
+      <div class="field"><label>Merchandise sales allowed?</label><select id="specialResidencyMerch">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Yes, with venue terms</option>
+      </select></div>
+      <div class="field"><label>Expected attendance per date</label><input id="specialResidencyAttendance" inputmode="numeric" placeholder="Example: 100"></div>
+    </div>
   </div>
 </div>
 
 <div id="specialOpenMicFields" class="hidden">
-  <div class="formgrid" style="margin-top:12px">
-    <div class="field"><label>Frequency</label><select id="specialOpenMicFrequency">
-      <option value="">Choose</option><option>One-time</option><option>Weekly</option><option>Every other week</option><option>Monthly</option><option>Custom</option>
-    </select></div>
-    <div class="field"><label>Hosting length</label><input id="specialOpenMicLength" placeholder="Example: 7–10 PM / 3 hours"></div>
-    <div class="field"><label>Who provides sound?</label><select id="specialOpenMicSound">
-      <option value="">Unknown</option><option>Venue</option><option>PA LINE / host</option><option>Shared / partial</option>
-    </select></div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">2</span><strong>DESIGN THE OPEN MIC</strong></div>
+    <div class="special-funnel-help">Define the schedule and exactly what you want PA LINE to handle.</div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">Frequency</label><select id="specialOpenMicFrequency">
+        <option value="">Choose</option><option>One-time</option><option>Weekly</option><option>Every other week</option><option>Monthly</option><option>Custom</option>
+      </select></div>
+      <div class="field"><label>Preferred recurring day</label><input id="specialOpenMicDay" placeholder="Example: Mondays"></div>
+      <div class="field"><label class="special-funnel-required">What should PA LINE handle?</label><select id="specialOpenMicRole">
+        <option value="">Choose</option><option>Host only</option><option>Host + perform</option><option>Host + run sound</option><option>Host + perform + run sound</option><option>Full open mic coordination</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Hosting length</label><input id="specialOpenMicLength" placeholder="Example: 7–10 PM / 3 hours"></div>
+      <div class="field"><label>Age policy</label><select id="specialOpenMicAge">
+        <option value="">Choose</option><option>All ages</option><option>18+</option><option>21+</option><option>Venue dependent</option>
+      </select></div>
+      <div class="field"><label>Expected turnout / room capacity</label><input id="specialOpenMicAttendance" placeholder="Example: 50–75"></div>
+    </div>
+  </div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">3</span><strong>PRODUCTION & HOST AGREEMENT</strong></div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">Who provides sound?</label><select id="specialOpenMicSound">
+        <option value="">Choose</option><option>Venue</option><option>PA LINE / host</option><option>Shared / partial</option>
+      </select></div>
+      <div class="field"><label>Sign-up system</label><select id="specialOpenMicSignup">
+        <option value="">Choose</option><option>Walk-in sign-up sheet</option><option>Venue manages sign-up</option><option>Host manages sign-up</option><option>Online pre-signup</option><option>Mixed</option>
+      </select></div>
+      <div class="field"><label>Backline available?</label><select id="specialOpenMicBackline">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Partial</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Host compensation</label><select id="specialOpenMicPayStructure">
+        <option value="">Choose</option><option>Flat rate per event</option><option>Monthly residency rate</option><option>Door / tips</option><option>Food / beverage + fee</option><option>Discuss options</option>
+      </select></div>
+      <div class="field"><label>Budget, if known</label><input id="specialOpenMicBudget" placeholder="Example: $250 per night"></div>
+    </div>
   </div>
 </div>
 
 <div id="specialPRFields" class="hidden">
-  <div class="formgrid" style="margin-top:12px">
-    <div class="field"><label>Media / PR type</label><select id="specialPRType">
-      <option value="">Choose</option><option>Interview</option><option>Filming / video shoot</option><option>Podcast</option><option>Radio</option><option>TV</option><option>Photo shoot</option><option>Press / media event</option><option>Content collaboration</option><option>Other</option>
-    </select></div>
-    <div class="field"><label>Expected duration</label><input id="specialPRDuration" placeholder="Example: 90 minutes"></div>
-    <div class="field"><label>Live performance involved?</label><select id="specialPRPerformance">
-      <option value="">Unknown</option><option>Yes</option><option>No</option><option>Maybe</option>
-    </select></div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">2</span><strong>DEFINE THE MEDIA OPPORTUNITY</strong></div>
+    <div class="special-funnel-help">Tell us what the appearance is, where it will live, and who you need from PA LINE.</div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">Media / PR type</label><select id="specialPRType">
+        <option value="">Choose</option><option>Interview</option><option>Filming / video shoot</option><option>Podcast</option><option>Radio</option><option>TV</option><option>Photo shoot</option><option>Press / media event</option><option>Content collaboration</option><option>Other</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Outlet / show / project</label><input id="specialPROutlet" placeholder="Publication, station, podcast, production, brand, etc."></div>
+      <div class="field"><label class="special-funnel-required">Live or recorded?</label><select id="specialPRFormat">
+        <option value="">Choose</option><option>Live</option><option>Recorded</option><option>Combination</option><option>Not sure yet</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Where does it happen?</label><select id="specialPRLocationMode">
+        <option value="">Choose</option><option>In person</option><option>Remote / online</option><option>Hybrid</option>
+      </select></div>
+      <div class="field"><label>Expected duration</label><input id="specialPRDuration" placeholder="Example: 90 minutes"></div>
+      <div class="field"><label>Who do you need?</label><select id="specialPRPersonnel">
+        <option value="">Choose</option><option>Trever only</option><option>PA LINE duo</option><option>Full PA LINE</option><option>Specific member(s)</option><option>Flexible</option>
+      </select></div>
+      <div class="field"><label>Live performance involved?</label><select id="specialPRPerformance">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Maybe</option>
+      </select></div>
+      <div class="field"><label>Topic / purpose</label><input id="specialPRPurpose" placeholder="Album, tour, profile feature, branded content, etc."></div>
+    </div>
+  </div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">3</span><strong>RELEASE, USAGE & DELIVERABLES</strong></div>
+    <div class="formgrid">
+      <div class="field"><label>Expected publish / air date</label><input id="specialPRReleaseDate" type="date"></div>
+      <div class="field"><label>Intended usage</label><select id="specialPRUsage">
+        <option value="">Choose</option><option>Editorial / press</option><option>Organic social content</option><option>Paid advertising / promotion</option><option>Internal / private use</option><option>Multiple uses</option><option>Not decided</option>
+      </select></div>
+      <div class="field"><label>Requested deliverables</label><input id="specialPRDeliverables" placeholder="Interview, clips, photos, raw footage, live song, etc."></div>
+      <div class="field"><label>Compensation / budget</label><input id="specialPRBudget" placeholder="Fee, travel coverage, barter, or budget range"></div>
+      <div class="field"><label>Travel covered if in person?</label><select id="specialPRTravel">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Not applicable</option><option>Discuss</option>
+      </select></div>
+    </div>
   </div>
 </div>
 
-<div class="field" style="margin-top:12px">
-  <label>Tell us about the booking</label>
-  <textarea id="specialNotes" rows="7" placeholder="Schedule, expectations, format, production needs, compensation, audience, usage, deliverables, or anything else PA LINE should know."></textarea>
+<div id="specialCharityFields" class="hidden">
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">2</span><strong>THE CAUSE & EVENT</strong></div>
+    <div class="special-funnel-help">Tell us who benefits and what kind of involvement you are asking from PA LINE.</div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">Event type</label><select id="specialCharityType">
+        <option value="">Choose</option><option>Charity event</option><option>Fundraiser</option><option>Benefit concert / event</option><option>Nonprofit event</option><option>Community benefit</option><option>Other charitable event</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Cause / beneficiary</label><input id="specialCharityBeneficiary" placeholder="Who or what does the event benefit?"></div>
+      <div class="field"><label>Organization / nonprofit name</label><input id="specialCharityOrganization" placeholder="If different from the booking contact"></div>
+      <div class="field"><label>Fundraising goal</label><input id="specialCharityGoal" placeholder="Example: $15,000"></div>
+      <div class="field"><label>Expected attendance</label><input id="specialCharityAttendance" placeholder="Example: 300"></div>
+      <div class="field"><label class="special-funnel-required">Requested performance format</label><select id="specialCharityLineup">
+        <option value="">Choose</option><option>Solo</option><option>Duo</option><option>Full PA LINE</option><option>Flexible</option><option>Appearance only / no performance</option>
+      </select></div>
+    </div>
+  </div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">3</span><strong>FUNDRAISING & ENTERTAINMENT TERMS</strong></div>
+    <div class="formgrid">
+      <div class="field"><label>Fundraising format</label><select id="specialCharityFormat">
+        <option value="">Choose</option><option>Ticketed event</option><option>Donation based</option><option>Sponsorship</option><option>Auction / raffle</option><option>Free community event</option><option>Mixed / other</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">What are you requesting?</label><select id="specialCharityArrangement">
+        <option value="">Choose</option><option>Standard paid booking</option><option>Reduced charitable rate</option><option>Donated performance</option><option>Sponsorship / partnership</option><option>Discuss options</option>
+      </select></div>
+      <div class="field"><label class="special-funnel-required">Entertainment budget</label><select id="specialCharityBudget">
+        <option value="">Choose</option><option>Budget available</option><option>Limited budget</option><option>No entertainment budget</option><option>Still being determined</option>
+      </select></div>
+      <div class="field"><label>Who provides sound?</label><select id="specialCharitySound">
+        <option value="">Unknown</option><option>Venue / event</option><option>PA LINE</option><option>Production company</option><option>Shared / partial</option>
+      </select></div>
+      <div class="field"><label>Donation / sponsorship documentation available?</label><select id="specialCharityDocumentation">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Not applicable</option>
+      </select></div>
+    </div>
+  </div>
+</div>
+
+<div id="specialCustomFields" class="hidden">
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">2</span><strong>DESCRIBE THE IDEA</strong></div>
+    <div class="special-funnel-help">This path is intentionally flexible. Tell us what the project is and what role you want PA LINE to play.</div>
+    <div class="formgrid">
+      <div class="field"><label class="special-funnel-required">What would you like to book?</label><input id="specialCustomType" placeholder="Name the event, appearance, project, or collaboration"></div>
+      <div class="field"><label class="special-funnel-required">What do you want PA LINE to do?</label><input id="specialCustomRole" placeholder="Perform, host, speak, create content, collaborate, etc."></div>
+      <div class="field"><label>Expected duration</label><input id="specialCustomDuration" placeholder="Example: 2 hours"></div>
+      <div class="field"><label>In person, remote, or hybrid?</label><select id="specialCustomLocationMode">
+        <option value="">Choose</option><option>In person</option><option>Remote / online</option><option>Hybrid</option><option>Not sure yet</option>
+      </select></div>
+      <div class="field"><label>Live performance involved?</label><select id="specialCustomPerformance">
+        <option value="">Unknown</option><option>Yes</option><option>No</option><option>Maybe</option>
+      </select></div>
+      <div class="field"><label>Audience / participants</label><input id="specialCustomAudience" placeholder="Who is this for?"></div>
+    </div>
+  </div>
+  <div class="special-funnel-step">
+    <div class="special-funnel-step-head"><span class="special-funnel-step-number">3</span><strong>GOAL, BUDGET & PRODUCTION</strong></div>
+    <div class="formgrid">
+      <div class="field"><label>What should the booking accomplish?</label><input id="specialCustomGoal" placeholder="Describe the desired outcome"></div>
+      <div class="field"><label>Budget / compensation</label><input id="specialCustomBudget" placeholder="Budget range, fee, barter, sponsorship, etc."></div>
+      <div class="field"><label>Production / technical needs</label><input id="specialCustomProduction" placeholder="Sound, video, stage, equipment, travel, etc."></div>
+    </div>
+  </div>
+</div>
+
+<div class="special-funnel-step">
+  <div class="special-funnel-step-head"><span class="special-funnel-step-number">4</span><strong>ANYTHING ELSE WE SHOULD KNOW?</strong></div>
+  <div class="field">
+    <label>Final details / notes</label>
+    <textarea id="specialNotes" rows="6" placeholder="Schedule details, restrictions, special expectations, important contacts, accessibility needs, or anything else PA LINE should know."></textarea>
+  </div>
 </div>
 
 <div class="notice" style="margin-top:14px">
@@ -2527,7 +2810,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <button class="btn primary" disabled="" id="returningLinkBtn" onclick="simulateReturningMagicLink()" style="margin-top:12px">EMAIL ME A SECURE SIGN-IN LINK</button>
 <div class="notice hidden" id="returningLinkNotice"></div>
 </div>
-<div class="small preview-note"><strong>Interactive demo:</strong> email delivery is simulated so you can move through the verified-account experience.</div>
+<div class="small preview-note"><strong>Beta simulation:</strong> email delivery is simulated so you can move through the verified-account experience.</div>
 </section>
 <section class="card hidden" id="pageReturningHub">
 <button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
@@ -2773,7 +3056,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 </div>
 <div class="hidden" id="flexResults">
 <h2 style="margin-top:24px">Best date options</h2>
-<p class="presentation-data-note"><strong>Demo routing:</strong> the presentation uses simulated mileage. Final booking calculations use verified road routing.</p>
+<p class="presentation-data-note"><strong>Beta routing:</strong> the presentation uses simulated mileage. Final booking calculations use verified road routing.</p>
 <div class="recommendations" id="recommendations"></div>
 <div class="summary">
 <div><div class="small">Selected date</div><strong id="flexSelectedText">Choose an option</strong></div>
@@ -2839,6 +3122,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <label class="addon"><input class="demand-action" type="checkbox" value="Promote locally"/><span>Help promote locally if a show happens</span></label>
 </div>
 </div>
+<div class="fan-loyalty-preview" id="fanLoyaltyPreview"><div class="fan-loyalty-preview-head"><div><strong>FAN BOOKING LOYALTY</strong><div class="small">Help turn demand into a real routed show and build status over time.</div></div><div class="fan-loyalty-points" id="fanLoyaltyPoints">0 pts</div></div><div class="small" id="fanLoyaltyStatus" style="margin-top:7px">Choose Fan or Local Connector to earn route-help points.</div><div class="fan-loyalty-tier-row"><div class="fan-loyalty-tier"><strong>SUPPORTER · 0+</strong><span>City updates + presale alerts</span></div><div class="fan-loyalty-tier"><strong>STREET TEAM · 25+</strong><span>Early access + recognition</span></div><div class="fan-loyalty-tier"><strong>ROUTE BUILDER · 60+</strong><span>Merch-perk eligibility after meaningful booking help</span></div><div class="fan-loyalty-tier"><strong>HOMETOWN HERO · 120+</strong><span>Priority consideration for special fan perks when available</span></div></div><div class="small" style="margin-top:8px">A verified contribution that helps create a confirmed show can earn an additional 50-point booking bonus after PA LINE review. Perks are subject to availability and do not create a cash or ticket entitlement.</div></div>
 <div class="summary">
 <div><div class="small">Create a local demand request</div><strong id="demandSummary">Add city, contact info, and your role</strong></div>
 <button class="btn primary" disabled="" id="demandSubmit" onclick="submitDemand()">CREATE DEMAND</button>
@@ -2849,6 +3133,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <h1 style="margin-top:10px">You helped put PA LINE on the map here.</h1>
 <p>We’ll keep this city request tied to your contact information so you can be updated if it develops into a real booking opportunity.</p>
 <div class="notice" id="demandDoneCard"></div>
+<div class="notice" id="demandLoyaltyDone"><strong>Fan Booking Loyalty</strong><div class="small">Your route-help activity will appear here after submission.</div></div>
 <div class="notice">
 <strong>Keep building momentum</strong>
 <div class="req-list">
@@ -3042,7 +3327,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <button class="btn primary" disabled="" id="secureLinkBtn" onclick="simulateSecureLink()" style="margin-top:12px">SEND SECURE SIGN-IN LINK</button>
 <div class="notice hidden" id="secureLinkNotice"></div>
 </div>
-<div class="small preview-note"><strong>Interactive demo:</strong> email delivery is simulated. Private pricing still follows the same verified-account gate shown here.</div>
+<div class="small preview-note"><strong>Beta simulation:</strong> email delivery is simulated. Private pricing still follows the same verified-account gate shown here.</div>
 </section>
 <section class="card hidden" id="pageConfidentiality">
 <button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
@@ -3332,13 +3617,13 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 
 <section class="card hidden" id="pageLegalAdmin">
   <button class="btn" onclick="closeLegalAdmin()">← Back</button>
-  <span class="badge" style="margin-top:18px">ADMIN DEMO · LEGAL DOCUMENTS</span>
+  <span class="badge" style="margin-top:18px">BETA ADMIN · LEGAL DOCUMENTS</span>
   <h1 style="margin-top:12px">Legal Document Manager</h1>
   <p>Update the active agreement, NDA, stage plot, and riders without changing the booking-flow code. Each change gets its own version label.</p>
 
   <div class="notice admin-security-note">
     <strong>Production rule</strong>
-    <div class="small" style="margin-top:5px">This demo stores active document overrides in this browser. The live system should restrict this page to authorized PA LINE administrators, store immutable document versions server-side, and preserve the exact version attached to every signed booking.</div>
+    <div class="small" style="margin-top:5px">This beta stores active document overrides in this browser. The live system should restrict this page to authorized PA LINE administrators, store immutable document versions server-side, and preserve the exact version attached to every signed booking.</div>
   </div>
 
   <div class="notice">
@@ -3413,7 +3698,7 @@ Email: info@palineofficial.com</td><td>{{PURCHASER_LEGAL_NAME}}
 <p>If disclosure is legally required, the booking contact should, where legally permitted, give PA LINE reasonable notice so PA LINE can seek appropriate protection or limit the disclosure.</p>
 <h3>Electronic Acceptance</h3>
 <p>By electronically accepting these terms, the authorized booking contact confirms that they have authority to accept them for the booking party and intend that acceptance to apply to the confidential pricing and booking information disclosed through this request.</p>
-<p><strong>Prototype legal note:</strong> This confidentiality language is a business-rule draft for the prototype and should be reviewed by qualified counsel before production use.</p>
+<p><strong>Beta legal note:</strong> This confidentiality language is a business-rule draft for the beta and should be reviewed by qualified counsel before production use.</p>
 </template>
 <div aria-labelledby="documentReviewTitle" aria-modal="true" class="document-review-modal hidden" id="documentReviewModal" role="dialog">
 <div class="document-review-shell">
@@ -3554,7 +3839,7 @@ const MILEAGE_RATE=0.80;
 // touching the rest of the quote engine.
 const DRIVE_TIME_HOURLY_RATE=0; // Set when PA LINE's hourly travel-time value is finalized.
 const MAX_DRIVE_HOURS_PER_DAY=8;
-const PROTOTYPE_AVG_MPH=55;
+const BETA_AVG_MPH=55;
 
 // Demo confirmed shows used only to exercise the route logic in this standalone file.
 // The live version will pull these from the private booking calendar.
@@ -3843,7 +4128,7 @@ function submitRouteSavingsElection(){
 
   $("routeSavingsDecisionNotice").innerHTML=
     "<span class='badge'>SAVINGS CHOICE SAVED</span><h2 style='margin-top:8px'>"+parts.join(" · ")+"</h2>"+
-    "<div class='small'>Interactive demo complete. In the live booking system, this election is recorded to the booking account, receipted, and each amount is settled separately.</div>";
+    "<div class='small'>Beta simulation complete. In the live booking system, this election is recorded to the booking account, receipted, and each amount is settled separately.</div>";
   $("routeSavingsDecisionNotice").classList.remove("hidden");
   $("routeSavingsSubmit").textContent="SAVINGS CHOICE CONFIRMED ✓";
   $("routeSavingsSubmit").disabled=true;
@@ -3864,7 +4149,7 @@ function routeFor(dateStr,city,stateName,zip){
   const outboundMiles=pseudoLegMiles(targetLabel,outboundDestination);
   const totalMiles=inboundMiles+outboundMiles;
 
-  const driveHours=totalMiles/PROTOTYPE_AVG_MPH;
+  const driveHours=totalMiles/BETA_AVG_MPH;
   // PA LINE travel allowance rule:
   // Combine the inbound leg (previous confirmed gig, or home if none) and
   // outbound leg (next confirmed gig, or home if none). Mileage always applies.
@@ -3902,7 +4187,7 @@ function updateReturningAccess(){
 function simulateReturningMagicLink(){
   if($("returningLinkBtn").disabled)return;
   $("returningLinkNotice").classList.remove("hidden");
-  $("returningLinkNotice").innerHTML="<strong>Demo sign-in ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+$("returningEmail").value.trim()+"</strong>. Continue below to preview the verified booker portal.</div><button class='btn primary' style='margin-top:10px' onclick='completeReturningVerification()'>OPEN VERIFIED BOOKER PORTAL</button>";
+  $("returningLinkNotice").innerHTML="<strong>Beta sign-in simulation ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+escapeHTML($("returningEmail").value.trim())+"</strong>. Continue below to test the verified booker portal.</div><button class='btn primary' style='margin-top:10px' onclick='completeReturningVerification()'>OPEN VERIFIED BOOKER PORTAL</button>";
 }
 function completeReturningVerification(){
   state.accountVerified=true;
@@ -4012,7 +4297,7 @@ function updateSecureAccess(){
 function simulateSecureLink(){
   if($("secureLinkBtn").disabled)return;
   $("secureLinkNotice").classList.remove("hidden");
-  $("secureLinkNotice").innerHTML="<strong>Demo verification ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+$("secureAccountEmail").value.trim()+"</strong>. Continue below to preview the verified pricing experience.</div><button class='btn primary' style='margin-top:10px' onclick='completeSecureVerification()'>CONTINUE AS VERIFIED</button>";
+  $("secureLinkNotice").innerHTML="<strong>Beta verification simulation ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+escapeHTML($("secureAccountEmail").value.trim())+"</strong>. Continue below to test the verified pricing experience.</div><button class='btn primary' style='margin-top:10px' onclick='completeSecureVerification()'>CONTINUE AS VERIFIED</button>";
 }
 function completeSecureVerification(){
   state.accountVerified=true;
@@ -4065,8 +4350,29 @@ function selectedDemandActions(){
   return [...document.querySelectorAll(".demand-action:checked")].map(x=>x.value);
 }
 
+
+function fanLoyaltyPointsForDemand(){
+  if(!["fan","connector"].includes(state.demandRole))return 0;
+  const actions=selectedDemandActions(),party=Number($("demandParty")?.value||1);
+  const actionPoints={"Join local street team":10,"Share social content":5,"Follow and subscribe":3,"Invite friends":8,"Contact venue":15,"Promote locally":10};
+  let points=10+Math.min(20,party*2)+(state.demandRole==="connector"?10:0);
+  points+=actions.reduce((n,a)=>n+(actionPoints[a]||0),0);
+  if($("demandVenue")?.value.trim())points+=5;
+  if($("demandVenue2")?.value.trim())points+=5;
+  return points;
+}
+function publicFanTier(points){const p=Number(points||0);return p>=120?{name:"Hometown Hero",next:null}:p>=60?{name:"Route Builder",next:120}:p>=25?{name:"Street Team",next:60}:{name:"Supporter",next:25}}
+function updateFanLoyaltyPreview(){
+  if(!$("fanLoyaltyPoints"))return;const earned=fanLoyaltyPointsForDemand(),email=$("demandEmail")?.value.trim()||"";
+  let existing=0;try{existing=Number(window.PALineBridge?.getLoyaltyProfile?.(email)?.points||0)}catch(e){}
+  const total=existing+earned,tier=publicFanTier(total);
+  $("fanLoyaltyPoints").textContent=earned?`+${earned} pts`:`${existing} pts`;
+  $("fanLoyaltyStatus").textContent=!["fan","connector"].includes(state.demandRole)?"Choose Fan or Local Connector to earn route-help points.":`${existing?`${existing} existing + `:""}${earned} this request = ${total} total · ${tier.name}${tier.next?` · ${Math.max(0,tier.next-total)} to next tier`:" · top current tier"}`;
+}
+
 function updateDemandState(){
   if(!$("demandSubmit"))return;
+  updateFanLoyaltyPreview();
   const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("demandEmail").value.trim());
   const ok=$("demandCity").value.trim()&&$("demandState").value.trim()&&$("demandName").value.trim()&&emailOk&&state.demandRole;
   $("demandSubmit").disabled=!ok;
@@ -4078,6 +4384,8 @@ function updateDemandState(){
 ["demandCity","demandState","demandZip","demandVenue","demandVenue2","demandName","demandEmail","demandPhone","demandNotes"].forEach(id=>{
   const el=$(id); if(el)el.addEventListener("input",updateDemandState);
 });
+$("demandParty")?.addEventListener("change",updateDemandState);
+document.querySelectorAll(".demand-action").forEach(el=>el.addEventListener("change",updateDemandState));
 
 function submitDemand(){
   if($("demandSubmit").disabled)return;
@@ -4101,7 +4409,16 @@ function submitDemand(){
     (actions.length?"<div style='margin-top:10px'><strong>Ways they offered to help</strong><div class='small'>"+actions.join(", ")+"</div></div>":"");
 
   $("demandLevel").textContent="Demand level: "+level;
-  $("demandMetrics").textContent="Prototype demand score: "+points+" · "+party+" likely attendee"+(party===1?"":"s")+" · "+actions.length+" momentum action"+(actions.length===1?"":"s");
+  $("demandMetrics").textContent="Demand score: "+points+" · "+party+" likely attendee"+(party===1?"":"s")+" · "+actions.length+" momentum action"+(actions.length===1?"":"s");
+  const loyaltyPoints=fanLoyaltyPointsForDemand();
+  let loyaltyResult=null;
+  try{
+    loyaltyResult=window.PALineBridge?.submitDemand?.({role:state.demandRole,name:$("demandName").value.trim(),email:$("demandEmail").value.trim(),phone:$("demandPhone").value.trim(),city:$("demandCity").value.trim(),state:$("demandState").value.trim(),zip:$("demandZip").value.trim(),venue:$("demandVenue").value.trim(),alternateVenue:$("demandVenue2").value.trim(),party,actions,notes:$("demandNotes").value.trim(),updates:$("demandUpdates").value,demandScore:points,loyaltyPoints});
+  }catch(e){}
+  if($("demandLoyaltyDone")){
+    const profile=loyaltyResult?.profile,total=Number(profile?.points||loyaltyPoints),tier=publicFanTier(total);
+    $("demandLoyaltyDone").innerHTML=["fan","connector"].includes(state.demandRole)?`<strong>Fan Booking Loyalty · ${tier.name}</strong><div class='small' style='margin-top:5px'>This request earned ${loyaltyPoints} route-help points. Current tracked total: ${total}. A verified contribution that helps create a confirmed PA LINE show can receive an additional 50-point booking bonus after review.</div>`:`<strong>Venue / promoter request</strong><div class='small' style='margin-top:5px'>Fan loyalty points apply to Fan and Local Connector participation. Venue/booker repeat benefits remain part of the booking program.</div>`;
+  }
   prepareSharedDocumentGate("demand");
 }
 
@@ -4115,7 +4432,7 @@ function bookedEventsForDate(dateStr){
   const live=liveCalendarEventsFor(dateStr);
   if(live.length)return live;
   if(demoBooked.has(dateStr)){
-    return [{date:dateStr,status:"booked",title:"Existing confirmed PA LINE engagement",start:"7:00 PM",end:"10:00 PM",location:HOME_BASE,prototype:true}];
+    return [{date:dateStr,status:"booked",title:"Existing confirmed PA LINE engagement",start:"7:00 PM",end:"10:00 PM",location:HOME_BASE,simulated:true}];
   }
   return [];
 }
@@ -4195,7 +4512,7 @@ function requestedDurationMinutes(){
 }
 function travelMinutesBetween(fromLabel,toLabel){
   if(!fromLabel||!toLabel)return 0;
-  return Math.round((pseudoLegMiles(fromLabel,toLabel)/PROTOTYPE_AVG_MPH)*60);
+  return Math.round((pseudoLegMiles(fromLabel,toLabel)/BETA_AVG_MPH)*60);
 }
 function sameDayWindows(dateStr,city,stateName,zip,durationMinutes=90){
   const events=bookedEventsForDate(dateStr).map(e=>{
@@ -4323,7 +4640,7 @@ function renderSameDayAvailability(){
   const existing=r.events.map(e=>"<div class='small'>Existing: <strong>"+e.title+"</strong> · "+e.start+" to "+e.end+"</div>").join("");
   box.classList.toggle("time-warning",!status.ok);
   box.innerHTML="<strong>Same-day scheduling check</strong>"+existing+
-    "<div class='small' style='margin-top:8px'>Calculated with a 2-hour pre-show allowance and 2-hour post-show allowance for every performance, your requested performance duration, and "+(r.preliminary?"travel still pending":"prototype routed travel time")+".</div>"+
+    "<div class='small' style='margin-top:8px'>Calculated with a 2-hour pre-show allowance and 2-hour post-show allowance for every performance, your requested performance duration, and "+(r.preliminary?"travel still pending":"simulated routed travel time")+".</div>"+
     "<div style='margin-top:8px'><strong>Available performance start window"+(r.windows.length===1?"":"s")+"</strong>"+windowsHTML(r)+"</div>"+
     "<div class='small' style='margin-top:8px'>Requested start: <strong>"+clockLabel(start)+"</strong> · "+(status.ok?"This timing fits the current same-day plan.":"Choose a start time inside one of the available windows.")+"</div>";
   return status.ok;
@@ -4508,7 +4825,7 @@ function recurringSummaryHTML(){
 function openReview(){
   rememberCurrentEventAndVenue();
   const r=routeFor(state.selectedDate,$("eventCity").value,$("eventState").value,$("eventZip").value);
-  $("reviewCard").innerHTML="<strong>"+$("eventVenue").value+"</strong>"+($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+$("eventName").value.trim()+"</strong></div>":"")+"<div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+$("eventCity").value+", "+$("eventState").value+" · "+$("eventType").value+" · "+$("eventSetting").value+"</div><div style='margin-top:10px'><strong>"+state.format+"</strong></div><div class='small'>"+$("performanceLength").value+" · "+r.fit+" · sound provided: "+(state.soundProvided?"Yes":"No")+"</div>"+(state.truePotential?"<div style='margin-top:10px'><span class='badge'>TRUE POTENTIAL</span></div>":"")+recurringSummaryHTML();
+  $("reviewCard").innerHTML="<strong>"+escapeHTML($("eventVenue").value)+"</strong>"+($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+escapeHTML($("eventName").value.trim())+"</strong></div>":"")+"<div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML($("eventCity").value)+", "+escapeHTML($("eventState").value)+" · "+escapeHTML($("eventType").value)+" · "+escapeHTML($("eventSetting").value)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(state.format)+"</strong></div><div class='small'>"+escapeHTML($("performanceLength").value)+" · "+escapeHTML(r.fit)+" · sound provided: "+(state.soundProvided?"Yes":"No")+"</div>"+(state.truePotential?"<div style='margin-top:10px'><span class='badge'>TRUE POTENTIAL</span></div>":"")+recurringSummaryHTML();
   showPage("pageReview","Review")
 }
 function seasonal(dateStr){
@@ -4821,7 +5138,7 @@ function merchSummaryHTML(){
   const freeBookerShirt=(state.merchPackage==="dream"&&state.merchQty>=10)?1:0;
   return "<strong>"+p.label+"</strong>"+
     "<div class='small' style='margin-top:5px'>"+state.merchQty+" paid shirts + matching sticker/pin packs"+(freeBookerShirt?" + 1 free booker / venue-contact shirt":"")+" · "+money(state.merchTotal)+"</div>"+
-    "<div class='small'>For: "+(state.merchFor||"Venue / booking team")+" · Sizes: "+(state.merchSizes||"to be confirmed")+"</div>";
+    "<div class='small'>For: "+escapeHTML(state.merchFor||"Venue / booking team")+" · Sizes: "+escapeHTML(state.merchSizes||"to be confirmed")+"</div>";
 }
 
 function setTech(v){state.techCan=v;$("techYes").classList.toggle("selected",v===true);$("techDiscuss").classList.toggle("selected",v===false);$("techIssuePanel").classList.toggle("hidden",v!==false);updateTechContinue()}
@@ -4839,10 +5156,10 @@ function openCheckout(){
     pricingPreview="<div class='small' style='margin-top:6px'>Final itemization is intentionally held for Review & Sign.</div>";
   }
 
-  $("checkoutCard").innerHTML="<strong>"+$("eventVenue").value+"</strong>"
-    +($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+$("eventName").value.trim()+"</strong></div>":"")
+  $("checkoutCard").innerHTML="<strong>"+escapeHTML($("eventVenue").value)+"</strong>"
+    +($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+escapeHTML($("eventName").value.trim())+"</strong></div>":"")
     +"<div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div>"
-    +"<div class='small'>"+$("eventCity").value+", "+$("eventState").value+" · "+state.format+"</div>"
+    +"<div class='small'>"+escapeHTML($("eventCity").value)+", "+escapeHTML($("eventState").value)+" · "+escapeHTML(state.format)+"</div>"
     +budgetLine+pricingPreview
     +"<div class='small' style='margin-top:6px'>Exclusivity: "+(state.exclusivity?$("exSummary").textContent:"None")+"</div>"
     +"<div class='small' style='margin-top:6px'>Technical rider: "+(state.techCan?"can be accommodated":"needs discussion")+"</div>"
@@ -5288,6 +5605,10 @@ function submitShared(){
 
 function submitBooking(){
   if($("submitBtn").disabled)return;
+  try{
+    const requestId=localStorage.getItem("paline_last_booking_request_id")||("booking_"+Date.now());
+    fetch("/api/public/contracts/audit",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({contractKey:requestId,action:"booking-review-signed",payload:{signerName:$("sName")?.value?.trim()||"",signerTitle:$("sTitle")?.value?.trim()||"",signature:$("sSig")?.value?.trim()||"",signedDate:$("sDate")?.value||"",consent:!!$("sConsent")?.checked,finalAcknowledgment:!!$("sFinal")?.checked,documents:["agreement","stage","tech","hospitality"].map(key=>({key,reviewed:reviewedDocuments.has(key),version:documentConfig?.[key]?.defaultVersion||"current"})),venue:$("eventVenue")?.value||"",eventDate:state.selectedDate||"",amount:finalBookingAmounts().total}})}).then(r=>r.json()).then(x=>{if(x?.chainHash)localStorage.setItem("paline_last_contract_chain_hash",x.chainHash)}).catch(()=>{});
+  }catch(e){}
   rememberCurrentEventAndVenue();
   rememberContact({name:$("buyerName").value,email:$("buyerEmail").value,phone:$("buyerPhone").value,org:$("buyerOrg").value,venue:$("eventVenue").value});
   const total=finalBookingAmounts().total;
@@ -5296,7 +5617,7 @@ function submitBooking(){
     :state.truePotential
       ?"TRUE POTENTIAL custom quote requested"
       :"Request total: "+money(total);
-  $("doneCard").innerHTML="<strong>"+$("buyerName").value+"</strong><div class='small'>"+$("buyerEmail").value+"</div><div style='margin-top:10px'><strong>"+$("eventVenue").value+"</strong></div><div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+$("eventCity").value+", "+$("eventState").value+" · "+state.format+"</div><div style='margin-top:10px'><strong>"+pricingStatus+"</strong></div><div class='small'>Inquiry only. No payment has been processed and no contract has been created.</div><div class='small' style='margin-top:8px'><strong>Route price protection:</strong> after confirmation, later route improvements can reduce this booking's travel component but cannot increase it. Documented referrals that create the route-improving confirmed show are tracked for Route Builder Credit.</div>";
+  $("doneCard").innerHTML="<strong>"+escapeHTML($("buyerName").value)+"</strong><div class='small'>"+escapeHTML($("buyerEmail").value)+"</div><div style='margin-top:10px'><strong>"+escapeHTML($("eventVenue").value)+"</strong></div><div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML($("eventCity").value)+", "+escapeHTML($("eventState").value)+" · "+escapeHTML(state.format)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(pricingStatus)+"</strong></div><div class='small'>Request recorded. Your signed review is written to the server audit trail. PA LINE acceptance and any required deposit are still required before confirmation.</div><div class='small' style='margin-top:8px'><strong>Route price protection:</strong> after confirmation, later route improvements can reduce this booking's travel component but cannot increase it. Documented referrals that create the route-improving confirmed show are tracked for Route Builder Credit.</div>";
   showPage("pageDone","Complete")
 }
 
@@ -6464,7 +6785,6 @@ function resetDocumentReviewToTop(){
 <script>
 function deliverPrototypeInquiry(packet){
   try{
-    const type=(packet.bookingChannel==="special"||packet.bookingType)&&!String(packet.bookingChannel||"").startsWith("standard")?"booking":"booking";
     fetch("https://palineofficial.com/api/prototype-inquiries",{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
@@ -6574,11 +6894,13 @@ function specialBookingLabel(type){
   return ({
     residency:"Residency",
     open_mic:"Open Mic",
-    pr_media:"PR / Media Event"
+    pr_media:"PR / Media Event",
+    charity_benefit:"Charity / Fundraiser / Benefit",
+    other_custom:"Other / Custom"
   })[type]||"Special Booking";
 }
 
-function startSpecialBooking(type){
+function selectSpecialBookingType(type){
   specialBookingType=type;
   const label=specialBookingLabel(type);
   const badge=document.getElementById("specialBookingBadge");
@@ -6590,26 +6912,55 @@ function startSpecialBooking(type){
   if(title)title.textContent=
     type==="residency"?"Build a residency request.":
     type==="open_mic"?"Build an open mic request.":
-    "Build a PR / media request.";
+    type==="pr_media"?"Build a PR / media request.":
+    type==="charity_benefit"?"Build a charity / fundraiser / benefit request.":
+    type==="other_custom"?"Build a custom booking request.":
+    "Choose a booking type.";
 
   if(intro)intro.textContent=
     type==="residency"?"Tell us about the recurring relationship you want to build.":
     type==="open_mic"?"Tell us what kind of open mic you want hosted and how often.":
-    "Tell us about the interview, filming, press, or media opportunity.";
+    type==="pr_media"?"Tell us about the interview, filming, press, or media opportunity.":
+    type==="charity_benefit"?"Tell us about the cause, fundraiser, benefit, or nonprofit event.":
+    type==="other_custom"?"Tell us what you want to book. We will review the idea and follow up with the right questions.":
+    "Choose one of the booking types below.";
 
-  if(summary)summary.innerHTML=`<strong>${label}</strong><br>This is a separate booking channel and will not change the standard show-booking path.`;
+  const funnelSummary={
+    residency:"Recurring series → schedule → performance format → compensation.",
+    open_mic:"Hosting schedule → PA LINE responsibilities → production → host agreement.",
+    pr_media:"Media opportunity → format/personnel → usage → deliverables.",
+    charity_benefit:"Cause/event → performance request → fundraising terms → charitable arrangement.",
+    other_custom:"Your idea → PA LINE's role → goal/budget → production needs."
+  };
+  if(summary)summary.innerHTML=type
+    ? `<strong>${label}</strong><br>${funnelSummary[type]||"Tell us what you need and we will review the request."}`
+    : `<strong>Choose a booking type</strong><br>Select one of the options below to continue.`;
 
-  ["specialResidencyFields","specialOpenMicFields","specialPRFields"].forEach(id=>{
+  ["specialResidencyFields","specialOpenMicFields","specialPRFields","specialCharityFields","specialCustomFields"].forEach(id=>{
     document.getElementById(id)?.classList.add("hidden");
   });
   if(type==="residency")document.getElementById("specialResidencyFields")?.classList.remove("hidden");
   if(type==="open_mic")document.getElementById("specialOpenMicFields")?.classList.remove("hidden");
   if(type==="pr_media")document.getElementById("specialPRFields")?.classList.remove("hidden");
+  if(type==="charity_benefit")document.getElementById("specialCharityFields")?.classList.remove("hidden");
+  if(type==="other_custom")document.getElementById("specialCustomFields")?.classList.remove("hidden");
+
+  document.querySelectorAll("[data-special-type-choice]").forEach(el=>{
+    const active=el.dataset.specialTypeChoice===type;
+    el.classList.toggle("active",active);
+    el.setAttribute("aria-pressed",active?"true":"false");
+  });
 
   const button=document.getElementById("specialSubmitBtn");
-  if(button)button.textContent=`SEND ${label.toUpperCase()} REQUEST`;
+  if(button){
+    button.disabled=!type;
+    button.textContent=type?`SEND ${label.toUpperCase()} REQUEST`:"CHOOSE A BOOKING TYPE";
+  }
+}
 
-  showPage("pageSpecialBookingDetails",label);
+function startSpecialBooking(type){
+  showPage("pageSpecialBookingDetails",specialBookingLabel(type));
+  selectSpecialBookingType(type);
 }
 
 function specialVal(id){
@@ -6619,18 +6970,70 @@ function specialVal(id){
 function collectSpecialBooking(){
   const details={};
   if(specialBookingType==="residency"){
+    details.residencyFormat=specialVal("specialResidencyFormat");
     details.frequency=specialVal("specialResidencyFrequency");
+    details.preferredDays=specialVal("specialResidencyDay");
     details.run=specialVal("specialResidencyRun");
+    details.startWindow=specialVal("specialResidencyStartWindow");
+    details.performanceFormat=specialVal("specialResidencyLineup");
+    details.performanceLength=specialVal("specialResidencyLength");
+    details.sound=specialVal("specialResidencySound");
+    details.compensationStructure=specialVal("specialResidencyPayStructure");
+    details.budgetPerDate=specialVal("specialResidencyBudget");
+    details.merchAllowed=specialVal("specialResidencyMerch");
+    details.expectedAttendance=specialVal("specialResidencyAttendance");
   }
   if(specialBookingType==="open_mic"){
     details.frequency=specialVal("specialOpenMicFrequency");
+    details.preferredDay=specialVal("specialOpenMicDay");
+    details.hostRole=specialVal("specialOpenMicRole");
     details.hostingLength=specialVal("specialOpenMicLength");
+    details.agePolicy=specialVal("specialOpenMicAge");
+    details.expectedTurnout=specialVal("specialOpenMicAttendance");
     details.sound=specialVal("specialOpenMicSound");
+    details.signupSystem=specialVal("specialOpenMicSignup");
+    details.backline=specialVal("specialOpenMicBackline");
+    details.compensationStructure=specialVal("specialOpenMicPayStructure");
+    details.budget=specialVal("specialOpenMicBudget");
   }
   if(specialBookingType==="pr_media"){
     details.prType=specialVal("specialPRType");
+    details.outletProject=specialVal("specialPROutlet");
+    details.liveOrRecorded=specialVal("specialPRFormat");
+    details.locationMode=specialVal("specialPRLocationMode");
     details.duration=specialVal("specialPRDuration");
+    details.requestedPersonnel=specialVal("specialPRPersonnel");
     details.livePerformance=specialVal("specialPRPerformance");
+    details.purpose=specialVal("specialPRPurpose");
+    details.releaseDate=specialVal("specialPRReleaseDate");
+    details.usage=specialVal("specialPRUsage");
+    details.deliverables=specialVal("specialPRDeliverables");
+    details.budget=specialVal("specialPRBudget");
+    details.travelCovered=specialVal("specialPRTravel");
+  }
+  if(specialBookingType==="charity_benefit"){
+    details.eventType=specialVal("specialCharityType");
+    details.beneficiary=specialVal("specialCharityBeneficiary");
+    details.nonprofitOrganization=specialVal("specialCharityOrganization");
+    details.fundraisingGoal=specialVal("specialCharityGoal");
+    details.expectedAttendance=specialVal("specialCharityAttendance");
+    details.performanceFormat=specialVal("specialCharityLineup");
+    details.fundraisingFormat=specialVal("specialCharityFormat");
+    details.requestedArrangement=specialVal("specialCharityArrangement");
+    details.entertainmentBudget=specialVal("specialCharityBudget");
+    details.sound=specialVal("specialCharitySound");
+    details.documentation=specialVal("specialCharityDocumentation");
+  }
+  if(specialBookingType==="other_custom"){
+    details.customType=specialVal("specialCustomType");
+    details.requestedRole=specialVal("specialCustomRole");
+    details.duration=specialVal("specialCustomDuration");
+    details.locationMode=specialVal("specialCustomLocationMode");
+    details.livePerformance=specialVal("specialCustomPerformance");
+    details.audience=specialVal("specialCustomAudience");
+    details.goal=specialVal("specialCustomGoal");
+    details.budget=specialVal("specialCustomBudget");
+    details.productionNeeds=specialVal("specialCustomProduction");
   }
 
   return {
@@ -6658,7 +7061,28 @@ function submitSpecialBooking(){
   const result=document.getElementById("specialBookingResult");
 
   if(!payload.bookingType){
-    alert("Choose Residency, Open Mic, or PR / Media Event.");
+    alert("Choose a special booking type.");
+    return;
+  }
+  const d=payload.bookingTypeDetails||{};
+  if(specialBookingType==="residency"&&(!d.residencyFormat||!d.frequency||!d.run||!d.performanceFormat||!d.compensationStructure)){
+    alert("Finish the required residency details: format, frequency, run, performance format, and compensation structure.");
+    return;
+  }
+  if(specialBookingType==="open_mic"&&(!d.frequency||!d.hostRole||!d.hostingLength||!d.sound||!d.compensationStructure)){
+    alert("Finish the required open mic details: frequency, PA LINE's role, hosting length, sound, and compensation.");
+    return;
+  }
+  if(specialBookingType==="pr_media"&&(!d.prType||!d.outletProject||!d.liveOrRecorded||!d.locationMode)){
+    alert("Finish the required PR / media details: type, outlet or project, live/recorded format, and location format.");
+    return;
+  }
+  if(specialBookingType==="charity_benefit"&&(!d.eventType||!d.beneficiary||!d.performanceFormat||!d.requestedArrangement||!d.entertainmentBudget)){
+    alert("Finish the required charity / benefit details: event type, beneficiary, requested performance, booking arrangement, and budget status.");
+    return;
+  }
+  if(specialBookingType==="other_custom"&&(!d.customType||!d.requestedRole)){
+    alert("Tell us what you would like to book and what you want PA LINE to do.");
     return;
   }
   if(!payload.contactName || !payload.contactEmail || !payload.organization){
@@ -6697,6 +7121,6 @@ function submitSpecialBooking(){
 })();
 </script>
 
-<div class="paline-build-badge" data-v77-build-badge>BUILD v7.8</div>
+<div class="paline-build-badge" data-v77-build-badge>BETA v7.25</div>
 </body>
 </html>

@@ -1,3 +1,5 @@
+> LEGACY REFERENCE ONLY. This document predates the current PA LINE Platform Beta. Use `/CURRENT_SOURCE_OF_TRUTH.md` for current development.
+
 # RUN THIS FIRST
 
 1. Install Node.js if you do not already have it.
