@@ -22,10 +22,9 @@
 /storage/*.key
 /storage/pail
 
-# Published via the admin prototype-site importer, not git; deploy-production.sh's
-# `git reset --hard` must never clobber whatever's currently live.
-/public/exact-copy-site/index.html
-/public/exact-copy-site/PA_LINE_PUBLIC_BOOKING.html
+# v7.8+: exact-copy-site is now a multi-file structure managed via git.
+# The backup directory is local-only.
+/public/exact-copy-site-backup-pre-v78/
 /vendor
 _ide_helper.php
 Homestead.json

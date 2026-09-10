@@ -1,9 +1,9 @@
 {
-  "name": "PA LINE Crew + Command",
-  "short_name": "PA LINE",
-  "start_url": "./PA_LINE_CREW_COMMAND_v1_7_FIXED.html",
+  "name": "PA LINE CREW + COMMAND",
+  "short_name": "PA LINE CREW",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#07090c",
+  "background_color": "#090b0e",
   "theme_color": "#090b0e",
   "icons": [
     {
