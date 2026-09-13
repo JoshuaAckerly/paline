@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b0e">
+  <meta name="description" content="PA LINE CREW + COMMAND backend operations prototype">
+  <title>PA LINE CREW + COMMAND</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/pa-line-rose.png">
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop" aria-hidden="true">
+    <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow" id="modalEyebrow">PA LINE</span>
+          <h2 id="modalTitle">Modal</h2>
+        </div>
+        <button class="icon-btn" id="modalClose" type="button" aria-label="Close">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </section>
+  </div>
+
+  <audio id="practiceAudio" preload="metadata"></audio>
+  <script src="./src/app.js"></script>
+<script src="../shared/bridge.js"></script>
+</body>
+</html>
