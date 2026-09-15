@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Booking;
 
-use App\Models\BookingAllowedEmail;
+use App\Domain\Booking\AvailabilityState;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,36 +11,30 @@ class BookingAccessGateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_guest_is_redirected_to_the_access_gate_and_back_after_signing_in(): void
+    public function test_a_guest_can_reach_the_booking_page_without_signing_in(): void
     {
-        $this->get('/booking')->assertRedirect(route('booking.access'));
-        $this->assertTrue(str_ends_with((string) session('url.intended'), '/booking'));
+        // Booking is fully public: no account or sign-in required.
+        $this->get('/booking')->assertRedirect('https://demo.palineofficial.com');
     }
 
-    public function test_any_authenticated_user_can_reach_the_booking_page(): void
+    public function test_an_authenticated_user_can_also_reach_the_booking_page(): void
     {
-        // Booking is open to anyone who signs in — no allow-list approval needed.
-        $user = User::factory()->create(['email' => 'stranger@example.com']);
-
-        $this->actingAs($user)->get('/booking')->assertRedirect('https://demo.palineofficial.com');
-        $this->assertNull(session('booking_access_denied'));
-    }
-
-    public function test_an_approved_email_can_reach_the_booking_page(): void
-    {
-        $user = User::factory()->create(['email' => 'approved@example.com']);
-        BookingAllowedEmail::create(['email' => 'Approved@Example.com']);
+        $user = User::factory()->create(['email' => 'anyone@example.com']);
 
         $this->actingAs($user)->get('/booking')->assertRedirect('https://demo.palineofficial.com');
     }
 
-    public function test_an_unauthenticated_json_request_is_rejected_without_a_redirect(): void
+    public function test_an_anonymous_json_request_can_start_a_booking_draft(): void
     {
+        // No auth: the flow issues an anonymous draft token instead.
         $this->postJson('/booking-requests', ['source_path' => 'exact', 'primary_date' => '2026-10-10'])
-            ->assertUnauthorized();
+            ->assertCreated()
+            ->assertJsonPath('source_path', 'exact')
+            ->assertJsonPath('dates.0.state', AvailabilityState::Available->value)
+            ->assertJsonStructure(['id', 'draft_token']);
     }
 
-    public function test_the_access_gate_page_itself_is_public(): void
+    public function test_the_legacy_access_page_is_still_reachable(): void
     {
         $this->get('/booking/access')->assertOk();
     }

@@ -29,9 +29,10 @@ export default function BookingAccess({ denied }: { denied: boolean }) {
             <PageMeta title="Booking Preview Access" description="Sign in to access the PA LINE booking preview." />
             <div className="mx-auto max-w-lg px-6 py-16 md:py-24">
                 <p className="mb-4 text-xs font-semibold uppercase" style={{ color: 'var(--primary)' }}>PA LINE Booking</p>
-                <h1 className="text-4xl font-bold md:text-5xl">Preview access.</h1>
+                <h1 className="text-4xl font-bold md:text-5xl">Sign in (optional).</h1>
                 <p className="mt-4 leading-7" style={{ color: 'var(--muted)' }}>
-                    The booking app is currently limited to approved testers. Enter your email and we’ll send a secure sign-in link.
+                    Booking PA LINE is open to everyone — no account required. If you’d like a secure link to
+                    return to a saved booking later, enter your email and we’ll send one.
                 </p>
 
                 {denied && (
