@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\BookingAllowedEmail;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,22 +16,15 @@ class EnsureBookingAccess
 
         $user = $request->user();
 
+        // Booking is open to anyone who signs in. We still require a verified
+        // identity (magic-link login) as a light spam barrier, but the former
+        // email allow-list has been removed so no manual approval is needed.
         if (! $user) {
             if ($request->expectsJson()) {
-                abort(401, 'Sign in to access the PA LINE booking preview.');
+                abort(401, 'Sign in to access the PA LINE booking flow.');
             }
 
             return redirect()->guest(route('booking.access'));
-        }
-
-        if (! BookingAllowedEmail::allows($user->email)) {
-            if ($request->expectsJson()) {
-                abort(403, 'This email is not yet approved for the PA LINE booking preview.');
-            }
-
-            $request->session()->flash('booking_access_denied', true);
-
-            return redirect()->route('booking.access');
         }
 
         return $next($request);

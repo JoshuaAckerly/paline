@@ -17,12 +17,13 @@ class BookingAccessGateTest extends TestCase
         $this->assertTrue(str_ends_with((string) session('url.intended'), '/booking'));
     }
 
-    public function test_an_authenticated_but_unapproved_email_is_bounced_with_a_denied_message(): void
+    public function test_any_authenticated_user_can_reach_the_booking_page(): void
     {
+        // Booking is open to anyone who signs in — no allow-list approval needed.
         $user = User::factory()->create(['email' => 'stranger@example.com']);
 
-        $this->actingAs($user)->get('/booking')->assertRedirect(route('booking.access'));
-        $this->assertTrue(session('booking_access_denied'));
+        $this->actingAs($user)->get('/booking')->assertRedirect('https://demo.palineofficial.com');
+        $this->assertNull(session('booking_access_denied'));
     }
 
     public function test_an_approved_email_can_reach_the_booking_page(): void
