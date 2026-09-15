@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  # Manual trigger: lets a trusted collaborator (e.g. Trever) run a deploy from
+  # the GitHub Actions UI without needing the production SSH key locally. Access
+  # is controlled by GitHub repo permissions — only users with write access can
+  # run this. The SSH key stays a repo secret, never exposed to the operator.
+  workflow_dispatch:
 
 jobs:
   deploy:

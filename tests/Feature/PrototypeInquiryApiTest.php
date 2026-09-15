@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\PrototypeInquiry;
+use App\Notifications\BookingConfirmation;
 use App\Notifications\NewPrototypeInquiry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -38,6 +40,14 @@ class PrototypeInquiryApiTest extends TestCase
         ]);
 
         Notification::assertSentOnDemand(NewPrototypeInquiry::class);
+
+        // The person who booked gets a confirmation email at their address.
+        Notification::assertSentOnDemand(
+            BookingConfirmation::class,
+            function (BookingConfirmation $notification, array $channels, AnonymousNotifiable $notifiable): bool {
+                return $notifiable->routes['mail'] === 'jamie@example.com';
+            },
+        );
     }
 
     public function test_it_stores_a_demand_inquiry(): void
@@ -48,6 +58,9 @@ class PrototypeInquiryApiTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('prototype_inquiries', ['type' => 'demand']);
+
+        // Demand signals are not bookings, so no customer confirmation goes out.
+        Notification::assertNotSentTo(new AnonymousNotifiable, BookingConfirmation::class);
     }
 
     public function test_it_requires_a_valid_contact_email(): void

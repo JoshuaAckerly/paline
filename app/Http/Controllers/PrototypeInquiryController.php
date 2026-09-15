@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrototypeInquiry;
+use App\Notifications\BookingConfirmation;
 use App\Notifications\NewPrototypeInquiry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,17 @@ class PrototypeInquiryController extends Controller
             'payload' => $request->only(['contact', 'lead', 'record', 'notification']),
         ]);
 
-        Notification::route('mail', config('app.admin_emails'))->notify(new NewPrototypeInquiry($inquiry));
+        // Send synchronously: production has no queue worker, so a queued
+        // notification would never leave the jobs table. notifyNow() bypasses
+        // the queue regardless of the notification's Queueable trait.
+        Notification::route('mail', config('app.admin_emails'))
+            ->notifyNow(new NewPrototypeInquiry($inquiry));
+
+        // Confirm receipt to the person who submitted a booking (not demand).
+        if ($inquiry->type === 'booking') {
+            Notification::route('mail', $inquiry->contact_email)
+                ->notifyNow(new BookingConfirmation($inquiry));
+        }
 
         return response()->json(['status' => 'received'], 201);
     }
