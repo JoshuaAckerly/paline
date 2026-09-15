@@ -16,12 +16,28 @@ export default defineConfig(({ mode }) => {
             allowedHosts: ['palineofficial.com', 'paline.graveyardjokes.com'],
         };
     } else {
+        // Local/dev: the app is reached via nginx at http://paline.graveyardjokes.test,
+        // but Vite assets are served directly by the dev server on port 8090, so the
+        // browser must reach it at the VM's accessible host. Override with VITE_HOST / VITE_ORIGIN if needed.
+        const devHost = env.VITE_HOST || '10.0.1.20';
+        const devPort = Number(env.VITE_PORT || 8090);
+        const devOrigin = env.VITE_ORIGIN || `http://${devHost}:${devPort}`;
         server = {
-            port: 8090,
+            port: devPort,
             host: '0.0.0.0',
-            origin: 'http://127.0.0.1:8090',
-            cors: { origin: ['http://127.0.0.1:8091', 'https://uncle-gatherer-enactment.ngrok-free.dev'] },
-            allowedHosts: ['localhost', '127.0.0.1', 'paline.test', 'uncle-gatherer-enactment.ngrok-free.dev'],
+            origin: devOrigin,
+            hmr: { host: devHost },
+            cors: {
+                origin: [
+                    'http://paline.graveyardjokes.test',
+                    `http://${devHost}`,
+                    `http://${devHost}:8092`,
+                    'http://localhost:8092',
+                    'http://127.0.0.1:8092',
+                ],
+                credentials: true,
+            },
+            allowedHosts: ['localhost', '127.0.0.1', devHost, 'paline.graveyardjokes.test'],
         };
     }
 
