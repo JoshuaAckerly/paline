@@ -31,7 +31,9 @@ class MagicLinkController extends Controller
             $validated['draft_token'] ?? null,
         );
 
-        Notification::route('mail', $validated['email'])->notify(new MagicLoginLink($url));
+        // Send synchronously: this app has no queue worker, so a queued mail
+        // would never leave the jobs table. notifyNow() bypasses the queue.
+        Notification::route('mail', $validated['email'])->notifyNow(new MagicLoginLink($url));
 
         return response()->json([
             'message' => 'If the address can receive email, a secure sign-in link has been sent.',
