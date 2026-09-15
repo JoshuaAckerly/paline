@@ -57,6 +57,13 @@ sudo -u www-data php artisan event:cache
 echo "🔄 Restarting PHP-FPM..."
 sudo systemctl reload php${PHP_VERSION}-fpm
 
+# Gracefully restart the queue worker so it picks up the newly deployed code.
+# The worker itself is managed by Supervisor ([program:paline-worker] in
+# /etc/supervisor/conf.d/laravel-workers.conf); queue:restart signals it to
+# finish the current job and exit, and Supervisor autostarts a fresh one.
+echo "🌀 Restarting queue worker..."
+sudo -u www-data php artisan queue:restart
+
 # Manage SSR process with PM2
 echo "🌟 Managing SSR server with PM2..."
 if pm2 list | grep -q "$PROJECT_NAME-ssr"; then
