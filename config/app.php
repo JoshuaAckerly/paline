@@ -115,6 +115,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Crew Server Admin Bypass Secret
+    |--------------------------------------------------------------------------
+    |
+    | Shared secret used by the Laravel -> PA LINE crew Node server proxy
+    | (CrewInviteController) to authenticate server-to-server calls to the
+    | crew auth API without a browser session. Must match the crew Node
+    | server's PA_LINE_ADMIN_BYPASS_SECRET env var.
+    |
+    */
+
+    'crew_admin_bypass_secret' => env('PA_LINE_ADMIN_BYPASS_SECRET'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

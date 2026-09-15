@@ -21,7 +21,10 @@ class CrewInviteController extends Controller
 
         try {
             $res = Http::timeout(5)
-                ->withHeaders(['Host' => '127.0.0.1:5174'])
+                ->withHeaders([
+                    'Host'           => '127.0.0.1:5174',
+                    'x-admin-bypass' => (string) config('app.crew_admin_bypass_secret'),
+                ])
                 ->get("{$this->nodeBase}/api/auth/members");
 
             if ($res->successful()) {
@@ -47,7 +50,10 @@ class CrewInviteController extends Controller
 
         try {
             $res = Http::timeout(5)
-                ->withHeaders(['Host' => '127.0.0.1:5174'])
+                ->withHeaders([
+                    'Host'           => '127.0.0.1:5174',
+                    'x-admin-bypass' => (string) config('app.crew_admin_bypass_secret'),
+                ])
                 ->post("{$this->nodeBase}/api/auth/invite", [
                     'memberId'   => $validated['member_id'],
                     'authorized' => true,
@@ -69,7 +75,10 @@ class CrewInviteController extends Controller
     {
         try {
             Http::timeout(5)
-                ->withHeaders(['Host' => '127.0.0.1:5174'])
+                ->withHeaders([
+                    'Host'           => '127.0.0.1:5174',
+                    'x-admin-bypass' => (string) config('app.crew_admin_bypass_secret'),
+                ])
                 ->post("{$this->nodeBase}/api/auth/invite", [
                     'memberId'   => $memberId,
                     'authorized' => false,
