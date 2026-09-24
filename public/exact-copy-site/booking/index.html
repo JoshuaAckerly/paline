@@ -4305,7 +4305,7 @@ function submitProductionBookingRequest(){
   let saved=payload;
   try{
     if(window.PALineBridge?.submitBooking)saved=window.PALineBridge.submitBooking(payload)||payload;
-    if(typeof deliverPrototypeInquiry==="function")deliverBookingInquiry(saved);
+    if(typeof deliverBookingInquiry==="function")deliverBookingInquiry(saved);
   }catch(e){}
   rememberContact({name:contactName,email:contactEmail,org:organization,venue:payload.venue});
   $("doneCard").innerHTML="<strong>"+escapeHTML(contactName)+"</strong><div class='small'>"+escapeHTML(contactEmail)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(payload.venue)+"</strong></div><div>"+parseDate(payload.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML(payload.city)+", "+escapeHTML(payload.state)+" · "+escapeHTML(payload.format)+"</div><div style='margin-top:10px'><strong>Request sent to PA LINE</strong></div><div class='small'>PA LINE will verify availability, routing, production requirements, pricing, and agreement terms before anything is confirmed.</div>";
