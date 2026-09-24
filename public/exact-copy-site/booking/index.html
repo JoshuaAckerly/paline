@@ -3054,7 +3054,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{display:none!importan
 </div>
 <div class="hidden" id="flexResults">
 <h2 style="margin-top:24px">Best date options</h2>
-<p class="presentation-data-note"><strong>Beta routing:</strong> the presentation uses simulated mileage. Final booking calculations use verified road routing.</p>
+<p class="presentation-data-note"><strong>Date suggestions:</strong> these are request options only. PA LINE verifies the live calendar and routing before confirmation.</p>
 <div class="recommendations" id="recommendations"></div>
 <div class="summary">
 <div><div class="small">Selected date</div><strong id="flexSelectedText">Choose an option</strong></div>
@@ -3612,13 +3612,13 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{display:none!importan
 
 <section class="card hidden" id="pageLegalAdmin">
   <button class="btn" onclick="closeLegalAdmin()">← Back</button>
-  <span class="badge" style="margin-top:18px">BETA ADMIN · LEGAL DOCUMENTS</span>
+  <span class="badge" style="margin-top:18px">INTERNAL · LEGAL DOCUMENTS</span>
   <h1 style="margin-top:12px">Legal Document Manager</h1>
   <p>Update the active agreement, NDA, stage plot, and riders without changing the booking-flow code. Each change gets its own version label.</p>
 
   <div class="notice admin-security-note">
     <strong>Production rule</strong>
-    <div class="small" style="margin-top:5px">This beta stores active document overrides in this browser. The live system should restrict this page to authorized PA LINE administrators, store immutable document versions server-side, and preserve the exact version attached to every signed booking.</div>
+    <div class="small" style="margin-top:5px">Public users cannot manage legal versions here. Final document versions and signed records must be controlled by the authorized PA LINE administration system.</div>
   </div>
 
   <div class="notice">
