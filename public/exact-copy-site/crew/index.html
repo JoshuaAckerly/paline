@@ -1354,8 +1354,7 @@ Production authorization must be server-side. Menu visibility alone is not secur
         <div style="display:flex;align-items:center;gap:9px;margin-top:8px"><span class="portal-avatar"><span aria-hidden="true">TJ</span><img src="https://palineofficial.com/images/FB_IMG_1785518888446.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></span><div style="min-width:0"><strong>Trever J. Stribing</strong><div class="mini">Lead / Acoustic · 100% set up</div></div></div>
         <div class="workspace-switch" role="group" aria-label="Booking workspace"><button type="button" class="active" data-booking-scope="band">PA LINE</button><button type="button" class="" data-booking-scope="personal">MY SHOWS</button></div>
         <div class="sidebar-actions">
-          <button type="button" class="btn small-btn ghost" data-switch-user="">SWITCH</button>
-          <button type="button" class="btn small-btn ghost" data-reset-demo="">RESET</button>
+          <button type="button" class="btn small-btn ghost" data-switch-user="">SWITCH PROFILE</button>
         </div>
       </div>
     </aside>
@@ -5041,7 +5040,6 @@ function bindPageEvents(){
   document.querySelector("[data-public-booking]")?.addEventListener("click",openPublicBooking);
   document.querySelector("[data-mobile-menu]")?.addEventListener("click",()=>{state.sidebarOpen=!state.sidebarOpen;mount()});
   document.querySelector("[data-switch-user]")?.addEventListener("click",async()=>{try{await window.PALineServer?.logout?.()}catch(e){}state.userId=null;state.page="dashboard";state.profileId=null;state.communicationSearch="";state.communicationChannel="All";state.communicationDirection="All";mount()});
-  document.querySelector("[data-reset-demo]")?.addEventListener("click",resetDemo);
   document.querySelectorAll("[data-quick-offer]").forEach(el=>el.addEventListener("click",openOfferForm));
   document.querySelectorAll("[data-open-offer]").forEach(el=>el.addEventListener("click",()=>openOfferModal(el.dataset.openOffer)));
   document.querySelectorAll("[data-open-show]").forEach(el=>el.addEventListener("click",()=>openShowModal(el.dataset.openShow)));
@@ -5753,12 +5751,6 @@ function saveProfile(){
 function markAllRead(){
   memberNotifications(state.userId).forEach(n=>n.read=true);saveData();mount();
 }
-function resetDemo(){
-  if(!confirm("Reset this beta to the starting data? A Data Vault safety backup will be created first."))return;
-  try{window.PALineDataVault?.backupNowSync?.("before-reset")}catch(e){}
-  localStorage.removeItem(APP_KEY);localStorage.removeItem(PUBLIC_INQUIRY_OUTBOX_KEY);data=defaultData();ensureBackendCollections();saveData();state={...state,userId:null,page:"dashboard",songId:null,offerId:null,showId:null,profileId:null,sidebarOpen:false,communicationSearch:"",communicationChannel:"All",communicationDirection:"All"};mount();
-}
-
 async function portalPasswordHash(password,salt){
   const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
   const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:100000,hash:'SHA-256'},key,256);
