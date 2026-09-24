@@ -34,14 +34,8 @@ Route::get('/booking/access', [BookingAccessController::class, 'show'])->name('b
 // sign-in. The flow relies on anonymous draft tokens (see BookingDraftAccess),
 // and each write endpoint is rate-limited below as the spam barrier.
 
-// The integrated booking flow is offline for now; code stays in place.
-    // Real bookings currently go through the exact-copy static site instead.
-    // Inertia::location() (not redirect()->away()) is required here: the nav
-    // link is an Inertia <Link>, which visits routes via XHR — a plain 302 to
-    // an external, CORS-less origin gets blocked by the browser as a failed
-    // cross-origin XHR. Inertia::location() sends a 409 + X-Inertia-Location
-    // header instead, telling the client to do a real window.location visit.
-    Route::get('/booking', fn () => Inertia::location('https://demo.palineofficial.com'))->name('booking');
+// The public Booking route opens the canonical PA LINE booking application.
+Route::get('/booking', fn () => Inertia::location(url('/exact-copy-site/booking/index.html')))->name('booking');
 
     Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
     Route::post('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
