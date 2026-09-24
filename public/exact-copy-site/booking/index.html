@@ -3801,15 +3801,7 @@ function updateShowcaseChrome(id,label){
 }
 function startOver(){
   closeAllSuggestionLists?.();
-  if(currentVisiblePageId()==="pageStart"){
-    window.scrollTo({top:0,behavior:"smooth"});
-    return;
-  }
-  try{
-    window.location.reload();
-  }catch(e){
-    showPage("pageStart","Start");
-  }
+  window.location.reload();
 }
 
 function showPage(id,label){
@@ -3820,7 +3812,6 @@ function showPage(id,label){
   void target.offsetWidth;
   target.classList.add("showcase-enter");
   updateShowcaseChrome(id,label);
-  window.scrollTo({top:0,behavior:"smooth"});
 }
 function iso(d){return d.toISOString().slice(0,10)}
 function parseDate(s){return new Date(s+"T12:00:00")}
@@ -7110,7 +7101,6 @@ function submitSpecialBooking(){
     result.innerHTML=`<strong>REQUEST SENT</strong><br>${specialBookingLabel(payload.bookingType)} request received for PA LINE review.${saved?.id?`<br><span class="small">Request ${saved.id}</span>`:""}`;
   }
   document.getElementById("specialSubmitBtn").disabled=true;
-  window.scrollTo({top:0,left:0,behavior:"instant"});
 }
 </script>
 
