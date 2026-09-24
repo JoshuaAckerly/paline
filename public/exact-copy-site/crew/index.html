@@ -1247,6 +1247,24 @@ body.compact-menu .quick-access{padding-top:6px;padding-bottom:8px}
 @media(max-width:620px){.route-strength-factors,.fan-loyalty-tier-grid,.fan-profile-grid{grid-template-columns:1fr}}
 </style>
 
+
+<style id="v725-folder-navigation-style">
+.folder-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.folder-card{position:relative;border:1px solid var(--line);border-radius:18px;background:linear-gradient(155deg,rgba(230,184,92,.055),rgba(21,30,41,.98) 28%);padding:18px;overflow:hidden}
+.folder-card::before{content:"";position:absolute;left:18px;top:0;width:86px;height:5px;border-radius:0 0 7px 7px;background:var(--gold)}
+.folder-card:nth-child(4n+2)::before{background:var(--cyan)}
+.folder-card:nth-child(4n+3)::before{background:var(--pink)}
+.folder-card:nth-child(4n)::before{background:var(--purple)}
+.folder-head{display:flex;align-items:flex-start;gap:11px;margin:4px 0 14px}
+.folder-icon{width:40px;height:34px;display:grid;place-items:center;border:1px solid rgba(230,184,92,.32);border-radius:9px 9px 11px 11px;background:rgba(230,184,92,.09);font-size:18px;flex:0 0 auto}
+.folder-title{min-width:0}.folder-title strong{display:block;font-size:1rem}.folder-title span{display:block;margin-top:4px;color:var(--muted);font-size:.7rem;line-height:1.45}
+.subfolder-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.subfolder-btn{min-height:84px;border:1px solid var(--line);border-radius:12px;background:#111923;color:var(--text);padding:12px;text-align:left;cursor:pointer;font:inherit;transition:border-color .16s ease,transform .16s ease,background .16s ease}
+.subfolder-btn:hover,.subfolder-btn:focus-visible{border-color:var(--gold);background:rgba(230,184,92,.065);transform:translateY(-1px);outline:none}
+.subfolder-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.subfolder-top strong{font-size:.82rem}.subfolder-copy{display:block;margin-top:6px;color:var(--muted);font-size:.68rem;line-height:1.4}.subfolder-open{display:block;margin-top:8px;color:var(--gold2);font-size:.61rem;font-weight:950;letter-spacing:.06em}
+@media(max-width:880px){.folder-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.folder-card{padding:15px}.subfolder-grid{grid-template-columns:1fr}.subfolder-btn{min-height:72px}}
+</style>
 </head>
 
 
@@ -1436,8 +1454,8 @@ function deepClone(v){return JSON.parse(JSON.stringify(v))}
 function getMember(id){return data.members.find(m=>m.id===id)}
 function getLineup(id){return data.lineups.find(l=>l.id===id)}
 function currentUser(){return getMember(state.userId)}
-function isAdmin(){return !!currentUser()?.isAdmin}
-function isMasterAdmin(){const user=currentUser();return !!user&&(user.id==="trever"||user.accessTier==="master")}
+function isMasterAdmin(){const user=currentUser();return !!user&&user.id==="trever"}
+function isAdmin(){return isMasterAdmin()}
 function activeBookingScope(){return state.bookingScope==="personal"?state.userId:"band"}
 function itemScope(item){return item?.scope||"band"}
 function inActiveBookingScope(item){return itemScope(item)===activeBookingScope()}
@@ -2266,7 +2284,7 @@ function notify(userId,title,body,type="general",refId=null){
   data.notifications.unshift({id:uid("n"),userId,title,body,type,refId,read:false,createdAt:nowISO()});
 }
 function notifyAdmin(title,body,type="general",refId=null){
-  data.members.filter(m=>m.isAdmin).forEach(m=>notify(m.id,title,body,type,refId));
+  if(getMember("trever"))notify("trever",title,body,type,refId);
 }
 function memberNotifications(id=state.userId){return data.notifications.filter(n=>n.userId===id)}
 function unreadCount(id=state.userId){return memberNotifications(id).filter(n=>!n.read).length}
@@ -2835,6 +2853,7 @@ function app(){
 let lastMountedPageKey=null;
 function mount(){
   if(state.userId&&!portalMembers().some(member=>member.id===state.userId)){state.userId=null;state.page='dashboard'}
+  if(state.userId&&typeof canAccessPage==="function"&&!canAccessPage(state.page))state.page="dashboard";
   if(state.userId&&isMasterAdmin())syncMasterReminders();
   const pageKey=JSON.stringify([state.userId,state.page,state.bookingScope,state.page==='songbook'?state.songId:null,state.page==='shows'?state.showId:null,state.page==='offers'?state.offerId:null,state.page==='members'?state.profileId:null]);
   const pageChanged=pageKey!==lastMountedPageKey;
@@ -2853,99 +2872,57 @@ function renderLogin(){
   <main class="login-shell">
     <section class="login-card">
       <div class="login-rose"><img src="./assets/pa-line-rose.png" alt=""></div>
-      <span class="eyebrow">PA LINE OPERATIONS</span>
-      <h1 style="max-width:720px;margin:10px 0 12px">Choose your portal.</h1>
-      <p style="max-width:690px">If your login already exists, sign in. If Trever has activated your account for the first time, choose your name and create your password.</p>
+      <span class="eyebrow">PA LINE · CREW &amp; COMMAND</span>
+      <h1 style="max-width:720px;margin:10px 0 12px">Choose your profile.</h1>
+      <p style="max-width:690px">Trever Stribing opens the full Command center. Every other active profile opens the simplified Crew portal.</p>
 
       <div class="privacy-note" style="margin:12px 0 16px">
         <strong>SECURED SIDE</strong><br>
-        COMMAND requires portal credentials. First-time setup for crew/admin/member accounts must be authorized by the Main / Master Admin.
+        First-time setup for every non-Trever profile must be authorized by Trever.
       </div>
       <div class="portal-grid">
         ${portalMembers().map(m=>{
           const hasLogin=!!m.portalAccount;
-          const setupReady=!hasLogin&&(m.id==="trever"||m.accessTier==="master"||m.portalSecurity?.firstTimeSetupAuthorized===true);
+          const setupReady=!hasLogin&&(m.id==="trever"||m.portalSecurity?.firstTimeSetupAuthorized===true);
           const action=hasLogin?"SIGN IN":setupReady?"SET UP ACCOUNT":"SETUP NOT ACTIVATED";
           const status=hasLogin?"LOGIN ACTIVE":setupReady?"READY TO SET UP":"ASK MASTER ADMIN";
           return `
-          <button type="button" class="portal-choice ${m.isAdmin?"admin":""}" data-login="${m.id}">
-            <span class="portal-choice-head">${artistAvatar(m)}<span class="portal-choice-meta"><span class="eyebrow">${m.isAdmin?"COMMAND 🔒":"ARTIST PORTAL 🔒"}</span><strong>${esc(m.profile?.displayName||m.fullName)}</strong><span class="role">${esc(m.role)}</span></span></span>
+          <button type="button" class="portal-choice ${m.id==="trever"?"admin":""}" data-login="${m.id}">
+            <span class="portal-choice-head">${artistAvatar(m)}<span class="portal-choice-meta"><span class="eyebrow">${m.id==="trever"?"COMMAND · MASTER ADMIN 🔒":"CREW PORTAL 🔒"}</span><strong>${esc(m.profile?.displayName||m.fullName)}</strong><span class="role">${esc(m.role)}</span></span></span>
             <span class="portal-choice-footer"><span class="badge ${hasLogin?"good":setupReady?"warn":""}">${status}</span><strong>${action} →</strong></span>
           </button>`;
         }).join("")}
       </div>
-      <div class="small" style="margin-top:18px">Server-backed local environment. Passwords are hashed server-side and sessions use HttpOnly cookies. External deployment still needs HTTPS, verified recovery/MFA, and hosted infrastructure.</div>
+      <div class="small" style="margin-top:18px">Trever is the only full-control Command profile. All other profiles use Crew permissions.</div>
     </section>
   </main>`;
 }
-function navItems(){
-  if(isAdmin()){
-    return [
-      ["dashboard","Command"],
-      ["notifications","Notifications"],
-      ["calendar","Master Calendar"],
-
-      ["offers","Offers"],
-      ["pipeline","Booking Pipeline"],
-      ["shows","Confirmed Shows"],
-      ["tour","Tour Builder"],
-      ["markets","Market Database"],
-      ["fans","Fan Loyalty"],
-      ["contacts","Contacts"],
-      ["communications","Communication Log"],
-
-      ["weekly","Weekly Ops"],
-      ["ops-schedule","Ops Schedule"],
-      ["rehearsals","Rehearsals"],
-      ["meetings","Band Meetings"],
-      ["chat","Crew Chat"],
-
-      ["songbook","Songbook"],
-      ["lineups","Lineups"],
-      ["members","Artist Profiles"],
-      ["profile","My Artist Profile"],
-
-      ["settings","Settings"],
-      ["public","Public Site ↗"]
-    ];
-  }
+function allToolNavItems(){
+  if(isMasterAdmin())return [
+    ["dashboard","Home"],["notifications","Notifications"],["calendar","Master Calendar"],
+    ["offers","Offers"],["pipeline","Booking Pipeline"],["shows","Confirmed Shows"],["tour","Tour Builder"],["markets","Market Database"],["fans","Fan Loyalty"],["contacts","Contacts"],["communications","Communication Log"],
+    ["weekly","Weekly Ops"],["ops-schedule","Ops Schedule"],["rehearsals","Rehearsals"],["meetings","Band Meetings"],["chat","Crew Chat"],
+    ["songbook","Songbook"],["lineups","Lineups"],["members","Artist Profiles"],["profile","My Artist Profile"],["settings","Settings"]
+  ];
   return [
-    ["dashboard","Home"],
-    ["notifications","Notifications"],
-    ["calendar","My Calendar"],
-
-    ["offers","Show Offers"],
-    ["shows","Confirmed Shows"],
-    ["tour","Tour Builder"],
-    ["markets","Market Database"],
-    ["fans","Fan Loyalty"],
-    ["pipeline","Booking Pipeline"],
-    ["contacts","Contacts"],
-    ["communications","Communication Log"],
-
-    ["weekly","Weekly Ops"],
-    ["ops-schedule","Ops Schedule"],
-    ["rehearsals","Rehearsals"],
-    ["meetings","Band Meetings"],
-    ["chat","Crew Chat"],
-
-    ["songbook","Songbook"],
-    ["profile","My Artist Profile"],
-
-    ["settings","Account + Calendars"],
-    ["public","Public Site ↗"]
+    ["dashboard","Home"],["notifications","Notifications"],["calendar","My Schedule"],["offers","Show Offers"],["shows","Confirmed Shows"],
+    ["weekly","My Tasks"],["rehearsals","Rehearsals"],["meetings","Band Meetings"],["chat","Crew Chat"],["songbook","Songbook"],["profile","My Artist Profile"],["settings","Account + Calendars"]
   ];
 }
-
-function navSection(id){
-  if(["dashboard","notifications","calendar"].includes(id))return "NOW";
-  if(["offers","pipeline","shows","tour","markets","fans","contacts","communications"].includes(id))return isAdmin()?"BOOKINGS & SHOWS":"SHOWS";
-  if(["weekly","ops-schedule","rehearsals","meetings","chat"].includes(id))return "OPERATIONS";
-  if(["songbook","lineups","members","profile"].includes(id))return isAdmin()?"MUSIC & TEAM":"MUSIC & PROFILE";
-  return "SYSTEM";
+function navItems(){
+  if(isMasterAdmin())return [["dashboard","Home"],["shows-hub","Shows"],["road-hub","Road"],["band-hub","Band"],["office-hub","Office"]];
+  return [["dashboard","Home"],["calendar","Schedule"],["shows-hub","Shows"],["band-hub","Band"],["office-hub","My Portal"]];
 }
+function navSection(id){return isMasterAdmin()?"COMMAND":"CREW"}
+function allowedPageIds(){
+  if(isMasterAdmin())return new Set(["dashboard","shows-hub","road-hub","band-hub","office-hub","notifications","calendar","offers","pipeline","shows","tour","markets","fans","contacts","communications","weekly","ops-schedule","rehearsals","meetings","chat","songbook","lineups","members","profile","settings","public"]);
+  return new Set(["dashboard","calendar","shows-hub","band-hub","office-hub","notifications","offers","shows","weekly","rehearsals","meetings","chat","songbook","profile","settings"]);
+}
+function canAccessPage(id){return allowedPageIds().has(id)}
 function pageLabel(){
-  return navItems().find(i=>i[0]===state.page)?.[1] || "PA LINE";
+  const primary=navItems().find(i=>i[0]===state.page)?.[1];
+  if(primary)return primary;
+  return allToolNavItems().find(i=>i[0]===state.page)?.[1] || "PA LINE";
 }
 function renderNextRunPin(){
   const stops=upcomingTourStops(),next=stops[0];
@@ -2963,53 +2940,97 @@ function renderShell(){
     <aside class="sidebar ${state.sidebarOpen?"open":""}">
       <div class="brand-row">
         <img class="brand-rose" src="./assets/pa-line-rose.png" alt="">
-        <div class="brand-copy"><strong>PA LINE</strong><span>${isAdmin()?"COMMAND":"CREW"}</span></div>
+        <div class="brand-copy"><strong>PA LINE</strong><span>${isMasterAdmin()?"COMMAND":"CREW"}</span></div>
       </div>
       <nav class="nav">
-        ${renderQuickAccess()}
         ${visibleNavItems().map(([id,label],index,items)=>{
           const previousId=index?items[index-1][0]:null;
-          const section=navSection(id);
-          const sectionBreak=!previousId||navSection(previousId)!==section;
-          return `${sectionBreak?`<div class="nav-section-label">${section}</div>`:""}<div class="nav-with-pin">
-          <button class="nav-btn ${id==="public"?"public-link":""} ${state.page===id?"active":""}" type="button" data-nav="${id}">
-            <span class="menu-symbol" aria-hidden="true">${menuSymbol(id)}</span><span>${label}</span>${id==="notifications"&&unreadCount()?`<span class="nav-count">${unreadCount()}</span>`:""}
-          </button><button type="button" class="pin-control" data-pin-page="${id}" aria-label="${pinnedPages().includes(id)?'Unpin':'Pin'} ${esc(label)}" title="${pinnedPages().includes(id)?'Remove from':'Add to'} Quick Access" aria-pressed="${pinnedPages().includes(id)}"><span aria-hidden="true">☮</span></button></div>`;
+          const section=navSection(id),sectionBreak=!previousId||navSection(previousId)!==section;
+          return `${sectionBreak?`<div class="nav-section-label">${section}</div>`:""}<div class="nav-with-pin"><button class="nav-btn ${state.page===id?"active":""}" type="button" data-nav="${id}"><span class="menu-symbol" aria-hidden="true">${menuSymbol(id)}</span><span>${label}</span></button></div>`;
         }).join("")}
       </nav>
       <div class="sidebar-user">
-        <span class="eyebrow">${isMasterAdmin()?"MASTER ADMIN":isAdmin()?"CREW ADMIN":"MEMBER PORTAL"}</span>
+        <span class="eyebrow">${isMasterAdmin()?"MASTER ADMIN · FULL CONTROL":"CREW PORTAL"}</span>
         <div style="display:flex;align-items:center;gap:9px;margin-top:8px">${artistAvatar(user)}<div style="min-width:0"><strong>${esc(user.profile?.displayName||user.fullName)}</strong><div class="mini">${esc(user.role)} · ${profileCompletion(user)}% set up</div></div></div>
-        ${renderScopeSwitcher()}
-        <div class="sidebar-actions">
-          <button type="button" class="btn small-btn ghost" data-switch-user>SWITCH</button>
-          <button type="button" class="btn small-btn ghost" data-reset-demo>RESET</button>
-        </div>
+        ${isMasterAdmin()?renderScopeSwitcher():""}
+        <div class="sidebar-actions"><button type="button" class="btn small-btn ghost" data-switch-user>SWITCH</button><button type="button" class="btn small-btn ghost" data-reset-demo>RESET</button></div>
       </div>
     </aside>
     <main class="main" id="mainContent" tabindex="-1">
       <div class="topbar">
         <div style="display:flex;align-items:center;gap:9px">
           <button class="icon-btn mobile-menu" type="button" data-mobile-menu aria-label="Open menu">☰</button>
-          <div class="page-title"><strong>${pageLabel()}</strong><span>${state.page==="public"?"Public audience preview":isAdmin()?"PA LINE operations dashboard":"Private member workspace"}</span></div>
+          <div class="page-title"><strong>${pageLabel()}</strong><span>${isMasterAdmin()?"PA LINE Command center":"Private Crew workspace"}</span></div>
         </div>
         <div class="top-actions">
-          ${renderRoleViews()}
-          <button class="btn small-btn" type="button" data-nav="public">PUBLIC BOOKING ↗</button>
-          ${renderScopeSwitcher()}
+          <a class="btn small-btn" href="../index.html">APP HOME</a>
+          ${isMasterAdmin()?renderScopeSwitcher():""}
           <button class="command-trigger" type="button" data-command-palette aria-label="Search and jump anywhere"><span>SEARCH</span><kbd>CTRL K</kbd></button>
-          ${canManageActiveScope()?`<button class="btn small-btn primary" type="button" data-quick-offer>+ ${personalMode()?"PERSONAL SHOW":"OFFER"}</button>`:`<button class="btn small-btn" type="button" data-start-personal-booking>+ PERSONAL SHOW</button>`}
+          ${isMasterAdmin()?`<button class="btn small-btn primary" type="button" data-quick-offer>+ ${personalMode()?"PERSONAL SHOW":"OFFER"}</button>`:""}
         </div>
       </div>
-      ${personalMode()?`<div class="scope-banner"><div><strong>MY SHOWS MODE</strong> · Booking, contacts, calendar, routes, and money here belong only to ${esc(user.name)}.</div><button class="btn small-btn ghost" type="button" data-booking-scope="band">BACK TO PA LINE</button></div>`:""}
-      ${state.page==="tour"?"":renderNextRunPin()}
+      ${isMasterAdmin()&&personalMode()?`<div class="scope-banner"><div><strong>MY SHOWS MODE</strong> · Booking, contacts, calendar, routes, and money here belong only to ${esc(user.name)}.</div><button class="btn small-btn ghost" type="button" data-booking-scope="band">BACK TO PA LINE</button></div>`:""}
+      ${isMasterAdmin()&&state.page!=="tour"?renderNextRunPin():""}
       <div class="content">${renderPage()}</div>
     </main>
   </div>`;
 }
+function renderFolderHub(title,kicker,description,folders){
+  return `<section class="hero"><span class="eyebrow">${esc(kicker)}</span><h1>${esc(title)}</h1><p>${esc(description)}</p></section>
+  <div class="folder-grid">${folders.map(folder=>`<section class="folder-card" aria-label="${esc(folder.title)} folder">
+    <div class="folder-head"><span class="folder-icon" aria-hidden="true">${folder.icon||"▰"}</span><div class="folder-title"><strong>${esc(folder.title)}</strong><span>${esc(folder.copy||"")}</span></div></div>
+    <div class="subfolder-grid">${folder.items.map(item=>`<button class="subfolder-btn" type="button" data-nav="${item.id}"><span class="subfolder-top"><strong>${esc(item.title)}</strong>${item.badge!==undefined?`<span class="badge ${item.badgeClass||""}">${esc(item.badge)}</span>`:""}</span><span class="subfolder-copy">${esc(item.copy||"")}</span><span class="subfolder-open">OPEN →</span></button>`).join("")}</div>
+  </section>`).join("")}</div>`;
+}
+function renderShowsHub(){
+  const scopedOffers=data.offers.filter(inActiveBookingScope),openOffers=scopedOffers.filter(o=>!["declined","cancelled"].includes(o.status||"")).length;
+  const confirmed=scopedShows().filter(s=>s.status==="confirmed").length;
+  if(!isMasterAdmin())return renderFolderHub("Shows","PA LINE · CREW","Everything about playing shows, separated into what needs your response and what is already on the books.",[
+    {title:"Respond",icon:"✉",copy:"Things waiting on you.",items:[{id:"offers",title:"Show Offers",copy:"Accept, decline, or review offers sent to you.",badge:String(openOffers)}]},
+    {title:"Upcoming",icon:"♫",copy:"Your confirmed commitments and availability.",items:[{id:"shows",title:"Confirmed Shows",copy:"Call times, setlists, travel details, and show notes.",badge:String(confirmed),badgeClass:"good"},{id:"calendar",title:"My Schedule",copy:"See PA LINE commitments and protect dates you cannot play."}]}
+  ]);
+  const leads=pipelineItems().filter(x=>x._kind==="lead").length;
+  return renderFolderHub("Shows","PA LINE · SHOWS","From first inquiry to show day. Booking work and confirmed-show work live in separate folders.",[
+    {title:"Booking + Offers",icon:"✉",copy:"Everything before a date becomes a confirmed show.",items:[{id:"pipeline",title:"Booking Pipeline",copy:"Leads, follow-ups, holds, and opportunities.",badge:String(leads)},{id:"offers",title:"Offers + Responses",copy:"Review offers and member responses.",badge:String(openOffers)}]},
+    {title:"Show Management",icon:"♫",copy:"Everything after the date is moving forward.",items:[{id:"shows",title:"Confirmed Shows",copy:"Show Hub, advances, setlists, travel, and show details.",badge:String(confirmed),badgeClass:"good"},{id:"calendar",title:"Show Calendar",copy:"Availability, commitments, holds, and confirmed dates."}]}
+  ]);
+}
+function renderRoadHub(){
+  if(!isMasterAdmin())return renderMemberDashboard();
+  return renderFolderHub("Road","PA LINE · ROAD","Tour planning is split from market research so routing decisions stay easy to understand.",[
+    {title:"Tour Planning",icon:"➤",copy:"Build the run and see how the dates connect.",items:[{id:"tour",title:"Tour Builder",copy:"Routes, anchors, gaps, priorities, and Route Strength."},{id:"calendar",title:"Routing Calendar",copy:"Confirmed dates, holds, travel commitments, and open days."}]},
+    {title:"Markets + Demand",icon:"⌖",copy:"Decide where PA LINE should go next.",items:[{id:"markets",title:"Market Database",copy:"Cities, venue prospects, territories, and research."},{id:"fans",title:"Audience Demand",copy:"Fan demand and loyalty signals by market."}]}
+  ]);
+}
+function renderBandHub(){
+  if(!isMasterAdmin())return renderFolderHub("Band","PA LINE · CREW","Music and band coordination are separated so members can get where they need to go quickly.",[
+    {title:"Music",icon:"♩",copy:"Songs and rehearsal work.",items:[{id:"songbook",title:"Songbook",copy:"Songs, role notes, practice audio, and setlist material."},{id:"rehearsals",title:"Rehearsals",copy:"Upcoming rehearsals and your responses."}]},
+    {title:"Coordination",icon:"◎",copy:"Tasks, meetings, and band communication.",items:[{id:"weekly",title:"My Tasks",copy:"Your current Weekly Ops responsibilities."},{id:"meetings",title:"Meetings",copy:"Band meetings, invitations, and RSVPs."},{id:"chat",title:"Crew Chat",copy:"Private band conversation."}]}
+  ]);
+  return renderFolderHub("Band","PA LINE · BAND","People, music, and internal coordination each have their own folder.",[
+    {title:"People",icon:"♟",copy:"Who is in PA LINE and how they are configured.",items:[{id:"members",title:"Artist Profiles",copy:"Profiles, portal setup, roles, and member access.",badge:String(currentMembers().length)},{id:"lineups",title:"Lineups",copy:"Performing configurations and personnel."},{id:"profile",title:"My Artist Profile",copy:"Your own artist information and profile details."}]},
+    {title:"Music",icon:"♩",copy:"Repertoire and rehearsal preparation.",items:[{id:"songbook",title:"Songbook",copy:"Songs, role notes, practice audio, and setlist source material."},{id:"rehearsals",title:"Rehearsals",copy:"Schedule rehearsals and track responses."}]},
+    {title:"Coordination",icon:"◎",copy:"Internal planning and communication.",items:[{id:"meetings",title:"Band Meetings",copy:"Meetings, invitations, RSVPs, and notes."},{id:"chat",title:"Crew Chat",copy:"Private operational conversation."},{id:"weekly",title:"Weekly Ops",copy:"Shared priorities and responsibilities for the week."}]}
+  ]);
+}
+function renderOfficeHub(){
+  if(!isMasterAdmin())return renderFolderHub("My Portal","PA LINE · CREW","Your private information is separated from alerts and account settings.",[
+    {title:"My Stuff",icon:"♙",copy:"Your personal PA LINE information.",items:[{id:"profile",title:"My Artist Profile",copy:"Your PA LINE artist information."}]},
+    {title:"Account",icon:"⚙",copy:"Things tied to your portal login and notifications.",items:[{id:"notifications",title:"Notifications",copy:"Anything that needs your attention."},{id:"settings",title:"Account + Calendars",copy:"Login, security, notifications, and calendar connections."}]}
+  ]);
+  return renderFolderHub("Office","PA LINE · OFFICE","Business relationships, weekly operations, and system administration are separated into their own folders.",[
+    {title:"Relationships",icon:"▣",copy:"People and organizations outside the band.",items:[{id:"contacts",title:"Contacts",copy:"Venues, promoters, buyers, media, and other relationships."},{id:"communications",title:"Communication Log",copy:"Calls, emails, texts, DMs, notes, and follow-ups."}]},
+    {title:"Operations",icon:"☑",copy:"The work that keeps the band moving.",items:[{id:"weekly",title:"Weekly Ops",copy:"Shared priorities and work for the week."},{id:"ops-schedule",title:"Ops Schedule",copy:"Put operational work on a schedule."},{id:"notifications",title:"Notifications",copy:"Anything that needs your attention."}]},
+    {title:"Administration",icon:"⚙",copy:"System-level controls and configuration.",items:[{id:"settings",title:"Administration + Settings",copy:"Data safety, access, integrations, calendars, and system settings."},{id:"fans",title:"Fan Loyalty",copy:"Fan and local connector activity, points, and rewards."}]}
+  ]);
+}
 function renderPage(){
-  if(state.page==='ops-schedule')return renderOpsSchedule();
-  if(state.page==="dashboard")return isAdmin()?renderAdminDashboard():renderMemberDashboard();
+  if(state.page==="shows-hub")return renderShowsHub();
+  if(state.page==="road-hub")return renderRoadHub();
+  if(state.page==="band-hub")return renderBandHub();
+  if(state.page==="office-hub")return renderOfficeHub();
+  if(state.page==="ops-schedule")return renderOpsSchedule();
+  if(state.page==="dashboard")return isMasterAdmin()?renderAdminDashboard():renderMemberDashboard();
   if(state.page==="profile")return renderMyArtistProfilePage();
   if(state.page==="calendar")return renderCalendarPage();
   if(state.page==="tour")return renderTourReviewPage();
@@ -3030,7 +3051,7 @@ function renderPage(){
   if(state.page==="notifications")return renderNotificationsPage();
   if(state.page==="settings")return renderSettingsPage();
   if(state.page==="public")return renderPublicSitePage();
-  return renderAdminDashboard();
+  return isMasterAdmin()?renderAdminDashboard():renderMemberDashboard();
 }
 
 function renderPublicSitePage(){
@@ -4951,12 +4972,12 @@ function showToast(message){
 }
 function commandResults(query=""){
   const q=String(query).trim().toLowerCase(),matches=(...parts)=>!q||parts.join(" ").toLowerCase().includes(q),items=[];
-  navItems().filter(([id])=>id!=="public").forEach(([id,label])=>{if(matches(label))items.push({icon:"↗",title:label,meta:"Go to page",hint:"PAGE",action:`nav|${id}`})});
-  pipelineItems().forEach(item=>{if(matches(item.title,item.organization,item.city,item.stage))items.push({icon:"◎",title:item.title,meta:`${item.stage} · ${item.city||"Location TBD"}`,hint:item._kind.toUpperCase(),action:`${item._kind}|${item.id}`})});
-  scopedContacts().forEach(contact=>{if(matches(contact.name,contact.organization,contact.city,contact.type,(contact.tags||[]).join(" ")))items.push({icon:"◇",title:contact.name,meta:`${contact.type} · ${contact.organization||contact.city||"Contact"}`,hint:"CONTACT",action:`contact|${contact.id}`})});
-  if(q&&isAdmin())ensureMarketDatabase().forEach(market=>(market.venues||[]).forEach(venue=>{if(matches(venue.name,venue.city,venue.region,market.name,venue.type,venue.fit,venue.status))items.push({icon:"⌖",title:venue.name,meta:`${market.name} · ${effectiveMarketStatus(venue,market.id)} · ${venue.fit}`,hint:"MARKET",action:`market|${market.id}|${venue.id}`})}));
+  [...navItems(),...allToolNavItems()].filter((item,index,array)=>array.findIndex(x=>x[0]===item[0])===index&&canAccessPage(item[0])).forEach(([id,label])=>{if(matches(label))items.push({icon:"↗",title:label,meta:"Go to page",hint:"PAGE",action:`nav|${id}`})});
+  if(isMasterAdmin())pipelineItems().forEach(item=>{if(matches(item.title,item.organization,item.city,item.stage))items.push({icon:"◎",title:item.title,meta:`${item.stage} · ${item.city||"Location TBD"}`,hint:item._kind.toUpperCase(),action:`${item._kind}|${item.id}`})});
+  if(isMasterAdmin())scopedContacts().forEach(contact=>{if(matches(contact.name,contact.organization,contact.city,contact.type,(contact.tags||[]).join(" ")))items.push({icon:"◇",title:contact.name,meta:`${contact.type} · ${contact.organization||contact.city||"Contact"}`,hint:"CONTACT",action:`contact|${contact.id}`})});
+  if(q&&isMasterAdmin())ensureMarketDatabase().forEach(market=>(market.venues||[]).forEach(venue=>{if(matches(venue.name,venue.city,venue.region,market.name,venue.type,venue.fit,venue.status))items.push({icon:"⌖",title:venue.name,meta:`${market.name} · ${effectiveMarketStatus(venue,market.id)} · ${venue.fit}`,hint:"MARKET",action:`market|${market.id}|${venue.id}`})}));
   data.songs.forEach(song=>{if(matches(song.title,song.artist,song.key,song.status))items.push({icon:"♫",title:song.title,meta:`${song.artist} · ${song.key} · ${song.status}`,hint:"SONG",action:`song|${song.id}`})});
-  (isAdmin()?[...currentMembers(),...artistArchive()]:[currentUser()]).forEach(member=>{const profile=member.profile||{};if(matches(member.fullName,profile.displayName,profile.tagline,profile.bandHistory,(profile.instruments||[]).join(" ")))items.push({icon:"✦",title:profile.displayName||member.fullName,meta:`${profile.tagline||member.role} · ${data.members.includes(member)?"Current":"Archive"}`,hint:"ARTIST",action:`artist|${member.id}`})});
+  (isMasterAdmin()?[...currentMembers(),...artistArchive()]:[currentUser()]).filter(Boolean).forEach(member=>{const profile=member.profile||{};if(matches(member.fullName,profile.displayName,profile.tagline,profile.bandHistory,(profile.instruments||[]).join(" ")))items.push({icon:"✦",title:profile.displayName||member.fullName,meta:`${profile.tagline||member.role}`,hint:"ARTIST",action:`artist|${member.id}`})});
   return items.slice(0,18);
 }
 function renderCommandResults(query=""){
@@ -4971,7 +4992,7 @@ function bindCommandPalette(){
 function bindCommandResultButtons(){document.querySelectorAll("[data-command-result]").forEach(button=>button.addEventListener("click",()=>runCommandAction(button.dataset.commandResult)))}
 function runCommandAction(token){
   const [type,id,extra]=token.split("|");closeModal();
-  if(type==="nav"){state.page=id;state.songId=null;mount();return}
+  if(type==="nav"){if(!canAccessPage(id)){showToast("That area is Command-only.");return}state.page=id;state.songId=null;mount();return}
   if(type==="song"){state.page="songbook";state.songId=id;mount();return}
   if(type==="artist"){if(id===state.userId){state.page="profile";state.profileId=null}else if(isAdmin()){state.page="members";state.profileId=id}mount();return}
   if(type==="contact"){state.page="contacts";state.contactSearch=data.contacts.find(c=>c.id===id)?.name||"";mount();return}
@@ -4994,6 +5015,7 @@ function bindPageEvents(){
   document.querySelectorAll("[data-brief-action]").forEach(el=>el.addEventListener("click",()=>runCommandAction(el.dataset.briefAction)));
   document.querySelectorAll("[data-nav]").forEach(el=>el.addEventListener("click",()=>{
     if(el.dataset.nav==="public"){window.location.href="../booking/index.html";return}
+    if(!canAccessPage(el.dataset.nav)){showToast("That area is Command-only.");return}
     state.page=el.dataset.nav;state.songId=null;state.profileId=null;state.sidebarOpen=false;mount();
   }));
   document.querySelector("[data-public-scroll-shows]")?.addEventListener("click",()=>$("publicShows")?.scrollIntoView({behavior:"smooth",block:"start"}));
@@ -5726,7 +5748,7 @@ async function portalPasswordHash(password,salt){
 function openPortalLogin(id){
   const member=portalMembers().find(m=>m.id===id);if(!member)return;
   const setup=!member.portalAccount;
-  const isMasterPortal=member.id==="trever"||member.accessTier==="master";
+  const isMasterPortal=member.id==="trever";
   const setupAuthorized=isMasterPortal||member.portalSecurity?.firstTimeSetupAuthorized===true;
   if(setup&&!setupAuthorized){
     openModal("Portal setup locked",esc(member.fullName),`
@@ -5760,7 +5782,7 @@ function openPortalLogin(id){
       if(setup){
         if(password!==$('portalConfirm').value)throw Error('Passwords do not match.');
         if(data.members.some(m=>m.id!==id&&m.portalAccount?.email===email))throw Error('That email already has a portal.');
-        const serverUser=await window.PALineServer.setup(id,email,password,member.accessTier||'member');
+        const serverUser=await window.PALineServer.setup(id,email,password,id==="trever"?"master":"member");
         member.portalAccount={email,serverAuth:true,createdAt:nowISO()};member.email=email;
         member.profile ||= blankMemberProfile(member);
         member.profile.updatedAt=nowISO();member.profile.updatedBy=id;
@@ -5771,7 +5793,7 @@ function openPortalLogin(id){
         try{serverUser=await window.PALineServer.login(email,password,false)}catch(serverError){
           const legacy=member.portalAccount?.salt&&member.portalAccount?.hash&&email===member.portalAccount.email&&await portalPasswordHash(password,member.portalAccount.salt)===member.portalAccount.hash;
           if(!legacy)throw serverError;
-          serverUser=await window.PALineServer.setup(id,email,password,member.accessTier||'member');
+          serverUser=await window.PALineServer.setup(id,email,password,id==="trever"?"master":"member");
           showToast('Your existing beta login was upgraded to server security.');
         }
         if(serverUser.memberId!==id)throw Error('That login belongs to a different portal.');
@@ -5832,18 +5854,13 @@ function toggleRosterAccess(id){
   saveData();mount();
 }
 function adminView(){return isMasterAdmin()?'admin':isAdmin()?(currentUser().uiPreferences?.view||'admin'):'crew'}
-function visibleNavItems(){
-  const list=navItems(),view=adminView();
-  if(!isAdmin()||view==='admin')return list;
-  const crew=['dashboard','profile','calendar','rehearsals','meetings','chat','songbook','notifications','settings','public','offers','ops-schedule'];
-  return list.filter(([id])=>view==='crew'?crew.includes(id):!['members','settings','lineups'].includes(id));
-}
+function visibleNavItems(){return navItems()}
 function pinnedPages(){
   const permitted=new Set(visibleNavItems().map(([id])=>id));
   return [...new Set(currentUser()?.uiPreferences?.pins||[])].filter(id=>permitted.has(id)).slice(0,8);
 }
 function menuSymbol(id){
-  return ({dashboard:'⌂',profile:'♙',calendar:'▦',tour:'➤',markets:'⌖',fans:'★',pipeline:'⇢',offers:'✉',shows:'♫',rehearsals:'♬',meetings:'◎',chat:'☏',communications:'≡',weekly:'☑',members:'♟',contacts:'▣',songbook:'♩',lineups:'☷',notifications:'♧',settings:'⚙',public:'↗','ops-schedule':'◷'})[id]||'•';
+  return ({dashboard:"⌂","shows-hub":"♫","road-hub":"➤","band-hub":"♬","office-hub":"▣",profile:"♙",calendar:"▦",tour:"➤",markets:"⌖",fans:"★",pipeline:"⇢",offers:"✉",shows:"♫",rehearsals:"♬",meetings:"◎",chat:"☏",communications:"≡",weekly:"☑",members:"♟",contacts:"▣",songbook:"♩",lineups:"☷",notifications:"♧",settings:"⚙",public:"↗","ops-schedule":"◷"})[id]||"•";
 }
 function renderQuickAccess(){
   const pins=pinnedPages();
@@ -6132,23 +6149,18 @@ mount();
   }
   function isMaster(){
     const m=currentMember();
-    return !!(m && (m.id==="trever" || m.accessTier==="master"));
+    return !!(m && m.id==="trever");
   }
   function tierFor(member){
     if(!member)return "member";
-    if(member.id==="trever" || member.accessTier==="master")return "master";
-    if(member.accessTier==="crew_admin" || member.isAdmin)return "crew_admin";
-    return "member";
+    return member.id==="trever"?"master":"member";
   }
 
   function ensureMemberSecurity(){
     if(typeof data==="undefined"||!Array.isArray(data.members))return;
     data.members.forEach(m=>{
-      if(!m.accessTier){
-        if(m.id==="trever")m.accessTier="master";
-        else if(m.isAdmin)m.accessTier="crew_admin";
-        else m.accessTier="member";
-      }
+      if(m.id==="trever"){m.accessTier="master";m.isAdmin=true}
+      else{m.accessTier="member";m.isAdmin=false}
       m.portalSecurity ||= {
         setupComplete:false,
         firstTimeSetupAuthorized:m.id==="trever",
@@ -6386,8 +6398,8 @@ mount();
       </div>
       <div class="modal-footer"><button class="btn primary" type="button" data-v7-save-portal>APPLY PORTAL SETTINGS</button></div>`);
     document.querySelector("[data-v7-save-portal]")?.addEventListener("click",()=>{
-      m.accessTier=m.id==="trever"?"master":document.getElementById("v7AccessTier").value;
-      m.isAdmin=m.id==="trever"||m.accessTier!=="member";
+      m.accessTier=m.id==="trever"?"master":"member";
+      m.isAdmin=m.id==="trever";
       m.portalEnabled=m.id==="trever"?true:document.getElementById("v7PortalEnabled").value==="yes";
       m.portalSecurity ||= {};
       m.portalSecurity.firstTimeSetupAuthorized = m.id==="trever" ? true : !!document.getElementById("v73AllowFirstSetup")?.checked;
@@ -6678,7 +6690,7 @@ mount();
         if(serverState&&typeof serverState==='object'&&Object.keys(serverState).length){data=serverState;ensureBackendCollections();localStorage.setItem(APP_KEY,JSON.stringify(data));}
       }catch(e){}
       state.userId=user.memberId; state.bookingScope='band';
-      if(user.role==='master'||user.role==='crew_admin'){
+      if(user.memberId==='trever'&&user.role==='master'){
         for(const m of (data.members||[]))if(m.id!=='trever'&&!m.portalAccount&&m.portalSecurity?.firstTimeSetupAuthorized===true){try{await window.PALineServer.invite(m.id,true)}catch(e){}}
       }
       if(typeof mount==='function')mount();
