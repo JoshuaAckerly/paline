@@ -856,7 +856,7 @@ a:hover,
 
 
 /* v33 returning-booker + secure pricing */
-.returning-booker-bar{
+.returning-booker-bar{display:none!important;
   width:100%;
   margin-top:14px;
   padding:18px 20px;
@@ -929,7 +929,7 @@ a:hover,
   background:rgba(255,209,102,.05);
 }
 @media(max-width:760px){
-  .returning-booker-bar{align-items:flex-start;flex-direction:column}
+  .returning-booker-bar{display:none!important;align-items:flex-start;flex-direction:column}
   .returning-actions{grid-template-columns:1fr!important}
 }
 
@@ -1656,7 +1656,7 @@ label:has(input[type="checkbox"]),label:has(input[type="radio"]){padding:10px}
 #pageStart .choice p{font-size:13px;line-height:1.55;max-width:92%}
 #pageStart .choice strong{font-size:10px}
 #pageStart .choice .panel-rose{opacity:.12}
-.returning-booker-bar{
+.returning-booker-bar{display:none!important;
   margin-top:14px;padding:17px 18px;border-radius:15px;
   min-height:105px;
 }
@@ -1693,7 +1693,7 @@ label:has(input[type="checkbox"]),label:has(input[type="radio"]){padding:10px}
 }
 .footer-sep{opacity:.45}
 
-button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipulation}
+button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{display:none!important;touch-action:manipulation}
 
 @media(max-width:820px){
   .app{padding:12px 12px 44px}
@@ -1745,7 +1745,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
   }
   #pageStart .choice h2{font-size:21px}
   #pageStart .choice p{font-size:13px}
-  .returning-booker-bar{padding:16px;min-height:0;gap:12px}
+  .returning-booker-bar{display:none!important;padding:16px;min-height:0;gap:12px}
   .returning-booker-bar>strong{white-space:normal}
   .summary{align-items:stretch;flex-direction:column}
   .summary .btn.primary,.summary>button{width:100%}
@@ -2476,8 +2476,6 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <div aria-hidden="true" class="journey-track"><span id="journeyFill"></span></div>
 </div>
 <div class="topbar-actions">
-<span class="preview-chip" title="Interactive presentation build. Email, mapping, payment, and secure backend actions are simulated."><span class="preview-dot"></span>BETA MODE</span>
-<button class="btn top-admin-docs" id="legalDocsAdminBtn" onclick="openLegalAdmin()" type="button" title="Beta admin document manager">LEGAL DOCS</button>
 <button class="btn top-start-over hidden" id="startOverBtn" onclick="startOver()" type="button">START OVER</button>
 </div>
 </div>
@@ -3309,25 +3307,22 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <button class="btn" onclick="showPage('pageDetails','Event Details')">← Back</button>
 <h1 style="margin-top:18px">Here’s what we have so far</h1>
 <div class="notice" id="reviewCard"></div>
-<div class="summary"><div><strong>Next: secure account &amp; confidentiality</strong><div class="small">The contract and riders are reviewed once at the final step.</div></div><button class="btn primary" onclick="continueToSecurePricing()">CONTINUE</button></div>
+<div class="summary"><div><strong>Next: contact &amp; submit</strong><div class="small">PA LINE will verify routing, availability, pricing, and final agreements after receiving the request.</div></div><button class="btn primary" onclick="continueToSecurePricing()">CONTINUE</button></div>
 </section>
 <section class="card hidden" id="pageSecureAccess">
 <button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
-<span class="badge" style="margin-top:18px">SECURE ACCESS REQUIRED</span>
-<h1 style="margin-top:12px">Save the booking before we show private pricing.</h1>
-<p>Your account is the secure home for negotiated pricing, venue history, contracts, repeat-booking eligibility, and signed documents.</p>
+<span class="badge" style="margin-top:18px">CONTACT &amp; SUBMIT</span>
+<h1 style="margin-top:12px">Where should PA LINE follow up?</h1>
+<p>Send the request to PA LINE for manual review. Nothing is confirmed and no payment is taken here.</p>
 <div class="notice">
-<strong>Passwordless sign-in</strong>
-<div class="small" style="margin-top:5px">The production app should email a one-time sign-in link. That gives returning bookers an account without adding another password to remember.</div>
-<div class="formgrid" style="margin-top:12px">
+<div class="formgrid">
 <div class="field"><label>Your name</label><input autocomplete="name" data-smart-autocomplete="contact" id="secureAccountName" oninput="updateSecureAccess()"/></div>
 <div class="field"><label>Business email</label><input autocomplete="email" id="secureAccountEmail" oninput="updateSecureAccess()" type="email"/></div>
 <div class="field"><label>Venue / organization</label><input autocomplete="organization" data-smart-autocomplete="venue" id="secureAccountOrg" oninput="updateSecureAccess()"/></div>
 </div>
-<button class="btn primary" disabled="" id="secureLinkBtn" onclick="simulateSecureLink()" style="margin-top:12px">SEND SECURE SIGN-IN LINK</button>
-<div class="notice hidden" id="secureLinkNotice"></div>
+<button class="btn primary" disabled="" id="secureLinkBtn" onclick="submitProductionBookingRequest()" style="margin-top:12px">SEND TO PA LINE</button>
+<div class="small" style="margin-top:10px">PA LINE will review the date, routing, production needs, pricing, and agreement details before confirming anything.</div>
 </div>
-<div class="small preview-note"><strong>Beta simulation:</strong> email delivery is simulated. Private pricing still follows the same verified-account gate shown here.</div>
 </section>
 <section class="card hidden" id="pageConfidentiality">
 <button class="btn" onclick="showPage('pageReview','Review')">← Back</button>
@@ -3666,7 +3661,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 <section class="card hidden" id="pageDone">
 <span class="badge">REQUEST RECEIVED</span>
 <h1 style="margin-top:10px">You’re on the calendar radar.</h1>
-<p>Your booking request has been assembled and is ready for PA LINE review.</p>
+<p>Your booking request has been submitted for PA LINE review.</p>
 <div class="notice" id="doneCard"></div>
 <div class="summary"><div><strong>Status: Pending review</strong><div class="small">No payment has been processed and the date is not contractually confirmed.</div></div><button class="btn primary" onclick="location.reload()">START A NEW BOOKING</button></div>
 </section>
@@ -3698,7 +3693,7 @@ Email: info@palineofficial.com</td><td>{{PURCHASER_LEGAL_NAME}}
 <p>If disclosure is legally required, the booking contact should, where legally permitted, give PA LINE reasonable notice so PA LINE can seek appropriate protection or limit the disclosure.</p>
 <h3>Electronic Acceptance</h3>
 <p>By electronically accepting these terms, the authorized booking contact confirms that they have authority to accept them for the booking party and intend that acceptance to apply to the confidential pricing and booking information disclosed through this request.</p>
-<p><strong>Beta legal note:</strong> This confidentiality language is a business-rule draft for the beta and should be reviewed by qualified counsel before production use.</p>
+<p><strong>Important:</strong> Final negotiated pricing and binding agreement terms are provided by PA LINE after review of the request.</p>
 </template>
 <div aria-labelledby="documentReviewTitle" aria-modal="true" class="document-review-modal hidden" id="documentReviewModal" role="dialog">
 <div class="document-review-shell">
@@ -4128,7 +4123,7 @@ function submitRouteSavingsElection(){
 
   $("routeSavingsDecisionNotice").innerHTML=
     "<span class='badge'>SAVINGS CHOICE SAVED</span><h2 style='margin-top:8px'>"+parts.join(" · ")+"</h2>"+
-    "<div class='small'>Beta simulation complete. In the live booking system, this election is recorded to the booking account, receipted, and each amount is settled separately.</div>";
+    "<div class='small'>Savings selections are recorded with the booking request and reviewed by PA LINE.</div>";
   $("routeSavingsDecisionNotice").classList.remove("hidden");
   $("routeSavingsSubmit").textContent="SAVINGS CHOICE CONFIRMED ✓";
   $("routeSavingsSubmit").disabled=true;
@@ -4187,7 +4182,7 @@ function updateReturningAccess(){
 function simulateReturningMagicLink(){
   if($("returningLinkBtn").disabled)return;
   $("returningLinkNotice").classList.remove("hidden");
-  $("returningLinkNotice").innerHTML="<strong>Beta sign-in simulation ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+escapeHTML($("returningEmail").value.trim())+"</strong>. Continue below to test the verified booker portal.</div><button class='btn primary' style='margin-top:10px' onclick='completeReturningVerification()'>OPEN VERIFIED BOOKER PORTAL</button>";
+  $("returningLinkNotice").innerHTML="<strong>Secure sign-in</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+escapeHTML($("returningEmail").value.trim())+"</strong>. Continue below to test the verified booker portal.</div><button class='btn primary' style='margin-top:10px' onclick='completeReturningVerification()'>OPEN VERIFIED BOOKER PORTAL</button>";
 }
 function completeReturningVerification(){
   state.accountVerified=true;
@@ -4280,12 +4275,8 @@ function renderQuoteBenefits(){
   $("quoteBenefitsCard").innerHTML="<span class='badge'>BOOKING BENEFITS</span><h2 style='margin-top:8px'>Preferred-pricing review</h2><div class='req-list'>"+rows.join("")+"</div><div class='small' style='margin-top:8px'>Introductory/referral/repeat discount amounts have not been deducted because those program values are not finalized. Route Builder Credit is calculated only from realized post-confirmation travel savings.</div>";
 }
 function continueToSecurePricing(){
-  if(state.accountVerified){
-    openConfidentiality();
-    return;
-  }
   if(!$("secureAccountOrg").value)$("secureAccountOrg").value=$("eventVenue").value.trim();
-  showPage("pageSecureAccess","Secure Access");
+  showPage("pageSecureAccess","Contact & Submit");
   updateSecureAccess();
 }
 function updateSecureAccess(){
@@ -4294,18 +4285,45 @@ function updateSecureAccess(){
   const org=$("secureAccountOrg").value.trim();
   $("secureLinkBtn").disabled=!(name&&org&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 }
-function simulateSecureLink(){
+function submitProductionBookingRequest(){
   if($("secureLinkBtn").disabled)return;
-  $("secureLinkNotice").classList.remove("hidden");
-  $("secureLinkNotice").innerHTML="<strong>Beta verification simulation ready</strong><div class='small' style='margin-top:5px'>In the live booking system, the secure link arrives by email at <strong>"+escapeHTML($("secureAccountEmail").value.trim())+"</strong>. Continue below to test the verified pricing experience.</div><button class='btn primary' style='margin-top:10px' onclick='completeSecureVerification()'>CONTINUE AS VERIFIED</button>";
-}
-function completeSecureVerification(){
-  state.accountVerified=true;
-  state.accountName=$("secureAccountName").value.trim();
-  state.accountEmail=$("secureAccountEmail").value.trim();
-  state.accountOrg=$("secureAccountOrg").value.trim();
-  rememberContact({name:state.accountName,email:state.accountEmail,org:state.accountOrg,venue:$("eventVenue")?.value});
-  openConfidentiality();
+  const contactName=$("secureAccountName").value.trim();
+  const contactEmail=$("secureAccountEmail").value.trim();
+  const organization=$("secureAccountOrg").value.trim();
+  const payload={
+    venue:$("eventVenue").value.trim(),
+    city:$("eventCity").value.trim(),
+    state:$("eventState").value.trim(),
+    zip:$("eventZip").value.trim(),
+    date:state.selectedDate||"",
+    start:$("eventStart").value,
+    end:$("eventEnd").value,
+    format:state.format||"",
+    lineupId:state.format||"",
+    performanceLength:$("performanceLength").value,
+    eventType:$("eventType").value,
+    eventSetting:$("eventSetting").value,
+    soundProvided:state.soundProvided,
+    truePotential:!!state.truePotential,
+    additionalDates:[...(state.additionalDates||[])],
+    contactName,
+    contactEmail,
+    contactPhone:"",
+    organization,
+    notes:$("eventName")?.value.trim()||"",
+    pay:0,
+    source:state.source||"booking",
+    status:"pending-command-review",
+    submittedAt:new Date().toISOString()
+  };
+  let saved=payload;
+  try{
+    if(window.PALineBridge?.submitBooking)saved=window.PALineBridge.submitBooking(payload)||payload;
+    if(typeof deliverPrototypeInquiry==="function")deliverPrototypeInquiry(saved);
+  }catch(e){}
+  rememberContact({name:contactName,email:contactEmail,org:organization,venue:payload.venue});
+  $("doneCard").innerHTML="<strong>"+escapeHTML(contactName)+"</strong><div class='small'>"+escapeHTML(contactEmail)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(payload.venue)+"</strong></div><div>"+parseDate(payload.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML(payload.city)+", "+escapeHTML(payload.state)+" · "+escapeHTML(payload.format)+"</div><div style='margin-top:10px'><strong>Request sent to PA LINE</strong></div><div class='small'>PA LINE will verify availability, routing, production requirements, pricing, and agreement terms before anything is confirmed.</div>";
+  showPage("pageDone","Request Sent");
 }
 function openConfidentiality(){
   if(!$("pricingConfName").value)$("pricingConfName").value=state.accountName||"";
@@ -4694,19 +4712,20 @@ function openDetails(){
 ["eventVenue","eventCity","eventState","eventZip","eventStart","eventEnd"].forEach(id=>$(id).addEventListener("input",updateDetails));$("performanceLength").addEventListener("change",updateDetails);
 function chooseFormat(f){state.format=f;["fmtSolo","fmtDuo","fmtBand"].forEach(id=>$(id).classList.remove("selected"));$(f==="Solo"?"fmtSolo":f==="Duo"?"fmtDuo":"fmtBand").classList.add("selected");updateDetails()}
 function updateDetails(){
-  if($("eventCity").value.trim()&&$("eventState").value.trim()){
-    const r=routeFor(state.selectedDate,$("eventCity").value,$("eventState").value,$("eventZip").value);
+  const hasLocation=$("eventCity").value.trim()&&$("eventState").value.trim();
+  if(hasLocation){
     $("routeBox").classList.remove("hidden");
-    $("routeBox").innerHTML="<strong>"+r.fit+"</strong><div class='small' style='margin-top:5px'>Route basis: "+escapeHTML(r.inboundOrigin)+" → this venue → "+escapeHTML(r.outboundDestination)+". Preview: "+r.totalMiles+" routed miles · "+r.driveHours.toFixed(1)+" combined drive hours · mileage component "+money(r.mileageCost)+". "+(r.extendedTravelAllowanceApplies?"Because combined driving exceeds 8 hours, one additional base-rate travel allowance will apply.":"Combined driving does not exceed 8 hours, so no additional base-rate travel allowance applies.")+"</div>";
-    if(state.source==="exact")renderExactSuggestions(r)
+    $("routeBox").innerHTML="<strong>Routing review required</strong><div class='small' style='margin-top:5px'>PA LINE will verify real travel distance, surrounding shows, and routing before sending any final pricing or confirmation.</div>";
+    $("exactSuggestions").classList.add("hidden");
   }else{
-    $("routeBox").classList.add("hidden");$("exactSuggestions").classList.add("hidden")
+    $("routeBox").classList.add("hidden");
+    $("exactSuggestions").classList.add("hidden");
   }
   renderUniversalShowWindow();
   const timingOk=renderSameDayAvailability();
   const ok=state.format&&$("eventVenue").value.trim()&&$("eventCity").value.trim()&&$("eventState").value.trim()&&$("eventStart").value&&$("eventEnd").value&&state.soundProvided!==null&&timingOk;
   $("detailsContinue").disabled=!ok;
-  $("detailsSummary").textContent=ok?state.format+" · "+$("eventVenue").value:(timingOk?"Complete venue, format, and sound information":"Choose a start time that fits the available schedule")
+  $("detailsSummary").textContent=ok?state.format+" · "+$("eventVenue").value:(timingOk?"Complete venue, format, and sound information":"Choose a start time that fits the available schedule");
 }
 function renderExactSuggestions(originalRoute){
   const city=$("eventCity").value,st=$("eventState").value,zip=$("eventZip").value,orig=parseDate(state.originalDate||state.selectedDate),arr=[];
@@ -4824,9 +4843,8 @@ function recurringSummaryHTML(){
 
 function openReview(){
   rememberCurrentEventAndVenue();
-  const r=routeFor(state.selectedDate,$("eventCity").value,$("eventState").value,$("eventZip").value);
-  $("reviewCard").innerHTML="<strong>"+escapeHTML($("eventVenue").value)+"</strong>"+($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+escapeHTML($("eventName").value.trim())+"</strong></div>":"")+"<div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML($("eventCity").value)+", "+escapeHTML($("eventState").value)+" · "+escapeHTML($("eventType").value)+" · "+escapeHTML($("eventSetting").value)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(state.format)+"</strong></div><div class='small'>"+escapeHTML($("performanceLength").value)+" · "+escapeHTML(r.fit)+" · sound provided: "+(state.soundProvided?"Yes":"No")+"</div>"+(state.truePotential?"<div style='margin-top:10px'><span class='badge'>TRUE POTENTIAL</span></div>":"")+recurringSummaryHTML();
-  showPage("pageReview","Review")
+  $("reviewCard").innerHTML="<strong>"+escapeHTML($("eventVenue").value)+"</strong>"+($("eventName")?.value.trim()?"<div class='small' style='margin-top:3px'><strong>"+escapeHTML($("eventName").value.trim())+"</strong></div>":"")+"<div>"+parseDate(state.selectedDate).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML($("eventCity").value)+", "+escapeHTML($("eventState").value)+" · "+escapeHTML($("eventType").value)+" · "+escapeHTML($("eventSetting").value)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(state.format)+"</strong></div><div class='small'>"+escapeHTML($("performanceLength").value)+" · routing review required · sound provided: "+(state.soundProvided?"Yes":"No")+"</div>"+(state.truePotential?"<div style='margin-top:10px'><span class='badge'>TRUE POTENTIAL</span></div>":"")+recurringSummaryHTML();
+  showPage("pageReview","Review");
 }
 function seasonal(dateStr){
   const m=parseDate(dateStr).getMonth(),name=parseDate(dateStr).toLocaleDateString(undefined,{month:"long"});
@@ -5211,15 +5229,8 @@ function bundledLegalDocument(key){
     source:"bundled"
   };
 }
-function readLegalDocumentStore(){
-  try{
-    const parsed=JSON.parse(localStorage.getItem(LEGAL_DOC_STORE_KEY)||"{}");
-    return parsed&&typeof parsed==="object"?parsed:{};
-  }catch(e){return {}}
-}
-function writeLegalDocumentStore(store){
-  try{localStorage.setItem(LEGAL_DOC_STORE_KEY,JSON.stringify(store));return true}catch(e){return false}
-}
+function readLegalDocumentStore(){return {}}
+function writeLegalDocumentStore(){return false}
 function sanitizeLegalHTML(input){
   const box=document.createElement("div");
   box.innerHTML=String(input||"");
@@ -5263,12 +5274,7 @@ function syncLegalVersionLabels(){
   });
   renderLegalVersionTable();
 }
-function openLegalAdmin(){
-  legalAdminReturnPage=currentVisiblePageId();
-  loadLegalAdminDocument();
-  syncLegalVersionLabels();
-  showPage("pageLegalAdmin","Legal Documents");
-}
+function openLegalAdmin(){return}
 function closeLegalAdmin(){
   const target=$(legalAdminReturnPage)?legalAdminReturnPage:"pageStart";
   showPage(target,target==="pageStart"?"Start":"Booking");
@@ -6777,15 +6783,15 @@ function resetDocumentReviewToTop(){
 </script>
 <footer class="app-footer">
 <span class="footer-brand"><span aria-hidden="true" class="rose-art"></span><span>PA LINE</span></span>
-<span>Booking preview</span>
+<span>Booking</span>
 <span class="footer-sep">•</span>
-<span>Availability, routing, authentication, and payments are simulated until the production integrations are connected.</span>
+<span>Requests are reviewed by PA LINE before any date, price, or agreement is confirmed.</span>
 </footer>
 
 <script>
 function deliverPrototypeInquiry(packet){
   try{
-    fetch("https://palineofficial.com/api/prototype-inquiries",{
+    fetch("/api/prototype-inquiries",{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
       body:JSON.stringify({type:"booking",source_key:packet.id||null,contact:{name:packet.contactName||null,email:packet.contactEmail||null,phone:packet.contactPhone||null},lead:null,record:packet,notification:null})
@@ -6863,8 +6869,8 @@ function deliverPrototypeInquiry(packet){
 (function(){
   function markup(){
     return `<div class="paline-side-switch">
-      <button type="button" class="active" title="Public booking side">PUBLIC</button>
-      <a href="../crew/sw-reset.html?secure=1" title="Secure sign-in required">COMMAND SIGN IN 🔒</a>
+      <button type="button" class="active" title="Booking">BOOKING</button>
+      <a href="../crew/sw-reset.html?secure=1" title="Secure Crew & Command sign-in">CREW &amp; COMMAND 🔒</a>
     </div>`;
   }
 
@@ -7114,13 +7120,11 @@ function submitSpecialBooking(){
   function topNow(){
     try{window.scrollTo({top:0,left:0,behavior:"instant"})}catch(e){window.scrollTo(0,0)}
   }
-  document.addEventListener("click",function(e){
-    if(e.target.closest("button,[role=button],.paline-side-switch a"))setTimeout(topNow,0);
-  },true);
-  window.addEventListener("pageshow",topNow);
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",topNow,{once:true});
+  else topNow();
 })();
 </script>
 
-<div class="paline-build-badge" data-v77-build-badge>BETA v7.25</div>
+
 </body>
 </html>
