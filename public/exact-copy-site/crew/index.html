@@ -761,9 +761,11 @@ body{background:radial-gradient(circle at 88% 0%,rgba(230,184,92,.18),transparen
 </style>
 <script>
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-window.addEventListener('pageshow', function () {
-  window.scrollTo({top:0,left:0,behavior:'instant'});
-});
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",()=>window.scrollTo({top:0,left:0,behavior:"instant"}),{once:true});
+}else{
+  window.scrollTo({top:0,left:0,behavior:"instant"});
+}
 </script>
 <style id="v7-command-security-ops-styles">
 /* COMMAND sidebar scroll */
