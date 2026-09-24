@@ -2852,20 +2852,37 @@ function app(){
 }
 let lastMountedPageKey=null;
 function mount(){
+  const freshMount=lastMountedPageKey===null;
+  const previousWindowX=window.scrollX||0;
+  const previousWindowY=window.scrollY||0;
+  const previousMainScroll=document.querySelector(".main")?.scrollTop||0;
+  const previousContentScroll=document.querySelector(".content")?.scrollTop||0;
+
   if(state.userId&&!portalMembers().some(member=>member.id===state.userId)){state.userId=null;state.page='dashboard'}
   if(state.userId&&typeof canAccessPage==="function"&&!canAccessPage(state.page))state.page="dashboard";
   if(state.userId&&isMasterAdmin())syncMasterReminders();
+
   const pageKey=JSON.stringify([state.userId,state.page,state.bookingScope,state.page==='songbook'?state.songId:null,state.page==='shows'?state.showId:null,state.page==='offers'?state.offerId:null,state.page==='members'?state.profileId:null]);
-  const pageChanged=pageKey!==lastMountedPageKey;
   $("app").innerHTML=app();
   bindPageEvents();
   setTimeout(()=>window.PALineProductionRefresh?.(),0);
   if(state.sidebarOpen)document.querySelector(".sidebar")?.classList.add("open");
   lastMountedPageKey=pageKey;
-  if(pageChanged){
-    window.scrollTo({top:0,left:0,behavior:'instant'});
-    document.querySelector('.main')?.scrollTo({top:0,left:0,behavior:'instant'});
-  }
+
+  const applyScroll=()=>{
+    if(freshMount){
+      try{window.scrollTo({top:0,left:0,behavior:"instant"})}catch(e){window.scrollTo(0,0)}
+      const main=document.querySelector(".main");if(main)main.scrollTop=0;
+      const content=document.querySelector(".content");if(content)content.scrollTop=0;
+      return;
+    }
+    try{window.scrollTo({top:previousWindowY,left:previousWindowX,behavior:"instant"})}catch(e){window.scrollTo(previousWindowX,previousWindowY)}
+    const main=document.querySelector(".main");if(main)main.scrollTop=previousMainScroll;
+    const content=document.querySelector(".content");if(content)content.scrollTop=previousContentScroll;
+  };
+  applyScroll();
+  queueMicrotask(applyScroll);
+  requestAnimationFrame(applyScroll);
 }
 function renderLogin(){
   return `
@@ -6244,7 +6261,6 @@ mount();
         enforceMenuTier();
         injectTopNotifications();
         bindV7Controls();
-        scrollTopHard();
         enforceSecurityGate();
       });
       return out;
@@ -6489,6 +6505,7 @@ mount();
   }
 
   function boot(){
+    scrollTopHard();
     ensureMemberSecurity();
     enforceMenuTier();
     augmentSettings();
@@ -6501,7 +6518,6 @@ mount();
       injectTopNotifications();
       bindV7Controls();
       enforceSecurityGate();
-      scrollTopHard();
     },0);
   }
 
@@ -6514,17 +6530,13 @@ mount();
 
 <script id="v76-navigation-cleanup">
 (function(){
-  function v76ForceTop(){
+  // In-app clicks intentionally preserve scroll position.
+  // Fresh document loads are handled by the main boot sequence.
+  window.v76ForceTop=function(){
     try{window.scrollTo({top:0,left:0,behavior:"instant"})}catch(e){window.scrollTo(0,0)}
-    const main=document.querySelector(".main"); if(main)main.scrollTop=0;
-    const content=document.querySelector(".content"); if(content)content.scrollTop=0;
-  }
-  window.v76ForceTop=v76ForceTop;
-  document.addEventListener("click",function(e){
-    const nav=e.target.closest("[data-nav], [data-v72-public], .paline-side-switch a");
-    if(nav)setTimeout(v76ForceTop,0);
-  },true);
-  window.addEventListener("pageshow",v76ForceTop);
+    const main=document.querySelector(".main");if(main)main.scrollTop=0;
+    const content=document.querySelector(".content");if(content)content.scrollTop=0;
+  };
 })();
 </script>
 
