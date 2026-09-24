@@ -2808,7 +2808,7 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{display:none!importan
 <button class="btn primary" disabled="" id="returningLinkBtn" onclick="simulateReturningMagicLink()" style="margin-top:12px">EMAIL ME A SECURE SIGN-IN LINK</button>
 <div class="notice hidden" id="returningLinkNotice"></div>
 </div>
-<div class="small preview-note"><strong>Beta simulation:</strong> email delivery is simulated so you can move through the verified-account experience.</div>
+<div class="small preview-note"><strong>Returning booker access:</strong> returning-account self-service is temporarily unavailable. Please submit a new request and PA LINE will connect it to your history.</div>
 </section>
 <section class="card hidden" id="pageReturningHub">
 <button class="btn" onclick="showPage('pageStart','Start')">← Back</button>
@@ -3816,7 +3816,7 @@ function showPage(id,label){
 function iso(d){return d.toISOString().slice(0,10)}
 function parseDate(s){return new Date(s+"T12:00:00")}
 function money(n){return "$"+Math.round(n).toLocaleString()}
-const LIVE_PA_LINE_CALENDAR = [{"date": "2026-09-12", "status": "booked", "title": "Another World Music Festival", "start": "7:00 PM", "end": "8:30 PM", "location": "Public / confirmed PA LINE calendar event"}, {"date": "2026-09-19", "status": "booked", "title": "Christian bday party gig", "start": "6:00 PM", "end": "11:00 PM", "location": "Bloomfield's Pub, Depew, NY"}];
+const LIVE_PA_LINE_CALENDAR = [];
 const HOME_BASE="PA LINE routing base";
 const HOME_BASE_ROUTE_KEY="paline-routing-base-v1";
 const MILEAGE_RATE=0.80;
@@ -3825,15 +3825,10 @@ const MILEAGE_RATE=0.80;
 // touching the rest of the quote engine.
 const DRIVE_TIME_HOURLY_RATE=0; // Set when PA LINE's hourly travel-time value is finalized.
 const MAX_DRIVE_HOURS_PER_DAY=8;
-const BETA_AVG_MPH=55;
+const FALLBACK_AVG_MPH=55;
 
-// Demo confirmed shows used only to exercise the route logic in this standalone file.
-// The live version will pull these from the private booking calendar.
-const demoConfirmedShows=[
-  {date:addDays(today,5), city:"Rochester", state:"NY", zip:"14604"},
-  {date:addDays(today,12), city:"Syracuse", state:"NY", zip:"13202"},
-  {date:addDays(today,20), city:"Erie", state:"PA", zip:"16501"}
-];
+// Public requests do not infer routing from invented surrounding shows.
+const routingReferenceShows=[];
 
 function addDays(base,n){const d=new Date(base);d.setDate(d.getDate()+n);return d}
 
@@ -3851,7 +3846,7 @@ function locationLabel(city,stateName,zip){
 
 function surroundingConfirmedShows(dateStr){
   const target=parseDate(dateStr);
-  const sorted=[...demoConfirmedShows].sort((a,b)=>a.date-b.date);
+  const sorted=[...routingReferenceShows].sort((a,b)=>a.date-b.date);
   let prev=null,next=null;
   for(const gig of sorted){
     if(gig.date<target) prev=gig;
@@ -4135,7 +4130,7 @@ function routeFor(dateStr,city,stateName,zip){
   const outboundMiles=pseudoLegMiles(targetLabel,outboundDestination);
   const totalMiles=inboundMiles+outboundMiles;
 
-  const driveHours=totalMiles/BETA_AVG_MPH;
+  const driveHours=totalMiles/FALLBACK_AVG_MPH;
   // PA LINE travel allowance rule:
   // Combine the inbound leg (previous confirmed gig, or home if none) and
   // outbound leg (next confirmed gig, or home if none). Mileage always applies.
@@ -4310,7 +4305,7 @@ function submitProductionBookingRequest(){
   let saved=payload;
   try{
     if(window.PALineBridge?.submitBooking)saved=window.PALineBridge.submitBooking(payload)||payload;
-    if(typeof deliverPrototypeInquiry==="function")deliverPrototypeInquiry(saved);
+    if(typeof deliverPrototypeInquiry==="function")deliverBookingInquiry(saved);
   }catch(e){}
   rememberContact({name:contactName,email:contactEmail,org:organization,venue:payload.venue});
   $("doneCard").innerHTML="<strong>"+escapeHTML(contactName)+"</strong><div class='small'>"+escapeHTML(contactEmail)+"</div><div style='margin-top:10px'><strong>"+escapeHTML(payload.venue)+"</strong></div><div>"+parseDate(payload.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</div><div class='small'>"+escapeHTML(payload.city)+", "+escapeHTML(payload.state)+" · "+escapeHTML(payload.format)+"</div><div style='margin-top:10px'><strong>Request sent to PA LINE</strong></div><div class='small'>PA LINE will verify availability, routing, production requirements, pricing, and agreement terms before anything is confirmed.</div>";
@@ -4432,26 +4427,12 @@ function submitDemand(){
 }
 
 let viewMonth=new Date(today.getFullYear(),today.getMonth(),1);
-const demoHeld=new Set(),demoBooked=new Set(),demoBlocked=new Set();
-for(let i=1;i<=18;i++){let d=new Date(today);d.setDate(d.getDate()+i*9);(i%3===0?demoBooked:i%3===1?demoHeld:demoBlocked).add(iso(d))}
-function liveCalendarEventsFor(dateStr){
-  return LIVE_PA_LINE_CALENDAR.filter(e=>e.date===dateStr&&e.status==="booked");
-}
-function bookedEventsForDate(dateStr){
-  const live=liveCalendarEventsFor(dateStr);
-  if(live.length)return live;
-  if(demoBooked.has(dateStr)){
-    return [{date:dateStr,status:"booked",title:"Existing confirmed PA LINE engagement",start:"7:00 PM",end:"10:00 PM",location:HOME_BASE,simulated:true}];
-  }
-  return [];
-}
+function liveCalendarEventsFor(){return []}
+function bookedEventsForDate(){return []}
 function availability(d){
-  const s=iso(d),max=new Date(today);max.setMonth(max.getMonth()+24);
-  if(d<today||d>max)return"blocked";
-  if(bookedEventsForDate(s).length)return"limited";
-  if(demoHeld.has(s))return"held";
-  if(demoBlocked.has(s))return"blocked";
-  return"available"
+  const max=new Date(today);max.setMonth(max.getMonth()+24);
+  if(d<today||d>max)return "blocked";
+  return "available";
 }
 function renderCalendar(){
   const cal=$("calendar");cal.innerHTML="";
@@ -4460,16 +4441,12 @@ function renderCalendar(){
   for(let i=0;i<startDay;i++){let e=document.createElement("div");e.className="day muted";cal.appendChild(e)}
   for(let n=1;n<=days;n++){
     const d=new Date(first.getFullYear(),first.getMonth(),n,12),st=availability(d),e=document.createElement("div");
-    e.dataset.date=iso(d);
-    e.className="day";
-    if(st==="limited")e.classList.add("limited");
-    else if(st!=="available")e.classList.add("blocked");
+    e.dataset.date=iso(d);e.className="day";
+    if(st!=="available")e.classList.add("blocked");
     if(state.selectedDate===iso(d))e.classList.add("selected");
-    const label=st==="available"?(isLongRange(iso(d))?"12+ MO":"AVAILABLE"):st==="limited"?"LIMITED":st.toUpperCase();
-    e.innerHTML="<strong>"+n+"</strong><div class='tag'>"+label+"</div>";
-    if(st==="available"){e.onclick=()=>selectExactDate(d)}
-    if(st==="limited"){e.onclick=()=>showLimitedDateModal(d)}
-    cal.appendChild(e)
+    e.innerHTML="<strong>"+n+"</strong><div class='tag'>"+(st==="available"?(isLongRange(iso(d))?"12+ MO":"REQUEST"):"UNAVAILABLE")+"</div>";
+    if(st==="available")e.onclick=()=>selectExactDate(d);
+    cal.appendChild(e);
   }
   $("monthTitle").textContent=viewMonth.toLocaleDateString(undefined,{month:"long",year:"numeric"});
   const prev=new Date(viewMonth);prev.setMonth(prev.getMonth()-1);const next=new Date(viewMonth);next.setMonth(next.getMonth()+1);
@@ -4521,7 +4498,7 @@ function requestedDurationMinutes(){
 }
 function travelMinutesBetween(fromLabel,toLabel){
   if(!fromLabel||!toLabel)return 0;
-  return Math.round((pseudoLegMiles(fromLabel,toLabel)/BETA_AVG_MPH)*60);
+  return Math.round((pseudoLegMiles(fromLabel,toLabel)/FALLBACK_AVG_MPH)*60);
 }
 function sameDayWindows(dateStr,city,stateName,zip,durationMinutes=90){
   const events=bookedEventsForDate(dateStr).map(e=>{
@@ -4620,42 +4597,23 @@ function renderUniversalShowWindow(){
 
 function renderSameDayAvailability(){
   const box=$("limitedAvailabilityBox");if(!box)return true;
-  const start=clockMinutes($("eventStart").value);
-  const rawEnd=clockMinutes($("eventEnd").value);
-
+  const start=clockMinutes($("eventStart").value),rawEnd=clockMinutes($("eventEnd").value);
   if(start==null||rawEnd==null){
-    box.classList.remove("hidden");
-    box.classList.add("time-warning");
-    box.innerHTML="<strong>Performance times required</strong><div class='small' style='margin-top:5px'>Choose both a start time and an end time so the 2-hour pre-show and 2-hour post-show scheduling allowances can be checked.</div>";
+    box.classList.remove("hidden");box.classList.add("time-warning");
+    box.innerHTML="<strong>Performance times required</strong><div class='small' style='margin-top:5px'>Choose both a start and end time. PA LINE will verify the full commitment window after submission.</div>";
     return false;
   }
-
   if(start<SAME_DAY_MIN_START||start>SAME_DAY_MAX_START){
-    box.classList.remove("hidden");
-    box.classList.add("time-warning");
+    box.classList.remove("hidden");box.classList.add("time-warning");
     box.innerHTML="<strong>Start time outside booking hours</strong><div class='small' style='margin-top:5px'>PA LINE performance start times must be between 10:00 AM and 11:00 PM.</div>";
     return false;
   }
-
-  const events=bookedEventsForDate(state.selectedDate);
-  if(!events.length){
-    box.classList.add("hidden");
-    box.classList.remove("time-warning");
-    return true;
-  }
-
-  box.classList.remove("hidden");
-  const status=sameDayTimingStatus(),r=status.result;
-  const existing=r.events.map(e=>"<div class='small'>Existing: <strong>"+e.title+"</strong> · "+e.start+" to "+e.end+"</div>").join("");
-  box.classList.toggle("time-warning",!status.ok);
-  box.innerHTML="<strong>Same-day scheduling check</strong>"+existing+
-    "<div class='small' style='margin-top:8px'>Calculated with a 2-hour pre-show allowance and 2-hour post-show allowance for every performance, your requested performance duration, and "+(r.preliminary?"travel still pending":"simulated routed travel time")+".</div>"+
-    "<div style='margin-top:8px'><strong>Available performance start window"+(r.windows.length===1?"":"s")+"</strong>"+windowsHTML(r)+"</div>"+
-    "<div class='small' style='margin-top:8px'>Requested start: <strong>"+clockLabel(start)+"</strong> · "+(status.ok?"This timing fits the current same-day plan.":"Choose a start time inside one of the available windows.")+"</div>";
-  return status.ok;
+  box.classList.remove("hidden");box.classList.remove("time-warning");
+  box.innerHTML="<strong>Schedule review pending</strong><div class='small' style='margin-top:5px'>PA LINE will verify travel, load-in, the 2-hour pre-show allowance, performance time, and the 2-hour post-show allowance before confirming the date.</div>";
+  return true;
 }
 
-function selectExactDate(d){
+function selectExactDate(d){function selectExactDate(d){
   state.selectedDate=iso(d);state.originalDate=state.selectedDate;
   $("exactSelectedText").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   $("exactContinue").disabled=false;
@@ -4681,14 +4639,21 @@ function flexWindow(){
   return[new Date(y,8,22,12),new Date(y,11,20,12)]
 }
 function findFlexibleDates(){
-  const w=flexWindow(),city=$("flexCity").value.trim(),st=$("flexState").value.trim();if(!w){alert("Choose a date range or season.");return}if(!city||!st){alert("Add city and state.");return}
+  const w=flexWindow();if(!w){alert("Choose a date range or season.");return}
+  const city=$("flexCity").value.trim(),st=$("flexState").value.trim();if(!city||!st){alert("Add city and state.");return}
   const [a,b]=w;if(b<a){alert("End date must be after start date.");return}
-  let arr=[],d=new Date(a);for(let i=0;i<800&&d<=b;i++,d.setDate(d.getDate()+1)){const av=availability(d);if(!["available","limited"].includes(av))continue;const r=routeFor(iso(d),city,st,$("flexZip").value);let score=100-r.totalMiles/4-(av==="limited"?35:0);if(state.preferredDays.size){score+=state.preferredDays.has(d.getDay())?15:-15}arr.push({date:new Date(d),route:r,score})}
-  arr.sort((x,y)=>y.score-x.score);const top=arr.slice(0,5),box=$("recommendations");box.innerHTML="";
-  top.forEach(o=>{let e=document.createElement("div");e.className="rec";e.innerHTML="<h3>"+o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</h3><div class='fit'>"+o.route.fit+"</div><div class='small'>Preview added travel: "+o.route.totalMiles+" miles · "+money(o.route.totalCost)+"</div>";e.onclick=()=>{[...box.children].forEach(x=>x.classList.remove("selected"));e.classList.add("selected");state.selectedDate=iso(o.date);state.originalDate=state.selectedDate;$("flexSelectedText").textContent=o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});$("flexContinue").disabled=false};box.appendChild(e)});
-  $("flexResults").classList.remove("hidden")
+  const arr=[];let d=new Date(a);
+  for(let i=0;i<800&&d<=b&&arr.length<40;i++,d.setDate(d.getDate()+1)){
+    if(availability(d)!=="available")continue;
+    const preferred=!state.preferredDays.size||state.preferredDays.has(d.getDay());
+    arr.push({date:new Date(d),preferred});
+  }
+  arr.sort((x,y)=>(Number(y.preferred)-Number(x.preferred))||x.date-y.date);
+  const top=arr.slice(0,5),box=$("recommendations");box.innerHTML="";
+  top.forEach(o=>{let e=document.createElement("div");e.className="rec";e.innerHTML="<h3>"+o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</h3><div class='fit'>"+(o.preferred?"PREFERRED DAY":"REQUEST OPTION")+"</div><div class='small'>PA LINE will verify calendar and routing after you submit the request.</div>";e.onclick=()=>{[...box.children].forEach(x=>x.classList.remove("selected"));e.classList.add("selected");state.selectedDate=iso(o.date);state.originalDate=state.selectedDate;$("flexSelectedText").textContent=o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});$("flexContinue").disabled=false};box.appendChild(e)});
+  $("flexResults").classList.remove("hidden");
 }
-function continueFlexible(){if(state.selectedDate)openDetails()}
+function continueFlexible(){if(state.selectedDate)openDetails()}function continueFlexible(){if(state.selectedDate)openDetails()}
 function backFromDetails(){showPage(state.source==="exact"?"pageExact":"pageFlexible",state.source==="exact"?"I Know My Date":"I’m Flexible")}
 function openDetails(){
   renderAdditionalDates();
@@ -4697,7 +4662,7 @@ function openDetails(){
   applyReturningProfileToDetails();
   if(state.autoOpenRecurring){state.autoOpenRecurring=false;if($("recurringPanel").classList.contains("hidden"))toggleRecurring();$("recurringFrequency").value="specific";updateRecurringUI();}
   updateBookingBenefits();
-  $("detailsLead").textContent=state.source==="exact"?"Your chosen date stays selected. Add the location and we will show optional nearby dates only if they route substantially better.":"Great. We found a route-friendly date. Now give us the show details.";
+  $("detailsLead").textContent=state.source==="exact"?"Your preferred date stays selected. Add the show details and PA LINE will verify the full calendar and route after submission.":"Great. You picked a preferred date. Now give us the show details.";
   updateDetails()
 }
 ["eventVenue","eventCity","eventState","eventZip","eventStart","eventEnd"].forEach(id=>$(id).addEventListener("input",updateDetails));$("performanceLength").addEventListener("change",updateDetails);
@@ -4724,7 +4689,7 @@ function renderExactSuggestions(originalRoute){
   arr.sort((a,b)=>a.r.totalMiles-b.r.totalMiles);$("exactSuggestions").classList.remove("hidden");$("exactSuggestionCards").innerHTML="";
   if(!arr.length){$("exactSuggestionText").textContent="Your selected date is available and there is no clearly better nearby routing option.";return}
   $("exactSuggestionText").textContent="We are happy to make your original date work. These nearby dates may reduce unnecessary travel.";
-  arr.slice(0,2).forEach(o=>{let e=document.createElement("div");e.className="rec";e.innerHTML="<strong>"+o.d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</strong><div class='small'>May reduce routed travel by about "+o.diff+" preview miles.</div>";e.onclick=()=>{state.selectedDate=iso(o.d);$("eventDate").value=state.selectedDate;updateDetails()};$("exactSuggestionCards").appendChild(e)})
+  arr.slice(0,2).forEach(o=>{let e=document.createElement("div");e.className="rec";e.innerHTML="<strong>"+o.d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</strong><div class='small'>Potential alternate date for PA LINE review.</div>";e.onclick=()=>{state.selectedDate=iso(o.d);$("eventDate").value=state.selectedDate;updateDetails()};$("exactSuggestionCards").appendChild(e)})
 }
 function setSoundProvided(v){state.soundProvided=v;$("soundYes").classList.toggle("selected",v===true);$("soundNo").classList.toggle("selected",v===false);$("soundPanel").classList.remove("hidden");syncSoundTech();updateDetails()}
 function syncSoundTech(){
@@ -5030,7 +4995,7 @@ function openQuote(){
   $("quoteCard").innerHTML=
     "<div class='price-factor-grid'>"+
       "<div class='price-factor'><span>PERFORMANCE</span><strong>"+escapeHTML(state.format)+"</strong><small>"+escapeHTML(s.label.replace(/,\s*\d+% (below|above) baseline/i,""))+"</small></div>"+
-      "<div class='price-factor'><span>ROUTING</span><strong>"+r.totalMiles+" preview miles</strong><small>"+r.driveHours.toFixed(1)+" combined drive hours · "+(r.extendedTravelAllowanceApplies?"additional base-rate travel allowance applies":"no additional base-rate travel allowance")+"</small></div>"+
+      "<div class='price-factor'><span>ROUTING</span><strong>Routing review</strong><small>"+r.driveHours.toFixed(1)+" combined drive hours · "+(r.extendedTravelAllowanceApplies?"additional base-rate travel allowance applies":"no additional base-rate travel allowance")+"</small></div>"+
       "<div class='price-factor'><span>SOUND</span><strong>"+escapeHTML(soundLabel)+"</strong><small>"+escapeHTML(techLabel)+"</small></div>"+
       (state.truePotential?"<div class='price-factor premium-factor'><span>TRUE POTENTIAL</span><strong>Custom production quote</strong><small>Expanded production is quoted separately.</small></div>":"")+
     "</div>";
@@ -6780,7 +6745,7 @@ function resetDocumentReviewToTop(){
 </footer>
 
 <script>
-function deliverPrototypeInquiry(packet){
+function deliverBookingInquiry(packet){
   try{
     fetch("/api/prototype-inquiries",{
       method:"POST",
@@ -6834,7 +6799,7 @@ function deliverPrototypeInquiry(packet){
     if(!window.PALineBridge)return null;
     const req=window.PALineBridge.submitBooking(collectBookingRequest());
     localStorage.setItem("paline_last_booking_request_id",req.id);
-    deliverPrototypeInquiry(req);
+    deliverBookingInquiry(req);
     return req;
   }
   // Capture explicit request/submit actions without interfering with current booking logic.
@@ -7091,7 +7056,7 @@ function submitSpecialBooking(){
   try{
     if(window.PALineBridge?.submitBooking){
       saved=window.PALineBridge.submitBooking(payload);
-      deliverPrototypeInquiry(saved||payload);
+      deliverBookingInquiry(saved||payload);
     }
   }catch(e){}
 
