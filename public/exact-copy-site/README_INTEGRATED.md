@@ -1,8 +1,15 @@
-# PA LINE Platform Beta v7.25
+# PA LINE Platform
 
-Public runtime: `booking/index.html`
-Private runtime: `crew/index.html`
+Canonical public entry: `index.html`
+
+Public Booking: `booking/index.html`
+Private Crew & Command: `crew/index.html`
 Booking bridge: `shared/bridge.js`
-Data Vault client: `shared/vault.js`
+Server client: `shared/server-core.js`
+Local recovery client: `shared/vault.js`
 
-COMMAND -> PUBLIC opens the public booking app. PUBLIC -> COMMAND goes through secure sign-in. Browser storage is the working copy and the local Data Vault is the recovery copy.
+The platform has one public entry with two destinations: **Booking** and **Crew & Command**.
+
+Booking requests are submitted to the PA LINE backend for review. The public site does not self-confirm a date, price, or agreement. Final routing, pricing, production terms, and agreements are handled after PA LINE review.
+
+Crew & Command requires secure profile sign-in. Trever Stribing is the full-control Command administrator. Other active profiles use the simplified Crew portal.
