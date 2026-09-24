@@ -2456,6 +2456,38 @@ button,a,[onclick],.choice,.rec,.day,.returning-booker-bar{touch-action:manipula
 @media(max-width:680px){.fan-loyalty-tier-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
+
+<style id="sky-blue-readability-v2">
+/* Final production readability guard: keep the soft sky-blue theme coherent
+   even when older dark-theme rules appear later in the prototype cascade. */
+html,body{background:#d9efff!important;color:#17324a!important}
+body{
+  background:
+    radial-gradient(circle at 15% 0%,rgba(61,131,174,.13),transparent 30%),
+    radial-gradient(circle at 85% 8%,rgba(255,255,255,.72),transparent 28%),
+    linear-gradient(180deg,#d9efff 0%,#eef8ff 52%,#d9efff 100%)!important;
+}
+.choice:hover{background:linear-gradient(180deg,#f8fcff,#e3f2fc)!important}
+.field input,.field select,.field textarea,
+.custom-date-picker-day,.custom-date-picker-nav,
+.same-day-close{
+  background:#f8fcff!important;
+  color:#17324a!important;
+  border-color:rgba(61,131,174,.28)!important;
+}
+.field input::placeholder,.field textarea::placeholder{color:#6a8091!important;opacity:1}
+.field select option{background:#fff;color:#17324a}
+.custom-date-picker-day:hover:not(:disabled){background:#e3f2fc!important}
+.autocomplete-list{background:#f8fcff!important;border-color:rgba(61,131,174,.28)!important}
+.autocomplete-item{color:#17324a!important}
+.autocomplete-item:hover{background:#e3f2fc!important}
+.same-day-modal,.document-review-shell,
+.rec,.req-item,.addon,.summary,.final-price-card{
+  color:#17324a;
+}
+.small,.muted{color:#5f7485!important}
+</style>
+
 </head>
 <body>
 <div class="app">
