@@ -14,14 +14,14 @@ class BookingAccessGateTest extends TestCase
     public function test_a_guest_can_reach_the_booking_page_without_signing_in(): void
     {
         // Booking is fully public: no account or sign-in required.
-        $this->get('/booking')->assertRedirect('https://demo.palineofficial.com');
+        $this->get('/booking')->assertRedirect(url('/exact-copy-site/booking/index.html'));
     }
 
     public function test_an_authenticated_user_can_also_reach_the_booking_page(): void
     {
         $user = User::factory()->create(['email' => 'anyone@example.com']);
 
-        $this->actingAs($user)->get('/booking')->assertRedirect('https://demo.palineofficial.com');
+        $this->actingAs($user)->get('/booking')->assertRedirect(url('/exact-copy-site/booking/index.html'));
     }
 
     public function test_an_anonymous_json_request_can_start_a_booking_draft(): void
