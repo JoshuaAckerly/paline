@@ -1,7 +1,9 @@
-# PA LINE Booking Beta v7.21
+# PA LINE Booking
 
-`index.html` is the current public booking beta runtime. It integrates with `../shared/bridge.js` and `../shared/vault.js`.
+`index.html` is the canonical public booking application.
 
-The original four booking paths remain, plus the special-booking channel with Residency, Open Mic, PR / Media, Charity / Fundraiser / Benefit, and Other / Custom. Each special type has its own funnel.
+Public paths include exact date, flexible timing, local demand, and special booking requests such as Residency, Open Mic, PR / Media, Charity / Fundraiser / Benefit, and Other / Custom.
 
-PUBLIC -> COMMAND always uses secure sign-in. Production-only integrations such as verified email, real routing providers, payment processing, and production authentication remain clearly identified as not yet connected.
+Public requests are submitted to the PA LINE backend for manual review. The public application intentionally does not present simulated routing, simulated verification, or self-service final pricing as confirmed production data.
+
+Final availability, routing, individualized pricing, production terms, and agreements remain subject to PA LINE review.
