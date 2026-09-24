@@ -4613,7 +4613,7 @@ function renderSameDayAvailability(){
   return true;
 }
 
-function selectExactDate(d){function selectExactDate(d){
+function selectExactDate(d){
   state.selectedDate=iso(d);state.originalDate=state.selectedDate;
   $("exactSelectedText").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   $("exactContinue").disabled=false;
@@ -4653,7 +4653,7 @@ function findFlexibleDates(){
   top.forEach(o=>{let e=document.createElement("div");e.className="rec";e.innerHTML="<h3>"+o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})+"</h3><div class='fit'>"+(o.preferred?"PREFERRED DAY":"REQUEST OPTION")+"</div><div class='small'>PA LINE will verify calendar and routing after you submit the request.</div>";e.onclick=()=>{[...box.children].forEach(x=>x.classList.remove("selected"));e.classList.add("selected");state.selectedDate=iso(o.date);state.originalDate=state.selectedDate;$("flexSelectedText").textContent=o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});$("flexContinue").disabled=false};box.appendChild(e)});
   $("flexResults").classList.remove("hidden");
 }
-function continueFlexible(){if(state.selectedDate)openDetails()}function continueFlexible(){if(state.selectedDate)openDetails()}
+function continueFlexible(){if(state.selectedDate)openDetails()}
 function backFromDetails(){showPage(state.source==="exact"?"pageExact":"pageFlexible",state.source==="exact"?"I Know My Date":"I’m Flexible")}
 function openDetails(){
   renderAdditionalDates();
