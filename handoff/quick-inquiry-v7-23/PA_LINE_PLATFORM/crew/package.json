@@ -1,0 +1,10 @@
+{
+  "name": "pa-line-crew-command",
+  "private": true,
+  "version": "0.7.23-beta",
+  "description": "PA LINE CREW + COMMAND beta operations platform",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "validate": "node scripts/validate.mjs"
+  }
+}
