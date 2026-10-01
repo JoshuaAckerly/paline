@@ -1,0 +1,64 @@
+name: Development Validation
+
+on:
+  push:
+    branches:
+      - "dev/**"
+      - "feature/**"
+      - "fix/**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Test and build only
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          touch database/database.sqlite
+          php artisan migrate --force
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: PHP tests
+        run: composer test
+
+      - name: PHP formatting check
+        run: ./vendor/bin/pint --test
+
+      - name: TypeScript
+        run: npm run types
+
+      - name: Frontend tests
+        run: npm run test
+
+      - name: Production build check
+        run: npm run build
