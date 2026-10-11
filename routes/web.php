@@ -76,7 +76,7 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('throttle:6,1')
         ->name('auth.magic.store');
     Route::get('/callback/{magicLoginToken}', [MagicLinkController::class, 'consume'])
-        ->middleware(['signed', 'throttle:12,1'])
+        ->middleware(['signed:relative', 'throttle:12,1'])
         ->name('auth.magic.consume');
     Route::post('/logout', [MagicLinkController::class, 'destroy'])
         ->middleware('auth')
@@ -124,6 +124,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/booking-access', [BookingAllowedEmailController::class, 'index'])->name('booking-access.index');
     Route::post('/booking-access', [BookingAllowedEmailController::class, 'store'])->name('booking-access.store');
     Route::delete('/booking-access/{bookingAllowedEmail}', [BookingAllowedEmailController::class, 'destroy'])->name('booking-access.destroy');
+
+    Route::post('/prototype-site/{prototypeSiteVersion}/publish', [PrototypeSiteController::class, 'publish'])
+        ->name('prototype-site.publish');
 });
 
 // Scoped access (e.g. Trevor): manage the public prototype import/publish flow
@@ -132,6 +135,4 @@ Route::middleware(['auth', 'prototype-site.manage'])->prefix('admin')->name('adm
     Route::get('/prototype-site', [PrototypeSiteController::class, 'edit'])->name('prototype-site.edit');
     Route::post('/prototype-site', [PrototypeSiteController::class, 'store'])->name('prototype-site.store');
     Route::get('/prototype-site/{prototypeSiteVersion}/preview', [PrototypeSiteController::class, 'preview'])->name('prototype-site.preview');
-    Route::post('/prototype-site/{prototypeSiteVersion}/publish', [PrototypeSiteController::class, 'publish'])->name('prototype-site.publish');
 });
-

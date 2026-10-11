@@ -15,7 +15,6 @@ class SyncAdminUsers extends Command
 
     public function handle(): int
     {
-        $defaultPassword = config('app.admin_default_password');
         $emails = [...config('app.admin_emails', []), ...config('app.prototype_admin_emails', [])];
 
         foreach (array_unique($emails) as $email) {
@@ -23,12 +22,17 @@ class SyncAdminUsers extends Command
                 ['email' => $email],
                 [
                     'name' => Str::headline(Str::before($email, '@')),
-                    'password' => Hash::make($defaultPassword),
-                    'email_verified_at' => now(),
+                    'password' => Hash::make(Str::random(64)),
                 ],
             );
 
-            $this->info($user->wasRecentlyCreated ? "Created admin user: {$email}" : "Already exists: {$email}");
+            if ($user->wasRecentlyCreated) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+            }
+
+            $this->info($user->wasRecentlyCreated
+                ? "Created admin user: {$email}; use the password-reset flow to set credentials."
+                : "Already exists: {$email}");
         }
 
         return self::SUCCESS;

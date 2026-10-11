@@ -33,6 +33,21 @@ class MagicLinkAuthenticationTest extends TestCase
         Notification::assertSentOnDemand(MagicLoginLink::class);
     }
 
+    public function test_magic_link_host_comes_from_the_canonical_application_url(): void
+    {
+        Notification::fake();
+        config(['app.url' => 'https://booking.example.com']);
+
+        $this->withHeader('Host', 'attacker.example')
+            ->postJson(route('auth.magic.store'), ['email' => 'buyer@example.com'])
+            ->assertAccepted();
+
+        $url = $this->sentMagicLinkUrl();
+        $this->assertSame('booking.example.com', parse_url($url, PHP_URL_HOST));
+        $this->assertStringStartsWith('https://booking.example.com/auth/callback/', $url);
+        $this->get($url)->assertRedirect('/booking/');
+    }
+
     public function test_a_valid_link_verifies_and_authenticates_the_user_once(): void
     {
         Notification::fake();
