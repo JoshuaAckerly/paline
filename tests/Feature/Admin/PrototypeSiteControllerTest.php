@@ -60,9 +60,17 @@ HTML;
     public function test_a_scoped_prototype_admin_can_view_the_page_but_not_the_rest_of_admin(): void
     {
         $trevor = User::factory()->create(['email' => config('app.prototype_admin_emails')[0]]);
+        $version = PrototypeSiteVersion::create([
+            'original_filename' => 'prototype.html',
+            'storage_path' => 'prototype-site-versions/staged.html',
+            'content_hash' => hash('sha256', $this->validFixtureHtml()),
+            'uploaded_by_email' => $trevor->email,
+        ]);
+        Storage::disk('local')->put($version->storage_path, $this->validFixtureHtml());
 
         $this->actingAs($trevor)->get('/admin/prototype-site')->assertOk();
         $this->actingAs($trevor)->get('/admin/messages')->assertForbidden();
+        $this->actingAs($trevor)->post("/admin/prototype-site/{$version->id}/publish")->assertForbidden();
     }
 
     public function test_a_user_in_neither_list_is_forbidden(): void
@@ -110,17 +118,20 @@ HTML;
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $response->assertHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data: https:");
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertStringContainsString('deliverPrototypeInquiry(packet);', $response->getContent());
     }
 
     public function test_publishing_writes_the_live_files_and_archives_the_previous_version(): void
     {
         $trevor = User::factory()->create(['email' => config('app.prototype_admin_emails')[0]]);
+        $admin = User::factory()->create(['email' => config('app.admin_emails')[0]]);
 
         $first = UploadedFile::fake()->createWithContent('v1.html', $this->validFixtureHtml());
         $this->actingAs($trevor)->post('/admin/prototype-site', ['file' => $first]);
         $firstVersion = PrototypeSiteVersion::sole();
-        $this->actingAs($trevor)->post("/admin/prototype-site/{$firstVersion->id}/publish")
+        $this->actingAs($admin)->post("/admin/prototype-site/{$firstVersion->id}/publish")
             ->assertRedirect('/admin/prototype-site');
 
         $firstVersion->refresh();
@@ -132,7 +143,7 @@ HTML;
         $second = UploadedFile::fake()->createWithContent('v2.html', $this->validFixtureHtml());
         $this->actingAs($trevor)->post('/admin/prototype-site', ['file' => $second]);
         $secondVersion = PrototypeSiteVersion::orderByDesc('id')->first();
-        $this->actingAs($trevor)->post("/admin/prototype-site/{$secondVersion->id}/publish");
+        $this->actingAs($admin)->post("/admin/prototype-site/{$secondVersion->id}/publish");
 
         $firstVersion->refresh();
         $secondVersion->refresh();
@@ -140,7 +151,7 @@ HTML;
         $this->assertSame('published', $secondVersion->status);
 
         // Publishing the archived first version again is the rollback path.
-        $this->actingAs($trevor)->post("/admin/prototype-site/{$firstVersion->id}/publish");
+        $this->actingAs($admin)->post("/admin/prototype-site/{$firstVersion->id}/publish");
         $firstVersion->refresh();
         $secondVersion->refresh();
         $this->assertSame('published', $firstVersion->status);

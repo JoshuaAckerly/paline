@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Middleware\EnsureBookingAccess;
+use App\Http\Middleware\EnsureCanManagePrototypeSite;
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\TrackSiteVisit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,16 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Trust all proxies so ngrok/reverse proxies pass HTTPS scheme correctly
-        $middleware->trustProxies(at: '*');
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '')),
+        )));
+        $middleware->trustProxies(at: $trustedProxies);
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \App\Http\Middleware\TrackSiteVisit::class,
+            HandleInertiaRequests::class,
+            TrackSiteVisit::class,
         ]);
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
-            'booking.access' => \App\Http\Middleware\EnsureBookingAccess::class,
-            'prototype-site.manage' => \App\Http\Middleware\EnsureCanManagePrototypeSite::class,
+            'admin' => EnsureUserIsAdmin::class,
+            'booking.access' => EnsureBookingAccess::class,
+            'prototype-site.manage' => EnsureCanManagePrototypeSite::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

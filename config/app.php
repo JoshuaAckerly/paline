@@ -79,9 +79,6 @@ return [
 
     'admin_emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('ADMIN_EMAILS'))))),
 
-    // Starter password assigned to newly-created admin users by `php artisan admin:sync-users`.
-    'admin_default_password' => env('ADMIN_DEFAULT_PASSWORD', '00000000'),
-
     /*
     |--------------------------------------------------------------------------
     | Prototype-Site Admin Emails

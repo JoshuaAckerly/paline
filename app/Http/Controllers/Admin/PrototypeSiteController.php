@@ -60,7 +60,11 @@ class PrototypeSiteController extends Controller
 
     public function preview(PrototypeSiteVersion $prototypeSiteVersion): HttpResponse
     {
-        return response($prototypeSiteVersion->html(), 200, ['Content-Type' => 'text/html']);
+        return response($prototypeSiteVersion->html(), 200, [
+            'Content-Type' => 'text/html',
+            'Content-Security-Policy' => "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data: https:",
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function publish(PrototypeSiteVersion $prototypeSiteVersion): RedirectResponse

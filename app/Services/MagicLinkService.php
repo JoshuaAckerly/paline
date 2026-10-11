@@ -34,10 +34,11 @@ class MagicLinkService
 
         return [
             $loginToken,
-            URL::temporarySignedRoute(
+            rtrim((string) config('app.url'), '/').URL::temporarySignedRoute(
                 'auth.magic.consume',
                 $expiresAt,
                 ['magicLoginToken' => $loginToken->id, 'token' => $plainToken],
+                absolute: false,
             ),
         ];
     }
