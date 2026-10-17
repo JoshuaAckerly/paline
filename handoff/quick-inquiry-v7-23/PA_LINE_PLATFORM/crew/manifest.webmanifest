@@ -1,0 +1,15 @@
+{
+  "name": "PA LINE CREW + COMMAND",
+  "short_name": "PA LINE CREW",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#090b0e",
+  "theme_color": "#090b0e",
+  "icons": [
+    {
+      "src": "./assets/pa-line-rose.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}

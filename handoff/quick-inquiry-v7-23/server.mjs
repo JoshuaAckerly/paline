@@ -1,0 +1,43 @@
+import http from "http";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
+const ROOT=path.join(__dirname,"PA_LINE_PLATFORM"),PORT_FILE=path.join(__dirname,".paline-port"),PID_FILE=path.join(__dirname,".paline-pid"),BUILD="beta-v7.23",REQUESTED_PORT=Number(process.env.PA_LINE_PORT||5174);
+const vaultRoot=process.env.PA_LINE_VAULT_DIR||path.join(process.env.APPDATA||os.homedir(),"PA_LINE_PLATFORM_BETA","DataVault"),vaultBackups=path.join(vaultRoot,"backups"),vaultAudio=path.join(vaultRoot,"audio"),vaultCurrent=path.join(vaultRoot,"current.json");
+fs.mkdirSync(vaultBackups,{recursive:true});fs.mkdirSync(vaultAudio,{recursive:true});
+const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".webmanifest":"application/manifest+json; charset=utf-8",".png":"image/png",".jpg":"image/jpeg",".jpeg":"image/jpeg",".svg":"image/svg+xml",".ico":"image/x-icon",".mp3":"audio/mpeg",".wav":"audio/wav"};
+const noCache=(extra={})=>({"Cache-Control":"no-store, no-cache, must-revalidate, max-age=0","Pragma":"no-cache","Expires":"0","X-PA-Line-Build":BUILD,...extra});
+function safePath(urlPath){let decoded;try{decoded=decodeURIComponent((urlPath||"/").split("?")[0])}catch{return null}if(decoded.includes("\0"))return null;const rel=decoded==="/"?"index.html":decoded.split("/").filter(Boolean).join("/"),rr=path.resolve(ROOT),abs=path.resolve(ROOT,rel);if(abs!==rr&&!abs.startsWith(rr+path.sep))return null;return abs}
+function readJson(file,fallback=null){try{return JSON.parse(fs.readFileSync(file,"utf8"))}catch(e){return fallback}}
+const stamp=()=>new Date().toISOString().replace(/[:.]/g,"-");
+function cleanSnapshot(input){const src=input?.localStorage;if(!src||typeof src!=="object"||Array.isArray(src)||!Object.values(src).every(v=>typeof v==="string"))throw new Error("Invalid vault snapshot");const localStorage={};for(const [k,v] of Object.entries(src))if(k.startsWith("PA_LINE_")||k.startsWith("paline_"))localStorage[k]=v;return {schema:1,savedAt:new Date().toISOString(),reason:String(input?.reason||"auto").slice(0,80),localStorage}}
+function backups(){try{return fs.readdirSync(vaultBackups).filter(n=>n.endsWith(".json")).sort().reverse()}catch(e){return []}}
+function prune(limit=100){backups().slice(limit).forEach(n=>{try{fs.unlinkSync(path.join(vaultBackups,n))}catch(e){}})}
+function backupDue(){const f=backups();if(!f.length)return true;try{return Date.now()-fs.statSync(path.join(vaultBackups,f[0])).mtimeMs>15*60*1000}catch(e){return true}}
+function writeBackup(s,label="auto"){const safe=String(label).replace(/[^a-z0-9_-]+/gi,"-").slice(0,30)||"auto",file=path.join(vaultBackups,`${stamp()}_${safe}.json`);fs.writeFileSync(file,JSON.stringify(s,null,2),"utf8");prune();return file}
+function saveSnapshot(input){const next=cleanSnapshot(input),prev=readJson(vaultCurrent,null),changed=!prev||JSON.stringify(prev.localStorage||{})!==JSON.stringify(next.localStorage||{}),force=["manual","before-reset","before-import","import"].includes(next.reason);if(prev&&changed&&(force||backupDue()))writeBackup(prev,force?"safety":"auto");const tmp=vaultCurrent+".tmp";fs.writeFileSync(tmp,JSON.stringify(next,null,2),"utf8");fs.renameSync(tmp,vaultCurrent);if(force)writeBackup(next,next.reason);return next}
+function readBody(req,max=25*1024*1024){return new Promise((resolve,reject)=>{const parts=[];let size=0;req.on("data",ch=>{size+=ch.length;if(size>max){reject(new Error("Request too large"));req.destroy();return}parts.push(ch)});req.on("end",()=>resolve(Buffer.concat(parts)));req.on("error",reject)})}
+const audioHash=k=>crypto.createHash("sha256").update(String(k)).digest("hex");
+function audioPaths(k){const h=audioHash(k);return {data:path.join(vaultAudio,h+".bin"),meta:path.join(vaultAudio,h+".json")}}
+function status(){let audioFiles=0;try{audioFiles=fs.readdirSync(vaultAudio).filter(x=>x.endsWith(".bin")).length}catch(e){}const current=readJson(vaultCurrent,null);return {build:BUILD,hasCurrent:!!current,savedAt:current?.savedAt||null,backupCount:backups().length,audioFiles}}
+async function handleVault(req,res,url){
+ if(url.pathname==="/api/vault/status"&&req.method==="GET"){res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify(status()));return true}
+ if(url.pathname==="/api/vault/export"&&req.method==="GET"){const current=readJson(vaultCurrent,{schema:1,savedAt:null,reason:"export",localStorage:{}});res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8","Content-Disposition":`attachment; filename="PA_LINE_DATA_BACKUP_${new Date().toISOString().slice(0,10)}.json"`}));res.end(JSON.stringify(current,null,2));return true}
+ if(url.pathname==="/api/vault"&&req.method==="GET"){res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify(readJson(vaultCurrent,{schema:1,savedAt:null,reason:"empty",localStorage:{}})));return true}
+ if(url.pathname==="/api/vault"&&req.method==="POST"){try{const body=await readBody(req),saved=saveSnapshot(JSON.parse(body.toString("utf8")||"{}"));res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:true,savedAt:saved.savedAt,backupCount:backups().length}))}catch(err){res.writeHead(400,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:false,error:String(err?.message||err)}))}return true}
+ if(url.pathname==="/api/vault/audio"){
+  const key=url.searchParams.get("key")||"";if(!key){res.writeHead(400,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:false,error:"Missing audio key"}));return true}const f=audioPaths(key);
+  if(req.method==="POST"){try{const body=await readBody(req,150*1024*1024),type=String(req.headers["content-type"]||"application/octet-stream").slice(0,120),encodedName=String(req.headers["x-pa-line-file-name"]||"practice-audio").slice(0,500);fs.writeFileSync(f.data,body);fs.writeFileSync(f.meta,JSON.stringify({key,type,encodedName,savedAt:new Date().toISOString()},null,2),"utf8");res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:true}))}catch(err){res.writeHead(400,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:false,error:String(err?.message||err)}))}return true}
+  if(req.method==="GET"){if(!fs.existsSync(f.data)){res.writeHead(404,noCache({"Content-Type":"text/plain; charset=utf-8"}));res.end("Not found");return true}const meta=readJson(f.meta,{});res.writeHead(200,noCache({"Content-Type":meta.type||"application/octet-stream","X-PA-Line-File-Name":meta.encodedName||"practice-audio"}));fs.createReadStream(f.data).pipe(res);return true}
+  if(req.method==="DELETE"){try{fs.unlinkSync(f.data)}catch(e){}try{fs.unlinkSync(f.meta)}catch(e){}res.writeHead(200,noCache({"Content-Type":"application/json; charset=utf-8"}));res.end(JSON.stringify({ok:true}));return true}
+ }
+ return false;
+}
+const app=http.createServer(async(req,res)=>{const url=new URL(req.url||"/","http://127.0.0.1");if(url.pathname.startsWith("/api/vault")&&await handleVault(req,res,url))return;let file=safePath(req.url);if(!file){res.writeHead(403,noCache({"Content-Type":"text/plain; charset=utf-8"}));res.end("Forbidden");return}fs.stat(file,(se,st)=>{if(!se&&st.isDirectory()){if(!url.pathname.endsWith("/")){res.writeHead(308,noCache({Location:url.pathname+"/"+url.search}));res.end();return}file=path.join(file,"index.html");}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404,noCache({"Content-Type":"text/plain; charset=utf-8"}));res.end("Not found");return}res.writeHead(200,noCache({"Content-Type":mime[path.extname(file).toLowerCase()]||"application/octet-stream"}));res.end(data)})})});
+function cleanup(){try{fs.unlinkSync(PORT_FILE)}catch(e){}try{fs.unlinkSync(PID_FILE)}catch(e){}}
+process.on("SIGINT",()=>{cleanup();process.exit(0)});process.on("SIGTERM",()=>{cleanup();process.exit(0)});process.on("exit",cleanup);try{fs.unlinkSync(PORT_FILE)}catch(e){}try{fs.unlinkSync(PID_FILE)}catch(e){}
+app.on("error",err=>{console.error(err);cleanup();process.exit(1)});
+app.listen(REQUESTED_PORT,"127.0.0.1",()=>{const port=app.address().port;fs.writeFileSync(PORT_FILE,String(port),"utf8");fs.writeFileSync(PID_FILE,String(process.pid),"utf8");console.log(`PA LINE ${BUILD} running at http://127.0.0.1:${port}`)});
