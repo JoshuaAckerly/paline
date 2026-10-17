@@ -7,6 +7,7 @@ const members = [
     { name: 'Griffin Brady',   role: 'World & Hand Percussion, Vocals' },
     { name: 'Andrew Moore',    role: 'Bass, Vocals' },
     { name: 'Michael Bloom',   role: 'Drum Kit' },
+    { name: 'Oliver Burdo',    role: 'Multi-Instrumentalist, Vocals' },
 ];
 
 const storySections = [
@@ -126,16 +127,18 @@ Andrew's arrival carried another layer of history because he and Griffin weren't
 Suddenly, two long musical journeys intersected: more than a decade of Trever's PA LINE history and more than twenty years of Griffin and Andrew's shared musical language.`,
     },
     {
-        heading: 'Michael Bloom and the Current PA LINE',
+        heading: 'Michael Bloom, Oliver Burdo and the Current PA LINE',
         body: `The newest chapter brings Michael Bloom of Lancaster, New York into PA LINE on full drum kit.
 
 For much of PA LINE's existence, the band deliberately operated outside the traditional rock rhythm section. Adding Michael doesn't eliminate that identity; it opens another dimension within it. A dedicated kit gives the songs a deeper backbeat and physical drive while allowing Griffin's hand percussion to become even more conversational, textural, and expansive.
 
 Andrew's bass can now move between those rhythmic worlds, while Trever's aggressive acoustic guitar can push against the rhythm rather than carrying so much of it by itself. PA LINE hasn't abandoned the acoustic identity that began with Trever, Lucas, and Alyssa. It has simply found another way to make that identity bigger.
 
-Today, PA LINE is Trever Stribing on lead vocals, acoustic guitar, kick and tambourine; Griffin Brady on world and hand percussion and vocals; Andrew Moore on bass and vocals; and Michael Bloom on drum kit.
+Oliver Burdo adds another layer as a PA LINE multi-instrumentalist and vocalist. A Rustbelt folk songwriter and member of St. Vith, Oliver brings more than a decade of solo and band touring experience, another songwriting voice, and additional instrumental range into the current band.
 
-Those four musicians stand at the end of a musical lineage extending back to 2014 and involving far more people than can fit into one current band photograph.`,
+Today, PA LINE is Trever Stribing on lead vocals, acoustic guitar, kick and tambourine; Griffin Brady on world and hand percussion and vocals; Andrew Moore on bass and vocals; Michael Bloom on drum kit; and Oliver Burdo as multi-instrumentalist and vocalist.
+
+Those five musicians stand at the end of a musical lineage extending back to 2014 and involving far more people than can fit into one current band photograph.`,
     },
     {
         heading: 'The Records Tell the Story',
